@@ -9,3 +9,4 @@ export * from './dates-engine/explain.js';
 export * from './search/search-input.js';
 export * from './dates-engine/local-estimate.js';
 export * from './transport/transport.js';
+export * from './hotels/hotels.js';

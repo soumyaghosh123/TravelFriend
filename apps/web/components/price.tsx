@@ -31,6 +31,11 @@ interface Props {
   size?: 'sm' | 'md' | 'lg';
   /** Hide the booking button (e.g. when the row already has one). */
   hideBook?: boolean;
+  /**
+   * Compact pill for price comparisons: "Agoda ₹11,550" as the booking link itself, with source,
+   * freshness and estimate status in its accessible label and tooltip. Needs `offer`.
+   */
+  chip?: { highlight?: boolean };
 }
 
 const SIZE = { sm: 'text-sm', md: 'text-base', lg: 'text-2xl tracking-[-.5px]' } as const;
@@ -49,11 +54,38 @@ function useNow(): number {
  * The only way prices are rendered: amount, "approx." when estimated, where it comes from,
  * how fresh it is, and a booking link with dates and travellers filled in (CLAUDE.md rule 1).
  */
-export function Price({ amount, isEstimate, offer, sources, ownEstimate, note, size = 'md', hideBook }: Props) {
+export function Price({ amount, isEstimate, offer, sources, ownEstimate, note, size = 'md', hideBook, chip }: Props) {
   const t = useTranslations('price');
   const locale = useLocale();
   const now = useNow();
   const fetchedAt = offer?.fetchedAt ?? sources?.fetchedAt;
+
+  if (chip && offer) {
+    const label = [
+      t('book', { site: offer.sourceName }),
+      inr(amount),
+      isEstimate ? t('approx') : null,
+      t('checked', { ago: checkedAgo(offer.fetchedAt, now, locale) }),
+      chip.highlight ? t('cheapestSite') : null,
+    ]
+      .filter(Boolean)
+      .join(' · ');
+    return (
+      <a
+        href={offer.bookingUrl}
+        target="_blank"
+        rel="noopener noreferrer sponsored"
+        aria-label={label}
+        title={label}
+        className={`block rounded-lg border px-2 py-1 text-[11px] ${
+          chip.highlight ? 'border-good bg-good-l font-semibold text-good' : 'border-line text-ink2 hover:border-brand'
+        }`}
+      >
+        {offer.sourceName} <b className="tabular-nums">{inr(amount)}</b>
+        {isEstimate && <span className="ml-0.5 text-warn">*</span>}
+      </a>
+    );
+  }
 
   return (
     <div className="min-w-0">

@@ -9,10 +9,11 @@ import { dateRange, monthLabel } from '../lib/format';
 import { tripSources } from '../lib/trip-sources';
 import { useResultsStream } from '../lib/use-results-stream';
 import { useSelectedWindow } from '../lib/use-selected-window';
-import { useTransport } from '../lib/use-transport';
+import { useHotels, useTransport } from '../lib/use-transport';
 import { BestDatesTab } from './best-dates-tab';
 import { DestinationBanner } from './destination-banner';
 import { GettingThereTab } from './getting-there-tab';
+import { HotelsTab } from './hotels-tab';
 import { PlanCards } from './plan-cards';
 import { Price } from './price';
 import { panelId, ResultTabs, tabId, type TabId } from './result-tabs';
@@ -33,7 +34,7 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
   const t = useTranslations('results');
   const ts = useTranslations('search');
   const locale = useLocale();
-  const { dates, transport: streamedTransport, retry } = useResultsStream(searchId);
+  const { dates, transport: streamedTransport, hotels: streamedHotels, retry } = useResultsStream(searchId);
   const [tab, setTab] = useState<TabId>('dates');
   const [style, setStyle] = useState<TripStyle>('budget');
   const [start, setStart] = useState<string | null>(null);
@@ -47,6 +48,7 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
 
   const selection = useSelectedWindow(searchId, current, start);
   const transport = useTransport(searchId, selection.window, streamedTransport);
+  const hotels = useHotels(searchId, selection.window, streamedHotels);
   const people = input.travellers.adults + input.travellers.childAges.length;
   const selected = current && start ? current.cells.find((c) => c.start === start) : undefined;
 
@@ -111,6 +113,18 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
               )}
               {transport.status === 'ok' && selection.window && (
                 <GettingThereTab transport={transport.data} window={selection.window} style={style} people={people} />
+              )}
+            </>
+          )}
+
+          {tab === 'hotels' && dates.status === 'ok' && current && (
+            <>
+              {(hotels.status === 'loading' || selection.status === 'loading') && <SkeletonBlock label={t('hotels.loading')} className="h-[420px]" />}
+              {(hotels.status === 'error' || selection.status === 'error') && (
+                <SectionError onRetry={selection.status === 'error' ? selection.retry : hotels.retry} />
+              )}
+              {hotels.status === 'ok' && selection.window && (
+                <HotelsTab section={hotels.data} window={selection.window} style={style} chosenTypes={input.hotelTypes} />
               )}
             </>
           )}

@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { createRegistry, fixedClock, type DatesSection, type ProviderSet, type TransportSection } from '@tripsaver/providers';
+import { createRegistry, fixedClock, type DatesSection, type HotelsSection, type ProviderSet, type TransportSection } from '@tripsaver/providers';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { AppModule } from '../src/app.module.js';
@@ -63,16 +63,41 @@ describe('results stream — brief §12: Kolkata → Goa, 10 days, Dec 2026, 2 a
   let id: string;
   let dates: DatesSection;
   let transport: TransportSection;
+  let hotels: HotelsSection;
 
   beforeAll(async () => {
     app = await makeApp();
     id = (await request(app.getHttpServer()).post('/api/search').send(briefExample).expect(201)).body.searchId;
     const events = await stream(app, id);
-    expect(events.map((e) => e.event)).toEqual(['dates', 'transport', 'done']);
-    expect(events[0]!.data.status).toBe('ok');
-    expect(events[1]!.data.status).toBe('ok');
-    dates = events[0]!.data.data as DatesSection;
-    transport = events[1]!.data.data as TransportSection;
+    // dates first, done last; the others arrive as they complete.
+    expect(events[0]!.event).toBe('dates');
+    expect(events.at(-1)!.event).toBe('done');
+    expect(events.map((e) => e.event).sort()).toEqual(['dates', 'done', 'hotels', 'transport']);
+    const get = (name: string) => events.find((e) => e.event === name)!.data;
+    for (const name of ['dates', 'transport', 'hotels']) expect(get(name).status).toBe('ok');
+    dates = get('dates').data as DatesSection;
+    transport = get('transport').data as TransportSection;
+    hotels = get('hotels').data as HotelsSection;
+  });
+
+  test('hotels are streamed for the Budget plan’s stay (arrival → return departure), with per-site prices', () => {
+    const best = dates.styles.find((s) => s.style === 'budget')!.top[0]!;
+    expect(hotels.checkIn).toBe(best.onward.arriveDate);
+    expect(hotels.checkOut).toBe(best.return.departDate);
+    expect(hotels.nights).toBe(best.hotelNights);
+    expect(hotels.hotels.length).toBeGreaterThan(10);
+    // The plan's hotel is one of the listed ones, at the same price.
+    const planHotel = hotels.hotels.find((h) => h.hotelId === best.hotel!.hotelId)!;
+    expect(planHotel.totalPrice).toBe(best.hotel!.cheapest.price.amount);
+  });
+
+  test('hotels endpoint: another stay; bad or too-long stays → 400', async () => {
+    const res = await request(app.getHttpServer()).get(`/api/search/${id}/hotels?checkIn=2026-12-03&checkOut=2026-12-10`).expect(200);
+    expect(res.body.nights).toBe(7);
+    await request(app.getHttpServer()).get(`/api/search/${id}/hotels?checkIn=2026-12-03`).expect(400);
+    await request(app.getHttpServer()).get(`/api/search/${id}/hotels?checkIn=2026-12-10&checkOut=2026-12-03`).expect(400);
+    await request(app.getHttpServer()).get(`/api/search/${id}/hotels?checkIn=2026-12-01&checkOut=2026-12-11`).expect(400); // 10 nights > 9
+    await request(app.getHttpServer()).get(`/api/search/${id}/hotels?checkIn=2026-11-28&checkOut=2026-12-02`).expect(400);
   });
 
   test('transport is streamed for the Budget plan’s cheapest dates, both directions, with fares and links', () => {
@@ -175,9 +200,10 @@ describe('results stream — a failing provider', () => {
     try {
       const id = (await request(app.getHttpServer()).post('/api/search').send(briefExample).expect(201)).body.searchId;
       const events = await stream(app, id);
-      expect(events.map((e) => e.event)).toEqual(['dates', 'transport', 'done']);
-      expect(events[0]!.data).toEqual({ status: 'error', message: 'unavailable' });
-      expect(events[1]!.data).toEqual({ status: 'error', message: 'unavailable' }); // no dates → no default transport
+      expect(events.at(-1)!.event).toBe('done');
+      // No dates → nothing to build transport or hotels for; every section says so and the stream finishes.
+      for (const e of events.slice(0, -1)) expect(e.data).toEqual({ status: 'error', message: 'unavailable' });
+      expect(events.map((e) => e.event).sort()).toEqual(['dates', 'done', 'hotels', 'transport']);
     } finally {
       await app.close();
     }

@@ -5,7 +5,6 @@
 - Scaffold pnpm + Turborepo monorepo with `@tripsaver/domain` and `@tripsaver/providers` packages.
 - Domain: pricing engine (child rules, room suggestion), cheapest-dates engine (windows, bands, top 3, reasons, month comparison).
 - Providers: interfaces, registry, deep links (honest `prefilled` flag), mock trains/buses/flights/hotels/calendar/climate for Goa, Manali, Jaipur, Kerala, Darjeeling.
-- Known gap: hotel extra-bed charges are not modelled yet (children under 8 share the bed).
 - Local infra: `docker-compose.yml` (PostgreSQL 16 + Redis 7, healthchecks, named volumes); `DATABASE_URL` / `REDIS_URL` in `.env.example`.
 - `@tripsaver/db`: Prisma 6 schema for PLAN §8 (integer-rupee money, `DATE` columns, `providerId` + `fetchedAt` on every price row), `init` migration, idempotent seed of the 6 mock providers and the default child-pricing rules from `@tripsaver/domain`.
 - Build step 2 — search form:
@@ -26,4 +25,11 @@
   - API: stream now sends `dates`, `transport` (for the Budget plan's cheapest dates), `done`; `GET /api/search/:id/transport?onward&return` for other dates (validated against the month and trip length).
   - Web: tabs are clickable (Best dates, Getting there); "Getting there" with Onward/Return and Train/Bus/Flight/Combined switches, Cheapest/Fastest/Overnight cards, per-class fares with group breakdown, availability and confirmation chance, the plan's own choice highlighted, combined-route cards with the change-over wait, and the plan's transport total. Selected window and transport are shared hooks (`useSelectedWindow`, `useTransport`).
 - Searches are stored in Redis (`RedisSearchStore`, 30-day expiry) when `REDIS_URL` is set, so result pages survive API restarts; in-memory store otherwise (tests).
+- Build step 5 — hotel comparison:
+  - Domain: `distanceKm`, `matchLandmark` ("Stay near"), `extraBedsNeeded` (2 adult-priced guests per room; children under 8 share), `filterHotels` (rating, free cancellation, breakfast, amenities, distance, price per night), `sortHotels` (cheapest, nearest, best value = price ÷ rating, highest rated), `priceLevelHint` (these nights vs the month).
+  - Closes the known gap: hotel extra-bed charges are now priced (mock: 20% of the room rate per bed, same seasonal swing) in both search results and the nightly grid.
+  - Mock data: real landmarks per destination (hotels sit within ~2 km of one), restaurant cost for two and breakfast price, couple-friendly tag; `PlaceDirectory.landmarks()`.
+  - Providers: `buildHotelsSection` — every hotel for the stay with per-site prices, cheapest site, distance from the landmark (or the main area, flagged), rooms and extra beds, price hint, sample-data flag.
+  - API: `hotels` section in the stream (transport and hotels now run in parallel after `dates`); `GET /api/search/:id/hotels?checkIn&checkOut` (in the month, at most N−1 nights).
+  - Web: Hotels tab — the plan's stay on top, sort and filter chips, "3-star and above" and "5-star" lists side by side plus a list for other chosen types (budget, homestay, hostel), hotel cards with every site's price (cheapest highlighted) as booking links, restaurant prices, extra beds; `<Price chip>` for compact per-site prices; shared `useSectionFor` hook for date-dependent sections.
 - Integration test reproducing the brief's Kolkata → Goa, December 2026 example (`buildCheapestDatesInput`).

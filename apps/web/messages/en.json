@@ -219,7 +219,8 @@
     "ownEstimate": "TripSaver estimate",
     "checked": "checked {ago}",
     "book": "Book on {site}",
-    "notPrefilled": "You may need to enter your dates and travellers on the site."
+    "notPrefilled": "You may need to enter your dates and travellers on the site.",
+    "cheapestSite": "cheapest site"
   },
   "results": {
     "days": "{days} days",
@@ -382,6 +383,74 @@
       "totalSub": "Onward {onward} · return {back}. Choose another option above and book it directly if you prefer.",
       "sample": "Timings and fares are sample data until live providers are connected.",
       "childEstimate": "Child fares marked approx. use our default rule; the operator's own child rules apply when you book."
+    },
+    "hotels": {
+      "loading": "Comparing hotel prices…",
+      "planStay": "{plan} plan stay",
+      "stayLine": "Stay {dates} · {nights} nights · {rooms, plural, one {# room} other {# rooms}}",
+      "extraBedsNote": "{beds, plural, one {# extra bed} other {# extra beds}} included in every price",
+      "landmarkFallback": "distances from {landmark}; add \"Stay near\" in More preferences to change it",
+      "hint": {
+        "lower": "Hotel prices for these dates are about {pct}% lower than usual this month.",
+        "higher": "Hotel prices for these dates are about {pct}% higher than usual this month."
+      },
+      "lists": {
+        "threePlus": "3-star and above",
+        "fiveStar": "5-star",
+        "others": "Also matching your hotel types"
+      },
+      "count": "{shown} of {total}",
+      "noneMatch": "No hotel matches these filters. Try removing one.",
+      "noNights": "No hotel is needed: you travel back the day you arrive.",
+      "sortLabel": "Sort hotels",
+      "sort": {
+        "cheapest": "Sort: Cheapest",
+        "nearest": "Nearest to landmark",
+        "value": "Best value",
+        "rating": "Highest rated"
+      },
+      "maxPerNightLabel": "Maximum price per night",
+      "anyPrice": "Any price",
+      "maxPerNight": "Up to {price} / night",
+      "rating35": "Guest rating 3.5+",
+      "freeCancellation": "Free cancellation",
+      "breakfast": "Breakfast included",
+      "near": "≤ {km} km from {landmark}",
+      "amenity": {
+        "Pool": "Pool",
+        "Parking": "Parking",
+        "Couple-friendly": "Couple-friendly",
+        "Wi-Fi": "Wi-Fi",
+        "Restaurant": "Restaurant",
+        "Spa": "Spa",
+        "Kids club": "Kids club",
+        "Gym": "Gym",
+        "Lockers": "Lockers",
+        "Common kitchen": "Shared kitchen",
+        "Home-cooked meals": "Home-cooked meals"
+      },
+      "type": {
+        "budget": "Budget",
+        "hostel": "Hostel",
+        "3star": "3-star",
+        "4star": "4-star",
+        "5star": "5-star",
+        "homestay": "Homestay",
+        "resort": "Resort"
+      },
+      "stars": "{stars} stars",
+      "reviews": "{count} reviews",
+      "distanceM": "{m} m from {landmark}",
+      "distanceKm": "{km} km from {landmark}",
+      "inPlan": "In your {plan} plan",
+      "restaurant": "Restaurant · for two",
+      "breakfastPrice": "Breakfast · per person",
+      "sitePrices": "Price on each booking site",
+      "stay": "{nights} nights · {perNight}/night · incl. taxes",
+      "rooms": "{rooms, plural, one {# room} other {# rooms}}",
+      "extraBeds": "+{beds, plural, one {# extra bed} other {# extra beds}}",
+      "sample": "Hotels and prices are sample data until live providers are connected.",
+      "taxesNote": "Prices are for the whole stay and all rooms, including taxes. * marks prices with children estimated by our default rule."
     }
   }
 }

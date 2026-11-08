@@ -1,7 +1,7 @@
 import type { SiteId } from '../../deeplinks/index.js';
 import type { HotelType } from '../../interfaces.js';
 import { draw } from '../rng.js';
-import { MOCK_DESTINATIONS } from './places.js';
+import { MOCK_DESTINATIONS, MOCK_LANDMARKS } from './places.js';
 
 export interface MockHotel {
   hotelId: string;
@@ -17,6 +17,9 @@ export interface MockHotel {
   freeCancellation: boolean;
   /** Typical nightly rate for one room, before season and tax. */
   baseRoomRate: number;
+  /** Nightly charge per extra bed, before season and tax. */
+  extraBedRate: number;
+  restaurant?: { costForTwo: number; breakfastPerPerson?: number };
   sites: SiteId[];
 }
 
@@ -71,8 +74,14 @@ function sitesFor(hotelId: string): SiteId[] {
 export const MOCK_HOTELS: Record<string, MockHotel[]> = Object.fromEntries(
   MOCK_DESTINATIONS.map((d) => [
     d.code,
-    SPECS.map(([type, stars, rating, baseRate, amenities], i): MockHotel => {
+    SPECS.map(([type, stars, rating, baseRate, specAmenities], i): MockHotel => {
       const hotelId = `${d.code}-H${String(i + 1).padStart(2, '0')}`;
+      // Each hotel sits within about 2 km of one of the destination's landmarks.
+      const marks = MOCK_LANDMARKS[d.code] ?? [];
+      const near = marks[Math.floor(draw(`${hotelId}|near`) * marks.length)] ?? d;
+      const roomRate = Math.round(baseRate * (PRICE_LEVEL[d.code] ?? 1));
+      const breakfastIncluded = draw(`${hotelId}|bf`) < 0.6;
+      const amenities = type !== 'hostel' && draw(`${hotelId}|cf`) < 0.5 ? [...specAmenities, 'Couple-friendly'] : specAmenities;
       return {
         hotelId,
         name: NAMES[d.code]?.[i] ?? `${d.name} ${SUFFIXES[i]}`,
@@ -80,12 +89,21 @@ export const MOCK_HOTELS: Record<string, MockHotel[]> = Object.fromEntries(
         stars,
         guestRating: rating,
         reviewCount: 120 + Math.floor(draw(`${hotelId}|reviews`) * 5000),
-        lat: d.lat + (draw(`${hotelId}|lat`) - 0.5) * 0.2,
-        lng: d.lng + (draw(`${hotelId}|lng`) - 0.5) * 0.2,
+        lat: near.lat + (draw(`${hotelId}|lat`) - 0.5) * 0.036,
+        lng: near.lng + (draw(`${hotelId}|lng`) - 0.5) * 0.036,
         amenities,
-        breakfastIncluded: draw(`${hotelId}|bf`) < 0.6,
+        breakfastIncluded,
         freeCancellation: draw(`${hotelId}|fc`) < 0.5,
-        baseRoomRate: Math.round(baseRate * (PRICE_LEVEL[d.code] ?? 1)),
+        baseRoomRate: roomRate,
+        extraBedRate: Math.round(roomRate * 0.2),
+        ...(amenities.includes('Restaurant')
+          ? {
+              restaurant: {
+                costForTwo: Math.round((roomRate * 0.35) / 50) * 50,
+                ...(breakfastIncluded ? {} : { breakfastPerPerson: Math.round((roomRate * 0.12) / 10) * 10 }),
+              },
+            }
+          : {}),
         sites: sitesFor(hotelId),
       };
     }),

@@ -1,4 +1,4 @@
-import type { Place, PlaceDirectory } from '../../interfaces.js';
+import type { Landmark, Place, PlaceDirectory } from '../../interfaces.js';
 
 /** Origin cities. Station and airport codes are real Indian Railways / IATA codes. */
 export const MOCK_ORIGINS: Place[] = [
@@ -20,7 +20,39 @@ export const MOCK_DESTINATIONS: Place[] = [
 
 const ALL = [...MOCK_ORIGINS, ...MOCK_DESTINATIONS];
 
+/** Real landmarks with approximate coordinates. The first per destination is its main area. */
+export const MOCK_LANDMARKS: Record<string, Landmark[]> = {
+  GOA: [
+    { name: 'Calangute Beach', lat: 15.5439, lng: 73.7553 },
+    { name: 'Baga Beach', lat: 15.5553, lng: 73.7517 },
+    { name: 'Panjim (Panaji)', lat: 15.4909, lng: 73.8278 },
+    { name: 'Old Goa', lat: 15.5009, lng: 73.9116 },
+    { name: 'Colva Beach', lat: 15.2793, lng: 73.9222 },
+  ],
+  MANALI: [
+    { name: 'Mall Road', lat: 32.2432, lng: 77.1892 },
+    { name: 'Old Manali', lat: 32.256, lng: 77.182 },
+    { name: 'Solang Valley', lat: 32.3166, lng: 77.1582 },
+  ],
+  JAIPUR: [
+    { name: 'Hawa Mahal', lat: 26.9239, lng: 75.8267 },
+    { name: 'MI Road', lat: 26.9157, lng: 75.8069 },
+    { name: 'Amer Fort', lat: 26.9855, lng: 75.8513 },
+  ],
+  KERALA: [
+    { name: 'Fort Kochi', lat: 9.9658, lng: 76.2421 },
+    { name: 'Alleppey (Alappuzha)', lat: 9.4981, lng: 76.3388 },
+    { name: 'Munnar', lat: 10.0889, lng: 77.0595 },
+  ],
+  DARJEELING: [
+    { name: 'Chowrasta (The Mall)', lat: 27.0418, lng: 88.2663 },
+    { name: 'Darjeeling Railway Station', lat: 27.0389, lng: 88.2627 },
+    { name: 'Tiger Hill', lat: 26.9946, lng: 88.2869 },
+  ],
+};
+
 export const mockPlaceDirectory: PlaceDirectory = {
   places: () => ALL,
   get: (code) => ALL.find((p) => p.code === code),
+  landmarks: (code) => MOCK_LANDMARKS[code] ?? [],
 };

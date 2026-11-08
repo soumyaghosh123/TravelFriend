@@ -1,44 +1,17 @@
 'use client';
 
-import type { PricedWindow, TransportSection } from '@tripsaver/providers';
-import { useCallback, useEffect, useState } from 'react';
+import type { HotelsSection, PricedWindow, TransportSection } from '@tripsaver/providers';
 import type { SectionState } from './use-results-stream';
+import { useSectionFor } from './use-section-for';
 
-/**
- * Getting-there data for the selected window's travel dates. The stream already carries the
- * default selection (Budget plan, cheapest dates); other dates are fetched on demand.
- */
-export function useTransport(
-  searchId: string,
-  window: PricedWindow | null,
-  streamed: SectionState<TransportSection>,
-): SectionState<TransportSection> & { retry: () => void } {
-  const onward = window?.onward.departDate;
-  const back = window?.return.departDate;
-  const key = onward && back ? `${onward}|${back}` : null;
-  const fromStream =
-    streamed.status === 'ok' && key === `${streamed.data.onward.date}|${streamed.data.return.date}` ? streamed : null;
-  const [fetched, setFetched] = useState<{ key: string; state: SectionState<TransportSection> } | null>(null);
-  const [attempt, setAttempt] = useState(0);
+/** Getting-there data for the selected window's travel dates. */
+export function useTransport(searchId: string, w: PricedWindow | null, streamed: SectionState<TransportSection>) {
+  const query = w ? { onward: w.onward.departDate, return: w.return.departDate } : null;
+  return useSectionFor(searchId, 'transport', query, streamed, (d) => !!query && d.onward.date === query.onward && d.return.date === query.return);
+}
 
-  useEffect(() => {
-    if (!key || fromStream || streamed.status === 'loading') return;
-    const ctrl = new AbortController();
-    setFetched({ key, state: { status: 'loading' } });
-    fetch(`/api/search/${encodeURIComponent(searchId)}/transport?onward=${onward}&return=${back}`, { signal: ctrl.signal })
-      .then(async (r) => {
-        if (!r.ok) throw new Error(String(r.status));
-        setFetched({ key, state: { status: 'ok', data: (await r.json()) as TransportSection } });
-      })
-      .catch(() => {
-        if (!ctrl.signal.aborted) setFetched({ key, state: { status: 'error' } });
-      });
-    return () => ctrl.abort();
-  }, [searchId, key, onward, back, fromStream, streamed.status, attempt]);
-
-  const retry = useCallback(() => setAttempt((n) => n + 1), []);
-  if (fromStream) return { ...fromStream, retry };
-  if (!key || streamed.status === 'loading') return { status: 'loading', retry };
-  if (!fetched || fetched.key !== key) return { status: 'loading', retry };
-  return { ...fetched.state, retry };
+/** Hotels for the selected window's stay: arrival day → the day the return journey leaves. */
+export function useHotels(searchId: string, w: PricedWindow | null, streamed: SectionState<HotelsSection>) {
+  const query = w ? { checkIn: w.onward.arriveDate, checkOut: w.return.departDate } : null;
+  return useSectionFor(searchId, 'hotels', query, streamed, (d) => !!query && d.checkIn === query.checkIn && d.checkOut === query.checkOut);
 }

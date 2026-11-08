@@ -5,10 +5,11 @@ import type {
   MonthClimate,
   MonthComparison,
   PeakWarning,
+  PriceLevel,
   WindowReason,
 } from '@tripsaver/domain';
 import type { PricedWindow, TripStyle } from './assemble.js';
-import type { TransportOffer } from './interfaces.js';
+import type { HotelOffer, TransportOffer } from './interfaces.js';
 
 /** API ↔ web contract for the "Best dates & price calendar" section (SSE event `dates`). */
 
@@ -104,4 +105,30 @@ export interface TransportSection {
   return: DirectionTransport;
   /** True when every fare comes from a mock provider, so the UI labels timings and fares as sample data. */
   sampleData: boolean;
+}
+
+// ── "Hotels" section (SSE event `hotels`, and GET /api/search/:id/hotels) ──
+
+/** A hotel for the stay, with what the filters and sorts need (domain `HotelLike`). */
+export interface HotelListing extends HotelOffer {
+  /** From the landmark the user asked to stay near (or the destination's main area). */
+  distanceKm: number | null;
+  /** Cheapest site's total for the stay, all rooms, incl. taxes. */
+  totalPrice: number;
+  perNight: number;
+}
+
+export interface HotelsSection {
+  destination: { code: string; name: string };
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  rooms: number;
+  extraBeds: number;
+  /** `matched` is false when we fell back to the main area because "Stay near" was empty or unknown. */
+  landmark: { name: string; matched: boolean } | null;
+  hotels: HotelListing[];
+  priceHint: PriceLevel | null;
+  sampleData: boolean;
+  fetchedAt: string;
 }

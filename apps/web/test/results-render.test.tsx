@@ -1,5 +1,14 @@
 import { makeSearchInputSchema } from '@tripsaver/domain';
-import { buildDatesSection, buildTransportSection, createRegistry, fixedClock, type DatesSection, type TransportSection } from '@tripsaver/providers';
+import {
+  buildDatesSection,
+  buildHotelsSection,
+  buildTransportSection,
+  createRegistry,
+  fixedClock,
+  type DatesSection,
+  type HotelsSection,
+  type TransportSection,
+} from '@tripsaver/providers';
 import { NextIntlClientProvider } from 'next-intl';
 import { readFileSync } from 'node:fs';
 import type { ReactNode } from 'react';
@@ -8,6 +17,7 @@ import { beforeAll, describe, expect, test } from 'vitest';
 import { BestDatesTab } from '../components/best-dates-tab';
 import { DestinationBanner } from '../components/destination-banner';
 import { GettingThereTab } from '../components/getting-there-tab';
+import { HotelsTab } from '../components/hotels-tab';
 import { PlanCards } from '../components/plan-cards';
 import { ResultTabs } from '../components/result-tabs';
 
@@ -15,6 +25,7 @@ import { ResultTabs } from '../components/result-tabs';
 const clock = fixedClock('2026-11-08T06:00:00Z');
 let dates: DatesSection;
 let transport: TransportSection;
+let hotels: HotelsSection;
 
 beforeAll(async () => {
   const input = makeSearchInputSchema('2026-11-08').parse({
@@ -31,6 +42,11 @@ beforeAll(async () => {
   transport = await buildTransportSection(
     set,
     { from: 'KOL', to: 'GOA', onwardDate: top.onward.departDate, returnDate: top.return.departDate, tripEnd: top.end, travellers: input.travellers },
+    { clock, timeoutMs: 4000 },
+  );
+  hotels = await buildHotelsSection(
+    set,
+    { to: 'GOA', checkIn: top.onward.arriveDate, checkOut: top.return.departDate, travellers: input.travellers, stayNear: 'Calangute' },
     { clock, timeoutMs: 4000 },
   );
 });
@@ -105,5 +121,27 @@ describe('results page renders with real mock data', () => {
   test('calendar has a button for each of the 22 possible start dates', () => {
     const { html } = render('en', page());
     expect(html.match(/aria-label="Start \d+ Dec: approx\./g)).toHaveLength(22);
+  });
+});
+
+function hotelsTab() {
+  const top = dates.styles.find((s) => s.style === 'budget')!.top[0]!;
+  return <HotelsTab section={hotels} window={top} style="budget" chosenTypes={['3-star', 'homestay']} />;
+}
+
+describe('Hotels tab renders with real mock data', () => {
+  test.each(['en', 'hi', 'bn'])('%s: no missing translations or render errors', (locale) => {
+    const { html, errors } = render(locale, hotelsTab());
+    expect(errors).toEqual([]);
+    expect(html.length).toBeGreaterThan(5000);
+  });
+
+  test('en: the plan stay, both lists side by side, the extra list for chosen homestays, per-site prices with the cheapest marked', () => {
+    const { html } = render('en', hotelsTab());
+    for (const s of ['Budget plan stay', '3-star and above', '5-star', 'Also matching your hotel types', 'from Calangute Beach', 'Guest rating 3.5+', 'Restaurant · for two'])
+      expect(html).toContain(s);
+    expect(html).toMatch(/aria-label="Book on [^"]+ · cheapest site"/);
+    const top = dates.styles.find((s) => s.style === 'budget')!.top[0]!;
+    expect(html).toContain(`checkin=${top.onward.arriveDate}`); // booking links carry the stay dates
   });
 });

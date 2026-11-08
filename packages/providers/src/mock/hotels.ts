@@ -3,6 +3,7 @@ import {
   daysInMonth,
   diffDays,
   eachDay,
+  extraBedsNeeded,
   isoDate,
   suggestRooms,
   validateTravellers,
@@ -30,18 +31,18 @@ export class MockHotelProvider implements HotelProvider {
     private catalogue: Record<string, MockHotel[]> = MOCK_HOTELS,
   ) {}
 
-  /** Group cost for one night (all rooms), before tax. Children under 8 share the bed. */
-  private nightly(h: MockHotel, destination: string, night: ISODate, rooms: number): number {
-    return (
-      mockDailyPrice({
-        base: h.baseRoomRate,
-        date: night,
-        destination,
-        key: h.hotelId,
-        events: MOCK_EVENTS[destination] ?? [],
-        climate: MOCK_CLIMATE[destination] ?? [],
-      }) * rooms
-    );
+  /** Group cost for one night (all rooms + extra beds), before tax. Children under 8 share a bed. */
+  private nightly(h: MockHotel, destination: string, night: ISODate, rooms: number, extraBeds: number): number {
+    const room = mockDailyPrice({
+      base: h.baseRoomRate,
+      date: night,
+      destination,
+      key: h.hotelId,
+      events: MOCK_EVENTS[destination] ?? [],
+      climate: MOCK_CLIMATE[destination] ?? [],
+    });
+    // Extra beds follow the same seasonal swing as the room rate.
+    return room * rooms + Math.round((room * h.extraBedRate) / h.baseRoomRate) * extraBeds;
   }
 
   async search(q: HotelQuery): Promise<HotelOffer[]> {
@@ -51,13 +52,14 @@ export class MockHotelProvider implements HotelProvider {
     }
     const place = mockPlaceDirectory.get(q.destination);
     const rooms = q.travellers.rooms ?? suggestRooms(q.travellers);
+    const extraBeds = extraBedsNeeded(q.travellers, rooms);
     const nights = diffDays(q.checkIn, q.checkOut);
     const fetchedAt = this.clock().toISOString();
     const list = (this.catalogue[q.destination] ?? []).filter((h) => !q.types || q.types.includes(h.type));
 
     return list.map((h) => {
       const subtotal = eachDay(q.checkIn, addDays(q.checkOut, -1)).reduce(
-        (s, n) => s + this.nightly(h, q.destination, n, rooms),
+        (s, n) => s + this.nightly(h, q.destination, n, rooms, extraBeds),
         0,
       );
       const total = Math.round(subtotal * TAX);
@@ -95,6 +97,9 @@ export class MockHotelProvider implements HotelProvider {
         breakfastIncluded: h.breakfastIncluded,
         freeCancellation: h.freeCancellation,
         nights,
+        rooms,
+        extraBeds,
+        ...(h.restaurant ? { restaurant: h.restaurant } : {}),
         sitePrices,
         cheapest,
       };
@@ -111,12 +116,13 @@ export class MockHotelProvider implements HotelProvider {
   ): Promise<Record<ISODate, number>> {
     validateTravellers(travellers);
     const rooms = travellers.rooms ?? suggestRooms(travellers);
+    const extraBeds = extraBedsNeeded(travellers, rooms);
     const candidates = (this.catalogue[destination] ?? []).filter((h) => h.type === type && h.guestRating >= MIN_RATING);
     if (candidates.length === 0) return {};
     const out: Record<ISODate, number> = {};
     for (let day = 1; day <= daysInMonth(year, month); day++) {
       const night = isoDate(year, month, day);
-      out[night] = Math.round(Math.min(...candidates.map((h) => this.nightly(h, destination, night, rooms))) * TAX);
+      out[night] = Math.round(Math.min(...candidates.map((h) => this.nightly(h, destination, night, rooms, extraBeds))) * TAX);
     }
     return out;
   }

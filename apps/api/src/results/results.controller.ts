@@ -1,13 +1,14 @@
 import { BadRequestException, Controller, Get, Inject, NotFoundException, Param, Query, Res } from '@nestjs/common';
-import type { DatesSection, TransportSection, TripStyle, WindowDetail } from '@tripsaver/providers';
+import type { DatesSection, HotelsSection, TransportSection, TripStyle, WindowDetail } from '@tripsaver/providers';
 import type { Response } from 'express';
 import type { SearchStore } from '../search/search-store.js';
 import { SEARCH_STORE } from '../tokens.js';
 import { DatesService, STYLES } from './dates.service.js';
+import { HotelsService } from './hotels.service.js';
 import { TransportService } from './transport.service.js';
 
-/** Result sections in stream order (PLAN §7). Later steps add hotels, itinerary, … */
-export const SECTIONS = ['dates', 'transport'] as const;
+/** Result sections (PLAN §7): `dates` first, then the others as they complete. Later steps add itinerary, … */
+export const SECTIONS = ['dates', 'transport', 'hotels'] as const;
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -17,6 +18,7 @@ export class ResultsController {
     @Inject(SEARCH_STORE) private readonly store: SearchStore,
     private readonly dates: DatesService,
     private readonly transport: TransportService,
+    private readonly hotels: HotelsService,
   ) {}
 
   private async search(id: string) {
@@ -48,27 +50,31 @@ export class ResultsController {
       if (!closed) res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
     };
 
-    let dates: DatesSection | null = null;
-    try {
-      dates = await this.dates.compute(id, stored.input);
-      send('dates', { status: 'ok', data: dates });
-    } catch (err) {
-      console.error(`[dates] search ${id}:`, err);
-      send('dates', { status: 'error', message: 'unavailable' });
-    }
-
-    // Transport for the default selection: the Budget plan's cheapest dates.
-    const best = dates?.styles.find((s) => s.style === 'budget')?.top[0];
-    if (!best) send('transport', { status: 'error', message: 'unavailable' });
-    else {
-      try {
-        const data = await this.transport.compute(stored.input, { onward: best.onward.departDate, return: best.return.departDate });
-        send('transport', { status: 'ok', data });
-      } catch (err) {
-        console.error(`[transport] search ${id}:`, err);
-        send('transport', { status: 'error', message: 'unavailable' });
+    /** Sends one section: its data, or "unavailable" if it failed (or had nothing to build from). */
+    const section = async <T>(name: (typeof SECTIONS)[number], build: (() => Promise<T>) | null): Promise<T | null> => {
+      if (!build) {
+        send(name, { status: 'error', message: 'unavailable' });
+        return null;
       }
-    }
+      try {
+        const data = await build();
+        send(name, { status: 'ok', data });
+        return data;
+      } catch (err) {
+        console.error(`[${name}] search ${id}:`, err);
+        send(name, { status: 'error', message: 'unavailable' });
+        return null;
+      }
+    };
+
+    const dates = await section<DatesSection>('dates', () => this.dates.compute(id, stored.input));
+
+    // The rest are for the default selection, the Budget plan's cheapest dates; they run in parallel.
+    const best = dates?.styles.find((s) => s.style === 'budget')?.top[0];
+    await Promise.all([
+      section('transport', best ? () => this.transport.compute(stored.input, { onward: best.onward.departDate, return: best.return.departDate }) : null),
+      section('hotels', best ? () => this.hotels.compute(stored.input, { checkIn: best.onward.arriveDate, checkOut: best.return.departDate }) : null),
+    ]);
     send('done', { sections: SECTIONS });
     res.end();
   }
@@ -97,5 +103,19 @@ export class ResultsController {
       throw new BadRequestException({ statusCode: 400, message: 'Dates must fit the searched month and trip length' });
     }
     return this.transport.compute(stored.input, d);
+  }
+
+  /** Hotels for another stay (user picked another window or plan). */
+  @Get('hotels')
+  async hotelsFor(@Param('id') id: string, @Query('checkIn') checkIn?: string, @Query('checkOut') checkOut?: string): Promise<HotelsSection> {
+    const stored = await this.search(id);
+    if (!checkIn || !checkOut || !ISO_DATE.test(checkIn) || !ISO_DATE.test(checkOut)) {
+      throw new BadRequestException({ statusCode: 400, message: 'checkIn and checkOut must be YYYY-MM-DD' });
+    }
+    const d = { checkIn, checkOut };
+    if (!this.hotels.validDates(stored.input, d)) {
+      throw new BadRequestException({ statusCode: 400, message: 'Stay must fit the searched month and trip length' });
+    }
+    return this.hotels.compute(stored.input, d);
   }
 }

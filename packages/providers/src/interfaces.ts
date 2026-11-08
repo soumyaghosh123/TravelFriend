@@ -11,9 +11,17 @@ export interface Place {
   lng: number;
 }
 
+/** A named spot to stay near (beach, old town, mall road); the first per destination is its main area. */
+export interface Landmark {
+  name: string;
+  lat: number;
+  lng: number;
+}
+
 export interface PlaceDirectory {
   places(): Place[];
   get(code: string): Place | undefined;
+  landmarks(code: string): Landmark[];
 }
 
 /** `from` / `to` are `Place.code`s. */
@@ -92,6 +100,11 @@ export interface HotelOffer {
   breakfastIncluded: boolean;
   freeCancellation: boolean;
   nights: number;
+  rooms: number;
+  /** Extra beds included in the price (more than 2 adult-priced guests per room). */
+  extraBeds: number;
+  /** The hotel's own restaurant, where known (brief §3.1). */
+  restaurant?: { costForTwo: number; breakfastPerPerson?: number };
   sitePrices: HotelSitePrice[];
   cheapest: HotelSitePrice;
 }
