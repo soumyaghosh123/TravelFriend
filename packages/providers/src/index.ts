@@ -7,3 +7,5 @@ export * from './mock/pricing-model.js';
 export * from './mock/data/places.js';
 export * from './mock/data/calendar.js';
 export * from './mock/calendar.js';
+export * from './mock/data/routes.js';
+export * from './mock/transport.js';
