@@ -1,0 +1,43 @@
+@import 'tailwindcss';
+
+/* Design tokens — PLAN §9.1 and docs/design/tripsaver-mockup.html */
+@theme {
+  --color-brand: #0f766e;
+  --color-brand-d: #115e59;
+  --color-brand-l: #ccfbf1;
+  --color-brand-xl: #f0fdfa;
+  --color-accent: #f59e0b;
+  --color-accent-l: #fef3c7;
+  --color-ink: #0f172a;
+  --color-ink2: #334155;
+  --color-muted: #64748b;
+  --color-line: #e2e8f0;
+  --color-bg: #f8fafc;
+  --color-good: #15803d;
+  --color-good-l: #dcfce7;
+  --color-bad: #b91c1c;
+  --color-bad-l: #fee2e2;
+  --color-warn: #b45309;
+  --color-warn-l: #fef3c7;
+
+  --radius-card: 14px;
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.06);
+  --font-sans: Inter, 'Segoe UI', system-ui, -apple-system, Roboto, 'Noto Sans Devanagari', 'Noto Sans Bengali', sans-serif;
+
+  --animate-kenburns: kenburns 18s ease-in-out infinite alternate;
+  @keyframes kenburns {
+    from { transform: scale(1); }
+    to { transform: scale(1.08); }
+  }
+}
+
+@layer base {
+  html { background: var(--color-bg); color: var(--color-ink); }
+  body { font-size: 14px; line-height: 1.45; }
+  button { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-safe-kb { animation: none !important; }
+}

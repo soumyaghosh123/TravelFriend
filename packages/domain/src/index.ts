@@ -6,3 +6,4 @@ export * from './pricing/rooms.js';
 export * from './dates-engine/windows.js';
 export * from './dates-engine/top.js';
 export * from './dates-engine/explain.js';
+export * from './search/search-input.js';

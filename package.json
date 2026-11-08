@@ -3,8 +3,11 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@9.15.9",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
+    "dev": "turbo run dev --filter=@tripsaver/web --filter=@tripsaver/api",
     "build": "turbo run build",
     "test": "turbo run test",
     "lint": "turbo run lint",

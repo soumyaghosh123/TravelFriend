@@ -1,0 +1,223 @@
+{
+  "meta": {
+    "title": "TripSaver – your whole trip at the cheapest price",
+    "description": "Cheapest dates, three complete plans, and where to book every part of your trip for less."
+  },
+  "header": {
+    "destinations": "Destinations",
+    "deals": "Deals",
+    "howItWorks": "How it works",
+    "language": "Language",
+    "currency": "₹ INR",
+    "signIn": "Sign in",
+    "home": "TripSaver home"
+  },
+  "hero": {
+    "title": "Beaches or mountains: your whole trip at the cheapest price.",
+    "body": "Tell us where you're going and for how long. We'll find the cheapest dates and build three complete plans, with hotels, trains, buses, flights, food and sightseeing, and show you where to book each part for less.",
+    "captions": {
+      "beach": "Sun, sand & sea",
+      "trail": "Himalayan trails",
+      "coast": "Goa coastline",
+      "snow": "Snow peaks of Himachal"
+    }
+  },
+  "search": {
+    "formLabel": "Plan a trip",
+    "from": "From",
+    "fromPlaceholder": "City, station or airport",
+    "to": "To",
+    "toPlaceholder": "City or region",
+    "region": "Region",
+    "airport": "{code} airport",
+    "bus": "{name} bus",
+    "noMatches": "No matching places yet",
+    "loading": "Searching…",
+    "days": "Days",
+    "fewerDays": "Fewer days",
+    "moreDays": "More days",
+    "month": "Month",
+    "monthHint": "We find the cheapest dates",
+    "hotelType": "Hotel type",
+    "hotelTypeHint": "3★+ and 5★ always shown",
+    "anyType": "Any type",
+    "hotelTypesLabel": "Hotel type:",
+    "hotelTypes": {
+      "budget": "Budget",
+      "3-star": "3-star",
+      "4-star": "4-star",
+      "5-star": "5-star",
+      "homestay": "Homestay / Villa",
+      "resort": "Resort",
+      "hostel": "Hostel"
+    },
+    "travellers": "Travellers",
+    "travellersSummary": "{adults, plural, one {# adult} other {# adults}}{children, plural, =0 {} one { · # child} other { · # children}}",
+    "roomsSummary": "{rooms, plural, one {# room} other {# rooms}}",
+    "roomsSuggestedTag": "(suggested)",
+    "adults": "Adults",
+    "adultsHint": "Age 18+ · full price",
+    "children": "Children",
+    "childrenHint": "Age 0–17 · priced by age",
+    "childAge": "Child {n} age",
+    "pickAge": "Age?",
+    "ageYears": "{age, plural, one {# yr} other {# yrs}}",
+    "fare": {
+      "free": "free",
+      "half": "half",
+      "full": "full"
+    },
+    "rooms": "Rooms",
+    "roomsHint": "Suggested from head count",
+    "decrease": "Decrease {what}",
+    "increase": "Increase {what}",
+    "rule": "Estimated cost rule: <b>under 4 free · 4–7 half · 8+ full</b>. If a train, airline or hotel has its own child price, we use theirs.",
+    "done": "Done",
+    "moreOpen": "More preferences",
+    "moreClose": "Fewer preferences",
+    "stayNear": "Stay near",
+    "stayNearPlaceholder": "e.g. Calangute Beach",
+    "budget": "Total budget (₹)",
+    "budgetPlaceholder": "e.g. 60000",
+    "travelMode": "Travel mode",
+    "modes": {
+      "any": "Any",
+      "train": "Train",
+      "bus": "Bus",
+      "flight": "Flight"
+    },
+    "ac": "AC",
+    "acOptions": {
+      "any": "AC or non-AC",
+      "ac": "AC only",
+      "nonac": "Non-AC"
+    },
+    "berth": "Sleeper or seater",
+    "berthOptions": {
+      "any": "Either",
+      "sleeper": "Sleeper",
+      "seater": "Seater"
+    },
+    "food": "Food",
+    "foodOptions": {
+      "any": "Veg + Non-veg",
+      "veg": "Veg",
+      "nonveg": "Non-veg",
+      "jain": "Jain"
+    },
+    "with": "Travelling with",
+    "companions": {
+      "kids": "Kids",
+      "seniors": "Seniors"
+    },
+    "interests": "Interests",
+    "interestOptions": {
+      "beaches": "Beaches",
+      "temples": "Temples",
+      "adventure": "Adventure",
+      "nightlife": "Nightlife",
+      "shopping": "Shopping",
+      "nature": "Nature"
+    },
+    "submit": "Find my cheapest trip →",
+    "submitting": "Finding your trip…",
+    "fixErrors": "Please fix the highlighted fields.",
+    "networkError": "We couldn't reach TripSaver. Check your connection and try again.",
+    "errors": {
+      "from": {
+        "required": "Choose where you're starting from.",
+        "unknown": "We don't have this starting point yet."
+      },
+      "to": {
+        "required": "Choose where you're going.",
+        "unknown": "We don't cover this destination yet.",
+        "sameAsFrom": "Destination must be different from the starting point."
+      },
+      "days": {
+        "range": "Choose between 2 and 31 days.",
+        "longerThanMonth": "The trip must fit inside the month. Choose fewer days."
+      },
+      "month": {
+        "format": "Choose a month.",
+        "past": "This month has already passed.",
+        "tooFar": "Choose a month within the next 12 months.",
+        "noWindowLeft": "There isn't enough of this month left for the trip. Choose next month or fewer days."
+      },
+      "hotelTypes": {
+        "min": "Choose at least one hotel type."
+      },
+      "adults": {
+        "range": "At least 1 adult and at most 20."
+      },
+      "travellers": {
+        "max": "At most 20 travellers in one search."
+      },
+      "children": {
+        "max": "At most 10 children."
+      },
+      "childAge": {
+        "required": "Pick each child's age, so we can price their ticket.",
+        "range": "Child ages are 0–17."
+      },
+      "rooms": {
+        "range": "Between 1 room and one room per adult."
+      },
+      "budget": {
+        "range": "Enter the budget in whole rupees."
+      },
+      "stayNear": {
+        "max": "Keep this under 80 characters."
+      },
+      "unknown": "Please check this field."
+    }
+  },
+  "destinations": {
+    "title": "Popular destinations",
+    "sub": "Pick one to start planning",
+    "plan": "Plan a trip →",
+    "kind": {
+      "city": "City",
+      "region": "Region"
+    }
+  },
+  "trust": {
+    "title": "Plan smart. Travel more.",
+    "sub": "From Goa's beaches to the Himalayan hills: the same trip for less.",
+    "source": {
+      "title": "Every price shows its source",
+      "body": "…and a booking link with your dates and travellers already filled in"
+    },
+    "dates": {
+      "title": "Cheapest dates, found for you",
+      "body": "We check every possible start date in your month"
+    },
+    "styles": {
+      "title": "Three ways to travel",
+      "body": "Offbeat, Budget and Comfort plans, side by side"
+    },
+    "partner": {
+      "title": "You book with the partner",
+      "body": "We compare and plan. We never take card payments."
+    }
+  },
+  "footer": {
+    "text": "<b>TripSaver</b> is a comparison and planning service. Bookings are completed on partner sites. Prices and availability can change, so always confirm on the partner site.",
+    "affiliate": "Affiliate disclosure",
+    "privacy": "Privacy policy (DPDP Act)",
+    "terms": "Terms"
+  },
+  "trip": {
+    "title": "{from} → {to}",
+    "meta": "{days} days · {month}",
+    "changeSearch": "✎ Change search",
+    "building": "Your search is saved",
+    "buildingBody": "The price calendar, three plans and booking links are the next build step. For now, this page confirms what you asked for.",
+    "searchedFor": "You searched for",
+    "hotelTypes": "Hotel types",
+    "preferences": "Preferences",
+    "none": "None",
+    "notFound": "We couldn't find that search",
+    "notFoundBody": "It may have expired. Start a new one.",
+    "newSearch": "New search"
+  }
+}

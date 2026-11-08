@@ -52,7 +52,16 @@ pnpm db:studio           # browse data
 pnpm db:down             # stop containers (data kept; `docker compose down -v` wipes it)
 ```
 
-Coming in later milestones: `pnpm dev` (web :3000, api :4000), `pnpm test:e2e` (Playwright).
+Apps (build step 2 onwards):
+
+```bash
+pnpm dev                 # web http://localhost:3000 + api http://localhost:4000/api (builds packages first)
+pnpm --filter @tripsaver/api test         # NestJS + supertest, via Vitest with SWC (decorator metadata)
+```
+
+The browser calls `/api/*` on the web origin; `next.config.ts` proxies it to `API_URL`. Validation lives once in `packages/domain` (`makeSearchInputSchema`); its messages are i18n keys under `search.errors` in `apps/web/messages/*.json`, and a test keeps en/hi/bn in sync.
+
+Coming in later milestones: `pnpm test:e2e` (Playwright).
 
 Mock providers are selected by `*_PROVIDERS` env vars (see `.env.example`); `createRegistry(process.env)` builds them. Tests that need fixed timestamps use `fixedClock(...)`.
 
