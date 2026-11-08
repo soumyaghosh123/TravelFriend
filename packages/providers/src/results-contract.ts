@@ -8,6 +8,7 @@ import type {
   WindowReason,
 } from '@tripsaver/domain';
 import type { PricedWindow, TripStyle } from './assemble.js';
+import type { TransportOffer } from './interfaces.js';
 
 /** API ↔ web contract for the "Best dates & price calendar" section (SSE event `dates`). */
 
@@ -57,4 +58,50 @@ export interface WindowDetail {
   /** The calendar's estimate for the same start date, for comparison. */
   estimate: number;
   reasons: WindowReason[];
+}
+
+// ── "Getting there" section (SSE event `transport`, and GET /api/search/:id/transport) ──
+
+/** One train / bus / flight departure, with an offer per class (cheapest first). */
+export interface TransportService {
+  key: string;
+  mode: TransportOffer['mode'];
+  operator: string;
+  number?: string;
+  fromPoint: string;
+  toPoint: string;
+  departAt: string;
+  arriveAt: string;
+  durationMin: number;
+  offers: TransportOffer[];
+}
+
+/** Two legs via a hub, e.g. train to Hyderabad then an overnight bus to Goa. */
+export interface CombinedRoute {
+  key: string;
+  via: { code: string; name: string };
+  first: TransportOffer;
+  second: TransportOffer;
+  groupFare: number;
+  durationMin: number;
+  waitMin: number;
+}
+
+export interface DirectionTransport {
+  from: { code: string; name: string };
+  to: { code: string; name: string };
+  date: string;
+  services: TransportService[];
+  summary: { cheapest?: TransportOffer; fastest?: TransportOffer; overnight?: TransportOffer };
+  combined: CombinedRoute[];
+  /** Modes with no direct service on this date (e.g. no direct bus Kolkata → Goa). */
+  noDirect: TransportOffer['mode'][];
+  fetchedAt: string;
+}
+
+export interface TransportSection {
+  onward: DirectionTransport;
+  return: DirectionTransport;
+  /** True when every fare comes from a mock provider, so the UI labels timings and fares as sample data. */
+  sampleData: boolean;
 }

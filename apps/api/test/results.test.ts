@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { createRegistry, fixedClock, type DatesSection, type ProviderSet } from '@tripsaver/providers';
+import { createRegistry, fixedClock, type DatesSection, type ProviderSet, type TransportSection } from '@tripsaver/providers';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { AppModule } from '../src/app.module.js';
@@ -62,14 +62,43 @@ describe('results stream — brief §12: Kolkata → Goa, 10 days, Dec 2026, 2 a
   let app: INestApplication;
   let id: string;
   let dates: DatesSection;
+  let transport: TransportSection;
 
   beforeAll(async () => {
     app = await makeApp();
     id = (await request(app.getHttpServer()).post('/api/search').send(briefExample).expect(201)).body.searchId;
     const events = await stream(app, id);
-    expect(events.map((e) => e.event)).toEqual(['dates', 'done']);
+    expect(events.map((e) => e.event)).toEqual(['dates', 'transport', 'done']);
     expect(events[0]!.data.status).toBe('ok');
+    expect(events[1]!.data.status).toBe('ok');
     dates = events[0]!.data.data as DatesSection;
+    transport = events[1]!.data.data as TransportSection;
+  });
+
+  test('transport is streamed for the Budget plan’s cheapest dates, both directions, with fares and links', () => {
+    const best = dates.styles.find((s) => s.style === 'budget')!.top[0]!;
+    expect(transport.onward.date).toBe(best.onward.departDate);
+    expect(transport.return.date).toBe(best.return.departDate);
+    for (const d of [transport.onward, transport.return]) {
+      expect(d.services.length).toBeGreaterThan(0);
+      for (const o of d.services.flatMap((s) => s.offers)) {
+        expect(o.price.amount).toBeGreaterThan(0);
+        expect(o.bookingUrl).toMatch(/^https:\/\//);
+      }
+    }
+    // The plan's chosen legs are among the listed options.
+    const listed = transport.onward.services.flatMap((s) => s.offers).map((o) => `${o.departAt}|${o.travelClass}`);
+    expect(listed).toContain(`${best.onward.departAt}|${best.onward.travelClass}`);
+  });
+
+  test('transport endpoint: other dates; bad or out-of-month dates → 400', async () => {
+    const res = await request(app.getHttpServer()).get(`/api/search/${id}/transport?onward=2026-12-03&return=2026-12-11`).expect(200);
+    expect(res.body.onward.date).toBe('2026-12-03');
+    expect(res.body.return.date).toBe('2026-12-11');
+    await request(app.getHttpServer()).get(`/api/search/${id}/transport?onward=2026-12-03`).expect(400);
+    await request(app.getHttpServer()).get(`/api/search/${id}/transport?onward=2026-12-25&return=2026-12-30`).expect(400); // 10 days runs into January
+    await request(app.getHttpServer()).get(`/api/search/${id}/transport?onward=2026-12-05&return=2026-12-04`).expect(400);
+    await request(app.getHttpServer()).get(`/api/search/${id}/transport?onward=2026-12-01&return=2026-12-12`).expect(400); // longer than 10 days
   });
 
   afterAll(async () => {
@@ -146,8 +175,9 @@ describe('results stream — a failing provider', () => {
     try {
       const id = (await request(app.getHttpServer()).post('/api/search').send(briefExample).expect(201)).body.searchId;
       const events = await stream(app, id);
-      expect(events.map((e) => e.event)).toEqual(['dates', 'done']);
+      expect(events.map((e) => e.event)).toEqual(['dates', 'transport', 'done']);
       expect(events[0]!.data).toEqual({ status: 'error', message: 'unavailable' });
+      expect(events[1]!.data).toEqual({ status: 'error', message: 'unavailable' }); // no dates → no default transport
     } finally {
       await app.close();
     }

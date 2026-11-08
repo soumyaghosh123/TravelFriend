@@ -347,6 +347,41 @@
       "hotelsPeakTitle": "Peak month: book hotels early",
       "hotelsBody": "Choose a free-cancellation rate so you can still change plans.",
       "basis": "Train rules come from the rail provider; flight and hotel timing is general guidance."
+    },
+    "transport": {
+      "loading": "Finding trains, buses and flights…",
+      "direction": "Direction",
+      "onwardTab": "Onward · {date} · {from} → {to}",
+      "returnTab": "Return · {date} · {from} → {to}",
+      "title": "{from} → {to} · {date}",
+      "modes": "Mode",
+      "combined": "Combined",
+      "cards": {
+        "cheapest": "Cheapest",
+        "fastest": "Fastest",
+        "overnight": "Best overnight option",
+        "cheapestNone": "No direct option on this date.",
+        "fastestNone": "No direct option on this date.",
+        "overnightNone": "No overnight sleeper on this date."
+      },
+      "summaryLine": "{service} · {from} → {to} · {h} h {m} m · {people} travellers",
+      "duration": "{h} h {m} m",
+      "inPlan": "In your {plan} plan",
+      "confirmChance": "{pct}% chance of confirmation",
+      "adultsLine": "{count, plural, one {# adult} other {# adults}} {amount}",
+      "childLine": "child ({age}) {fare} {amount}",
+      "childFreeLine": "child ({age}) free",
+      "noDirect": "There is no direct {mode} from {from} to {to} on this date.",
+      "seeCombined": "See combined routes →",
+      "noCombined": "No combined route beats the direct options on price or time.",
+      "combinedNote": "Combined routes are booked as separate tickets. If the first leg is late, the second is not protected, so the wait time includes a safety margin.",
+      "via": "Via {hub}",
+      "combinedTotal": "{h} h {m} m door to door",
+      "wait": "Change at {hub}: about {h} h {m} m to wait",
+      "totalTitle": "Transport in your {plan} plan, both ways · {people} travellers",
+      "totalSub": "Onward {onward} · return {back}. Choose another option above and book it directly if you prefer.",
+      "sample": "Timings and fares are sample data until live providers are connected.",
+      "childEstimate": "Child fares marked approx. use our default rule; the operator's own child rules apply when you book."
     }
   }
 }

@@ -42,6 +42,7 @@ export function priceForGroup(args: PriceForGroupArgs): GroupPrice {
             : 'full';
     lines.push({
       label: fareType === 'free' ? `Infant (${age} y)` : `Child (${age} y)`,
+      age,
       count: 1,
       fareType,
       unitAmount,

@@ -28,6 +28,8 @@ export interface PricingRule {
 
 export interface TravellerPriceLine {
   label: string;
+  /** Set on child lines, for translated labels. */
+  age?: number;
   count: number;
   fareType: FareType;
   unitAmount: number;

@@ -44,3 +44,9 @@ export function isWeekendNight(d: ISODate): boolean {
   const w = dayOfWeek(d);
   return w === 5 || w === 6;
 }
+
+/** Minutes from `a` to `b`, both local `YYYY-MM-DDTHH:MM` (no time zones; the trip is in local time). */
+export function minutesBetween(a: string, b: string): number {
+  const toMin = (s: string) => diffDays('1970-01-01', s.slice(0, 10)) * 1440 + Number(s.slice(11, 13)) * 60 + Number(s.slice(14, 16));
+  return toMin(b) - toMin(a);
+}

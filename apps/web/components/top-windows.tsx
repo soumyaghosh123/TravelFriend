@@ -9,7 +9,7 @@ import { Price } from './price';
 interface Props {
   style: StyleDates;
   selectedStart: string | null;
-  onSelect: (start: string, total: number) => void;
+  onSelect: (start: string) => void;
 }
 
 /** "3 cheapest date windows", each with its saving against the most expensive window (brief §2.1). */
@@ -29,7 +29,7 @@ export function TopWindows({ style, selectedStart, onSelect }: Props) {
               <button
                 type="button"
                 aria-pressed={on}
-                onClick={() => onSelect(w.start, w.total)}
+                onClick={() => onSelect(w.start)}
                 className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left ${on ? 'border-brand bg-brand-xl' : 'border-line hover:border-brand/50'}`}
               >
                 <span className="grid size-[26px] shrink-0 place-items-center rounded-full bg-good text-[13px] font-extrabold text-white">{w.rank}</span>

@@ -6,15 +6,18 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { dateRange, monthLabel } from '../lib/format';
+import { tripSources } from '../lib/trip-sources';
 import { useResultsStream } from '../lib/use-results-stream';
+import { useSelectedWindow } from '../lib/use-selected-window';
+import { useTransport } from '../lib/use-transport';
 import { BestDatesTab } from './best-dates-tab';
 import { DestinationBanner } from './destination-banner';
+import { GettingThereTab } from './getting-there-tab';
 import { PlanCards } from './plan-cards';
 import { Price } from './price';
-import { ResultTabs } from './result-tabs';
+import { panelId, ResultTabs, tabId, type TabId } from './result-tabs';
 import { SectionError } from './section-error';
 import { SkeletonBlock } from './skeleton-block';
-import { tripSources } from '../lib/trip-sources';
 
 interface Props {
   searchId: string;
@@ -30,21 +33,20 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
   const t = useTranslations('results');
   const ts = useTranslations('search');
   const locale = useLocale();
-  const { dates, retry } = useResultsStream(searchId);
+  const { dates, transport: streamedTransport, retry } = useResultsStream(searchId);
+  const [tab, setTab] = useState<TabId>('dates');
   const [style, setStyle] = useState<TripStyle>('budget');
   const [start, setStart] = useState<string | null>(null);
-  const [selectedTotal, setSelectedTotal] = useState<number | null>(null);
 
   const styles = dates.status === 'ok' ? dates.data.styles : [];
   const current: StyleDates | undefined = styles.find((s) => s.style === style);
   const best = current?.top[0];
 
-  // Pick the cheapest window whenever results arrive or the plan changes.
-  useEffect(() => {
-    setStart(best?.start ?? null);
-    setSelectedTotal(best?.total ?? null);
-  }, [best?.start, best?.total]);
+  // Pick the plan's cheapest window whenever results arrive or the plan changes.
+  useEffect(() => setStart(best?.start ?? null), [best?.start]);
 
+  const selection = useSelectedWindow(searchId, current, start);
+  const transport = useTransport(searchId, selection.window, streamedTransport);
   const people = input.travellers.adults + input.travellers.childAges.length;
   const selected = current && start ? current.cells.find((c) => c.start === start) : undefined;
 
@@ -71,9 +73,15 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
           {t('changeSearch')}
         </Link>
         <div className="flex-1" />
-        {current && best && selectedTotal !== null && (
+        {current && selection.window && (
           <div className="hidden text-right md:block">
-            <Price amount={selectedTotal} isEstimate sources={tripSources(best, current.fetchedAt)} size="md" note={t(`planTotal.${style}`)} />
+            <Price
+              amount={selection.window.total}
+              isEstimate
+              sources={tripSources(selection.window, current.fetchedAt)}
+              size="md"
+              note={t(`planTotal.${style}`)}
+            />
           </div>
         )}
       </div>
@@ -85,23 +93,28 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
         {dates.status === 'error' && <SectionError onRetry={retry} />}
         {dates.status === 'ok' && <PlanCards styles={styles} selected={style} onSelect={setStyle} people={people} />}
 
-        <ResultTabs active="dates" />
+        <ResultTabs active={tab} onChange={setTab} />
 
-        {dates.status === 'loading' && <SkeletonBlock label={t('loading')} className="h-[420px]" />}
-        {dates.status === 'ok' && current && (
-          <BestDatesTab
-            searchId={searchId}
-            dates={dates.data}
-            style={current}
-            people={people}
-            selectedStart={start}
-            onSelect={(s, total) => {
-              setStart(s);
-              setSelectedTotal(total);
-            }}
-          />
-        )}
-        {dates.status === 'ok' && !current && <SectionError onRetry={retry} />}
+        <div role="tabpanel" id={panelId(tab)} aria-labelledby={tabId(tab)}>
+          {dates.status === 'loading' && <SkeletonBlock label={t('loading')} className="h-[420px]" />}
+          {dates.status === 'ok' && !current && <SectionError onRetry={retry} />}
+
+          {tab === 'dates' && dates.status === 'ok' && current && (
+            <BestDatesTab dates={dates.data} style={current} people={people} selectedStart={start} selection={selection} onSelect={setStart} />
+          )}
+
+          {tab === 'getting' && dates.status === 'ok' && current && (
+            <>
+              {(transport.status === 'loading' || selection.status === 'loading') && <SkeletonBlock label={t('transport.loading')} className="h-[420px]" />}
+              {(transport.status === 'error' || selection.status === 'error') && (
+                <SectionError onRetry={selection.status === 'error' ? selection.retry : transport.retry} />
+              )}
+              {transport.status === 'ok' && selection.window && (
+                <GettingThereTab transport={transport.data} window={selection.window} style={style} people={people} />
+              )}
+            </>
+          )}
+        </div>
       </main>
     </>
   );

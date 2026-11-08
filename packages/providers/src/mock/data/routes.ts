@@ -122,5 +122,8 @@ const OUTBOUND: RouteTemplate[] = MOCK_ORIGINS.flatMap((o) =>
   MOCK_DESTINATIONS.flatMap((d) => (o.code === 'KOL' && d.code === 'GOA' ? KOL_GOA : generated(o, d))),
 );
 
+/** Routes between origin cities, so combined journeys can change at a hub (e.g. Kolkata → Hyderabad → Goa). */
+const BETWEEN_ORIGINS: RouteTemplate[] = MOCK_ORIGINS.flatMap((o, i) => MOCK_ORIGINS.slice(i + 1).flatMap((h) => generated(o, h)));
+
 /** All templates, both directions. */
-export const ROUTES: RouteTemplate[] = [...OUTBOUND, ...OUTBOUND.map(reverse)];
+export const ROUTES: RouteTemplate[] = [...OUTBOUND, ...BETWEEN_ORIGINS].flatMap((t) => [t, reverse(t)]);

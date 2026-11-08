@@ -1,15 +1,18 @@
 'use client';
 
-import type { DatesSection } from '@tripsaver/providers';
+import type { DatesSection, TransportSection } from '@tripsaver/providers';
 import { useCallback, useEffect, useState } from 'react';
 
 export type SectionState<T> = { status: 'loading' } | { status: 'ok'; data: T } | { status: 'error' };
 
 export interface ResultsState {
   dates: SectionState<DatesSection>;
+  /** For the Budget plan's cheapest dates (the default selection). */
+  transport: SectionState<TransportSection>;
 }
 
-const INITIAL: ResultsState = { dates: { status: 'loading' } };
+const SECTIONS = ['dates', 'transport'] as const;
+const INITIAL: ResultsState = { dates: { status: 'loading' }, transport: { status: 'loading' } };
 
 /**
  * Opens the SSE stream for a search and fills sections as they arrive (PLAN §7).
@@ -24,10 +27,12 @@ export function useResultsStream(searchId: string): ResultsState & { retry: () =
     const es = new EventSource(`/api/search/${encodeURIComponent(searchId)}/stream`);
     let finished = false;
 
-    es.addEventListener('dates', (e) => {
-      const msg = JSON.parse((e as MessageEvent<string>).data) as { status: 'ok'; data: DatesSection } | { status: 'error' };
-      setState((s) => ({ ...s, dates: msg.status === 'ok' ? { status: 'ok', data: msg.data } : { status: 'error' } }));
-    });
+    for (const section of SECTIONS) {
+      es.addEventListener(section, (e) => {
+        const msg = JSON.parse((e as MessageEvent<string>).data) as { status: 'ok'; data: unknown } | { status: 'error' };
+        setState((s) => ({ ...s, [section]: msg.status === 'ok' ? { status: 'ok', data: msg.data } : { status: 'error' } }));
+      });
+    }
     es.addEventListener('done', () => {
       finished = true;
       es.close();
@@ -36,7 +41,11 @@ export function useResultsStream(searchId: string): ResultsState & { retry: () =
       if (finished) return;
       es.close();
       // Anything still loading when the connection drops is unavailable; the user can retry.
-      setState((s) => ({ dates: s.dates.status === 'loading' ? { status: 'error' } : s.dates }));
+      setState((s) => {
+        const next = { ...s };
+        for (const k of SECTIONS) if (next[k].status === 'loading') next[k] = { status: 'error' };
+        return next;
+      });
     };
     return () => es.close();
   }, [searchId, attempt]);

@@ -14,3 +14,4 @@ export * from './mock/hotels.js';
 export * from './assemble.js';
 export * from './results-contract.js';
 export * from './dates-section.js';
+export * from './transport-section.js';
