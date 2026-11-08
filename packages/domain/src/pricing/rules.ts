@@ -26,6 +26,9 @@ export function validateTravellers(t: Travellers): void {
   if (!Number.isInteger(t.adults) || t.adults < 1) {
     throw new RangeError('At least one adult is required');
   }
+  if (t.rooms !== undefined && (!Number.isInteger(t.rooms) || t.rooms < 1)) {
+    throw new RangeError(`Rooms must be a whole number of at least 1, got ${t.rooms}`);
+  }
   for (const age of t.childAges) {
     if (!Number.isInteger(age) || age < 0 || age > 17) {
       throw new RangeError(`Child age must be a whole number from 0 to 17, got ${age}`);

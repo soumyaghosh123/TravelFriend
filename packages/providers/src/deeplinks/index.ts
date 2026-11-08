@@ -1,4 +1,4 @@
-import { diffDays, suggestRooms, type ISODate, type Travellers } from '@tripsaver/domain';
+import { diffDays, suggestRooms, validateTravellers, type ISODate, type Travellers } from '@tripsaver/domain';
 
 export type SiteId = 'irctc' | 'redbus' | 'makemytrip' | 'goibibo' | 'booking' | 'agoda' | 'expedia';
 
@@ -54,6 +54,7 @@ function url(base: string, params: [string, string | number][]): string {
  */
 export function buildDeepLink(site: SiteId, p: DeepLinkParams): { url: string; prefilled: boolean } {
   const t = p.travellers;
+  validateTravellers(t);
   if (p.kind === 'hotel') {
     const dest = need(p, 'destinationName');
     const checkIn = need(p, 'checkIn');

@@ -5,6 +5,9 @@ import type { ISODate } from '../types.js';
 export interface LegOption {
   departDate: ISODate;
   arriveDate: ISODate;
+  /** Local "HH:MM". Needed to allow a same-day connection; without times it is rejected. */
+  departTime?: string;
+  arriveTime?: string;
   groupFare: number;
   source: string;
 }
@@ -14,7 +17,8 @@ export interface CheapestDatesInput {
   month: number;
   days: number;
   onwardByDate: Record<ISODate, LegOption | undefined>;
-  returnByDate: Record<ISODate, LegOption | undefined>;
+  /** One or more ways home departing on that date (e.g. a cheap overnight train and a same-day flight). */
+  returnByDate: Record<ISODate, LegOption | LegOption[] | undefined>;
   /** Hotel cost for the group for the night starting on that date. */
   nightlyGroupPrice: Record<ISODate, number | undefined>;
   /** Local transport + food + sights for the group, per day at the destination. */
@@ -47,18 +51,25 @@ function infeasible(start: ISODate, end: ISODate): DateWindow {
   };
 }
 
+/** The return must leave after the onward journey arrives. Same-day needs known times. */
+function departsAfter(onward: LegOption, ret: LegOption): boolean {
+  if (ret.departDate > onward.arriveDate) return true;
+  if (ret.departDate < onward.arriveDate) return false;
+  return onward.arriveTime !== undefined && ret.departTime !== undefined && ret.departTime > onward.arriveTime;
+}
+
 function evaluate(input: CheapestDatesInput, start: ISODate, end: ISODate): DateWindow {
   const onward = input.onwardByDate[start];
   if (!onward) return infeasible(start, end);
   const arrive = onward.arriveDate;
 
-  // Latest return departure that still gets home by the last day.
+  // Latest return departure that still gets home by the last day; cheapest option on that date.
   let ret: LegOption | undefined;
-  for (let d = end; d >= arrive; d = addDays(d, -1)) {
-    const option = input.returnByDate[d];
-    if (option && option.arriveDate <= end) {
-      ret = option;
-      break;
+  for (let d = end; d >= arrive && !ret; d = addDays(d, -1)) {
+    const options = ([] as (LegOption | undefined)[]).concat(input.returnByDate[d]);
+    for (const option of options) {
+      if (!option || option.arriveDate > end || !departsAfter(onward, option)) continue;
+      if (!ret || option.groupFare < ret.groupFare) ret = option;
     }
   }
   if (!ret) return infeasible(start, end);

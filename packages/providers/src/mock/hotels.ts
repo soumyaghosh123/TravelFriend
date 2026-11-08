@@ -1,4 +1,14 @@
-import { addDays, daysInMonth, diffDays, eachDay, isoDate, suggestRooms, type ISODate, type Travellers } from '@tripsaver/domain';
+import {
+  addDays,
+  daysInMonth,
+  diffDays,
+  eachDay,
+  isoDate,
+  suggestRooms,
+  validateTravellers,
+  type ISODate,
+  type Travellers,
+} from '@tripsaver/domain';
 import type { Clock } from '../clock.js';
 import { buildDeepLink, SITE_NAMES } from '../deeplinks/index.js';
 import type { HotelOffer, HotelProvider, HotelQuery, HotelSitePrice, HotelType } from '../interfaces.js';
@@ -35,6 +45,10 @@ export class MockHotelProvider implements HotelProvider {
   }
 
   async search(q: HotelQuery): Promise<HotelOffer[]> {
+    validateTravellers(q.travellers);
+    if (q.checkOut <= q.checkIn) {
+      throw new RangeError(`Check-out (${q.checkOut}) must be after check-in (${q.checkIn})`);
+    }
     const place = mockPlaceDirectory.get(q.destination);
     const rooms = q.travellers.rooms ?? suggestRooms(q.travellers);
     const nights = diffDays(q.checkIn, q.checkOut);
@@ -95,6 +109,7 @@ export class MockHotelProvider implements HotelProvider {
     travellers: Travellers,
     type: HotelType,
   ): Promise<Record<ISODate, number>> {
+    validateTravellers(travellers);
     const rooms = travellers.rooms ?? suggestRooms(travellers);
     const candidates = (this.catalogue[destination] ?? []).filter((h) => h.type === type && h.guestRating >= MIN_RATING);
     if (candidates.length === 0) return {};
