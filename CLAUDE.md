@@ -12,7 +12,8 @@ Full brief: [BRIEF.md](BRIEF.md). Architecture and build order: [docs/PLAN.md](d
 
 1. **Every price shows its source, a `fetchedAt` time, and a booking link** with dates and travellers pre-filled. Render prices only through the `<Price>` component, and label estimates "approx.".
 2. Child pricing defaults (from `PricingRule`): under 4 → free, 4–7 → half, 8 and over → full. A provider's own child price always wins.
-3. Itinerary: N days → N distinct days, ≤ 9 active hours per day, no attraction on its closed day, Day 1 and Day N kept light. "N days" means N−1 hotel nights, and the trip fits inside the chosen month.
+3. Itinerary: N days → N distinct days, ≤ 9 active hours per day, no attraction on its closed day, Day 1 and Day N kept light. Hotel nights are only the nights spent at the destination (at most N−1); nights on a train or bus don't count. The trip fits inside the chosen month.
+8. UI follows the approved mockup [docs/design/tripsaver-mockup.html](docs/design/tripsaver-mockup.html) and the design tokens in PLAN §9.1.
 4. Providers sit behind interfaces in `packages/providers`. The UI and engines never import a concrete provider.
 5. `packages/domain` is pure: no I/O, no provider calls, deterministic.
 6. Secrets live only in `.env`. Keep `.env.example` updated. Never scrape sites whose terms forbid it.

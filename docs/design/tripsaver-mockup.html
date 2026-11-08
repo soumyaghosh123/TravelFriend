@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TripSaver – Website design mockup</title>
+<style>
+  :root{
+    --brand:#0f766e; --brand-d:#115e59; --brand-l:#ccfbf1; --brand-xl:#f0fdfa;
+    --accent:#f59e0b; --accent-l:#fef3c7;
+    --ink:#0f172a; --ink2:#334155; --muted:#64748b; --line:#e2e8f0; --bg:#f8fafc; --card:#fff;
+    --good:#15803d; --good-l:#dcfce7; --bad:#b91c1c; --bad-l:#fee2e2; --warn:#b45309; --warn-l:#fef3c7;
+    --r:14px; --shadow:0 1px 2px rgba(15,23,42,.06),0 4px 16px rgba(15,23,42,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;color:var(--ink);background:#e9eef3;font-size:14px;line-height:1.45}
+  button{font:inherit;cursor:pointer}
+  a{color:var(--brand);text-decoration:none}
+
+  /* ---------- design-review toolbar (not part of the product) ---------- */
+  .review{position:sticky;top:0;z-index:50;background:#0b1220;color:#cbd5e1;display:flex;gap:8px;align-items:center;padding:8px 14px;flex-wrap:wrap;font-size:13px}
+  .review b{color:#fff;margin-right:6px}
+  .review button{background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:5px 11px}
+  .review button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+  .review .sp{flex:1}
+  .review .note{color:#94a3b8}
+
+  /* ---------- app frame ---------- */
+  .app{max-width:1280px;margin:16px auto;background:var(--bg);border-radius:18px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.12);container-type:inline-size;container-name:app;transition:max-width .25s}
+  body.mobile .app{max-width:400px;border:10px solid #0b1220;border-radius:36px}
+  .screen{display:none}
+  .screen.on{display:block}
+
+  /* header */
+  .hdr{display:flex;align-items:center;gap:18px;padding:14px 24px;background:#fff;border-bottom:1px solid var(--line)}
+  .logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:19px;letter-spacing:-.3px}
+  .logo .mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#14b8a6);display:grid;place-items:center;color:#fff;font-size:16px}
+  .logo span{color:var(--accent)}
+  .nav{display:flex;gap:18px;color:var(--ink2);font-weight:500}
+  .hdr .sp{flex:1}
+  .pill{border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:#fff;color:var(--ink2);font-weight:500}
+  .btn{background:var(--brand);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:600}
+  .btn:hover{background:var(--brand-d)}
+  .btn.sm{padding:6px 11px;font-size:13px;border-radius:8px}
+  .btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+  .btn.acc{background:var(--accent);color:#1f1300}
+  @container app (max-width:700px){ .nav{display:none} .hdr{padding:12px 14px} .hdr .pill.lang{display:none} }
+
+  /* ---------- HOME ---------- */
+  .hero{padding:70px 24px 110px;color:#fff;position:relative;overflow:hidden;background:#134e4a;min-height:380px}
+  .hero .bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.6s ease;animation:kb 18s ease-in-out infinite alternate}
+  .hero .bg.on{opacity:1}
+  @keyframes kb{from{transform:scale(1)}to{transform:scale(1.08)}}
+  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,47,46,.82) 0%,rgba(4,47,46,.55) 45%,rgba(4,47,46,.1) 100%),linear-gradient(0deg,rgba(0,0,0,.35),transparent 40%)}
+  .hero>.in{position:relative;z-index:2}
+  .hero h1{font-size:44px;line-height:1.08;margin:0 0 12px;letter-spacing:-1px;max-width:720px;text-shadow:0 2px 12px rgba(0,0,0,.3)}
+  .hero p{margin:0;color:#e6fffb;font-size:16px;max-width:600px;text-shadow:0 1px 6px rgba(0,0,0,.35)}
+  .hero .cap{position:absolute;right:24px;bottom:84px;z-index:2;font-size:12px;background:rgba(0,0,0,.35);padding:5px 10px;border-radius:999px;backdrop-filter:blur(4px)}
+  .hero .dots{display:flex;gap:6px;margin-top:18px}
+  .hero .dots i{width:22px;height:4px;border-radius:9px;background:rgba(255,255,255,.4)}
+  .hero .dots i.on{background:var(--accent)}
+  .scenic{position:relative;margin-top:40px;padding:60px 24px;color:#fff;background:url("https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1800&q=70") center/cover fixed}
+  .scenic::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,23,42,.55),rgba(15,23,42,.75))}
+  .scenic>*{position:relative}
+  .scenic h2{text-align:center;margin:0 0 6px;font-size:24px}
+  .scenic .sub{text-align:center;color:#cbd5e1;margin:0 0 22px}
+  .scenic .trust div{background:rgba(255,255,255,.12);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.18);box-shadow:none}
+  .scenic .trust span{color:#e2e8f0}
+  .rbanner{position:relative;height:150px;background:url("https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=1800&q=70") center 60%/cover;display:flex;align-items:flex-end;padding:0 24px 16px;color:#fff}
+  .rbanner::before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(4,47,46,.75),rgba(4,47,46,.1) 70%)}
+  .rbanner>*{position:relative}
+  .rbanner h2{margin:0;font-size:26px;letter-spacing:-.5px}
+  .rbanner p{margin:2px 0 0;color:#e6fffb;font-size:13px}
+  .rbanner .wx{margin-left:auto;text-align:right;font-size:13px;background:rgba(0,0,0,.3);padding:6px 12px;border-radius:12px;backdrop-filter:blur(4px)}
+  @container app (max-width:700px){ .rbanner{height:120px;padding:0 14px 12px} .rbanner h2{font-size:20px} .rbanner .wx{display:none} .hero .cap{display:none} }
+  .plan .pimg{height:78px;margin:-14px -16px 12px;border-radius:14px 14px 0 0;background-size:cover;background-position:center}
+  .plan .tag{z-index:2}
+  .search{max-width:1180px;margin:-62px auto 0;background:#fff;border-radius:18px;box-shadow:var(--shadow);padding:18px;position:relative}
+  .sgrid{display:grid;grid-template-columns:1.2fr 1.2fr .7fr .9fr 1.2fr 1.1fr;gap:10px}
+  .fld{border:1px solid var(--line);border-radius:12px;padding:9px 12px;background:#fff;position:relative}
+  .fld label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+  .fld .v{font-weight:600;font-size:15px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fld .s{font-size:12px;color:var(--muted)}
+  .fld.focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-l)}
+  .stepper{display:flex;align-items:center;gap:10px;margin-top:2px}
+  .stepper b{font-size:15px}
+  .stepper i{font-style:normal;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--brand);font-weight:700}
+  .srow2{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);border-radius:999px;padding:5px 11px;background:#fff;font-size:13px;color:var(--ink2)}
+  .chip.on{background:var(--brand-xl);border-color:var(--brand);color:var(--brand-d);font-weight:600}
+  .chip.on::before{content:"✓ "}
+  .more{color:var(--brand);font-weight:600;margin-left:auto}
+  .search .go{width:100%;margin-top:14px;padding:14px;font-size:16px;border-radius:12px}
+  .popover{position:absolute;right:0;top:calc(100% + 8px);width:320px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:14px;z-index:5}
+  .popover .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .popover .row:last-of-type{border-bottom:0}
+  .popover small{color:var(--muted);display:block}
+  .ages{display:flex;gap:6px;margin:6px 0 2px}
+  .ages span{border:1px solid var(--line);border-radius:8px;padding:4px 8px;font-size:12px}
+  .ages span b{color:var(--brand)}
+  .rule{background:var(--brand-xl);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--brand-d);margin-top:8px}
+  .morep{margin-top:12px;border-top:1px solid var(--line);padding-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .morep .fld .v{font-size:13px}
+  @container app (max-width:1000px){ .sgrid{grid-template-columns:1fr 1fr} .morep{grid-template-columns:1fr 1fr} }
+  @container app (max-width:700px){ .hero{padding:28px 16px 80px} .hero h1{font-size:28px} .search{margin:-64px 12px 0;padding:12px} .popover{position:static;width:auto;margin-top:8px} .more{margin-left:0} }
+
+  .sect{max-width:1180px;margin:34px auto;padding:0 4px}
+  @container app (max-width:700px){ .sect{padding:0 14px} }
+  .sect h2{font-size:20px;margin:0 0 4px;letter-spacing:-.3px}
+  .sect .sub{color:var(--muted);margin:0 0 14px}
+  .dests{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  @container app (max-width:1000px){ .dests{grid-template-columns:repeat(2,1fr)} }
+  .dest{border-radius:var(--r);overflow:hidden;background:#fff;box-shadow:var(--shadow)}
+  .dest .ph{height:110px;display:flex;align-items:flex-end;padding:10px;color:#fff;font-weight:700;font-size:17px;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+  .dest .bd{padding:10px 12px}
+  .dest .bd small{color:var(--muted);display:block}
+  .deals{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @container app (max-width:900px){ .deals{grid-template-columns:1fr} }
+  .deal{background:#fff;border-radius:var(--r);padding:14px;box-shadow:var(--shadow);border-left:4px solid var(--accent)}
+  .trust{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @container app (max-width:900px){ .trust{grid-template-columns:1fr 1fr} }
+  .trust div{background:#fff;border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
+  .trust b{display:block;margin-bottom:2px}
+  .trust span{color:var(--muted);font-size:13px}
+  .foot{background:#0b1220;color:#94a3b8;padding:22px 24px;font-size:12px;margin-top:40px}
+  .foot b{color:#e2e8f0}
+
+  /* ---------- RESULTS ---------- */
+  .sumbar{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);padding:10px 24px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .sumbar .trip{font-weight:700;font-size:15px}
+  .sumbar .meta{color:var(--muted);font-size:13px}
+  .sumbar .best{background:var(--good-l);color:var(--good);border-radius:999px;padding:5px 12px;font-weight:600;font-size:13px}
+  .sumbar .sp{flex:1}
+  .sumbar .tot{text-align:right}
+  .sumbar .tot b{font-size:18px}
+  .sumbar .tot small{display:block;color:var(--muted);font-size:12px}
+  @container app (max-width:700px){ .sumbar{padding:10px 14px;gap:8px} .sumbar .tot{display:none} }
+
+  .wrap{max-width:1232px;margin:0 auto;padding:18px 24px 30px}
+  @container app (max-width:700px){ .wrap{padding:14px 12px 24px} }
+  .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @container app (max-width:800px){ .plans{grid-template-columns:1fr} }
+  .plan{background:#fff;border:2px solid var(--line);border-radius:16px;padding:14px 16px;cursor:pointer;position:relative;transition:border-color .15s, box-shadow .15s}
+  .plan:hover{box-shadow:var(--shadow)}
+  .plan.on{border-color:var(--brand);box-shadow:0 0 0 4px var(--brand-l)}
+  .plan .tag{position:absolute;top:-10px;right:14px;background:var(--good);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .plan h3{margin:0;font-size:16px;display:flex;align-items:center;gap:8px}
+  .plan h3 .ic{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:15px}
+  .plan .desc{color:var(--muted);font-size:13px;margin:6px 0 10px;min-height:38px}
+  .plan .price{font-size:24px;font-weight:800;letter-spacing:-.5px}
+  .plan .pp{color:var(--muted);font-size:12px}
+  .plan .bar{display:flex;height:8px;border-radius:99px;overflow:hidden;margin:10px 0 6px}
+  .plan .legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+  .plan .legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}
+  .plan .alt{margin-top:8px;font-size:12px;background:var(--bg);border-radius:8px;padding:6px 8px;color:var(--ink2)}
+  .c-tr{background:#0f766e}.c-ho{background:#f59e0b}.c-lo{background:#6366f1}.c-fo{background:#ec4899}.c-si{background:#0ea5e9}.c-bu{background:#94a3b8}
+
+  .tabs{display:flex;gap:4px;margin:20px 0 14px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:thin}
+  .tab{white-space:nowrap;background:none;border:0;padding:10px 12px;color:var(--muted);font-weight:600;border-bottom:3px solid transparent}
+  .tab.on{color:var(--brand-d);border-color:var(--brand)}
+  .tab .n{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--line);font-size:10px;margin-right:6px;color:var(--ink2)}
+  .tab.on .n{background:var(--brand);color:#fff}
+  .pane{display:none}
+  .pane.on{display:block}
+
+  .card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);padding:16px}
+  .card h4{margin:0 0 10px;font-size:15px}
+  .g2{display:grid;grid-template-columns:1.5fr 1fr;gap:14px}
+  .g2e{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @container app (max-width:900px){ .g2,.g2e,.g3{grid-template-columns:1fr} }
+  .stack>*+*{margin-top:14px}
+  .muted{color:var(--muted)}
+  .small{font-size:12px}
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--line);color:var(--ink2)}
+  .b-good{background:var(--good-l);color:var(--good)} .b-bad{background:var(--bad-l);color:var(--bad)} .b-warn{background:var(--warn-l);color:var(--warn)} .b-brand{background:var(--brand-l);color:var(--brand-d)}
+  .est{font-size:10px;font-weight:700;color:var(--warn);background:var(--warn-l);border-radius:4px;padding:1px 5px;margin-left:4px;vertical-align:middle}
+  .src{font-size:11px;color:var(--muted)}
+  .src b{color:var(--ink2)}
+
+  /* price calendar */
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .cal .dow{font-size:11px;color:var(--muted);text-align:center;font-weight:600;padding-bottom:2px}
+  .cal .d{border-radius:10px;padding:6px 4px;text-align:center;min-height:54px;border:2px solid transparent;cursor:pointer}
+  .cal .d .dn{font-weight:700;font-size:13px}
+  .cal .d .dp{font-size:11px;font-weight:600}
+  .cal .d.na{background:#f1f5f9;color:#cbd5e1;cursor:default}
+  .cal .d.sel{border-color:var(--ink)}
+  .cal .d.inwin{outline:2px dashed var(--brand);outline-offset:-2px}
+  .b1{background:#dcfce7;color:#14532d}.b2{background:#ecfccb;color:#365314}.b3{background:#fef9c3;color:#713f12}.b4{background:#ffedd5;color:#7c2d12}.b5{background:#fee2e2;color:#7f1d1d}
+  .scale{display:flex;gap:4px;align-items:center;font-size:11px;color:var(--muted);margin-top:10px}
+  .scale i{width:22px;height:10px;border-radius:3px;display:inline-block}
+  .win{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+  .win .rk{width:26px;height:26px;border-radius:50%;background:var(--good);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
+  .win .dt{font-weight:700}
+  .win .sv{color:var(--good);font-weight:600;font-size:12px}
+  .win .pr{margin-left:auto;font-weight:800;font-size:16px}
+  .why li{margin-bottom:6px}
+  .mbars{display:flex;align-items:flex-end;gap:6px;height:120px;margin-top:6px}
+  .mbars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:10px;color:var(--muted)}
+  .mbars span{width:100%;border-radius:6px 6px 0 0;display:block}
+  .mbars div.cur span{outline:2px solid var(--ink);outline-offset:1px}
+  .alert{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .alert input{border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:130px;font:inherit}
+
+  /* timeline */
+  .day{display:grid;grid-template-columns:120px 1fr;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+  .day:last-child{border-bottom:0}
+  .day .dh b{display:block;font-size:15px}
+  .day .dh small{color:var(--muted)}
+  .day .dh .spend{margin-top:6px;font-weight:700;font-size:13px}
+  .day .dh .hrs{font-size:11px;color:var(--muted)}
+  .slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  @container app (max-width:800px){ .day{grid-template-columns:1fr} .slots{grid-template-columns:1fr} }
+  .slot{background:var(--bg);border-radius:10px;padding:8px 10px;border:1px solid var(--line);position:relative}
+  .slot .when{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+  .slot .what{font-weight:600}
+  .slot .how{font-size:12px;color:var(--ink2)}
+  .slot .drag{position:absolute;right:8px;top:6px;color:#cbd5e1;cursor:grab}
+  .slot.travel{background:#eef2ff;border-color:#c7d2fe}
+  .slot.free{background:var(--accent-l);border-color:#fde68a}
+  .dayfoot{grid-column:2;display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink2);margin-top:6px}
+  @container app (max-width:800px){ .dayfoot{grid-column:1} }
+  .map{height:100%;min-height:260px;border-radius:12px;background:
+      radial-gradient(circle at 30% 30%,#bae6fd 0 18%,transparent 19%),
+      linear-gradient(135deg,#e0f2fe,#dcfce7);position:relative;overflow:hidden;border:1px solid var(--line)}
+  .map .pin{position:absolute;width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--brand);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:700}
+  .map .pin span{transform:rotate(45deg)}
+  .map .lbl{position:absolute;font-size:10px;font-weight:600;color:var(--ink2);background:rgba(255,255,255,.8);padding:1px 4px;border-radius:4px}
+
+  /* lists / tables */
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;padding:8px;border-bottom:1px solid var(--line)}
+  td{padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  .tblwrap{overflow-x:auto}
+  .mtabs{display:flex;gap:6px;margin-bottom:10px}
+  .mtabs button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 12px;font-weight:600;color:var(--ink2)}
+  .mtabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .sumcards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+  @container app (max-width:700px){ .sumcards{grid-template-columns:1fr} }
+  .sc{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}
+  .sc .k{font-size:11px;text-transform:uppercase;font-weight:700;letter-spacing:.06em}
+  .sc .v{font-weight:800;font-size:17px}
+  .avail{font-size:12px;font-weight:700}
+  .conf{display:inline-block;width:60px;height:6px;background:var(--line);border-radius:9px;overflow:hidden;vertical-align:middle}
+  .conf i{display:block;height:100%;background:var(--good)}
+
+  /* hotels */
+  .filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .filters select{border:1px solid var(--line);border-radius:999px;padding:5px 10px;font:inherit;background:#fff}
+  .hcol h4{display:flex;align-items:center;gap:8px}
+  .hotel{display:grid;grid-template-columns:120px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .hotel:last-child{border-bottom:0}
+  .hotel .ph{border-radius:10px;height:100px}
+  .hotel .nm{font-weight:700}
+  .hotel .st{color:var(--accent);letter-spacing:1px;font-size:12px}
+  .hotel .rt{font-size:12px}
+  .hotel .rt b{background:var(--good);color:#fff;border-radius:6px;padding:1px 6px;margin-right:4px}
+  .sites{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:8px}
+  .sites div{border:1px solid var(--line);border-radius:8px;padding:4px 6px;font-size:11px;text-align:center}
+  .sites div b{display:block;font-size:12px}
+  .sites div.low{border-color:var(--good);background:var(--good-l)}
+  .hotel .cta{display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px;flex-wrap:wrap}
+  .hotel .cta .tp{font-weight:800;font-size:16px}
+  @container app (max-width:520px){ .hotel{grid-template-columns:1fr} .sites{grid-template-columns:repeat(2,1fr)} }
+
+  /* lists */
+  .li{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .li:last-child{border-bottom:0}
+  .li .ic{width:38px;height:38px;border-radius:10px;background:var(--brand-xl);display:grid;place-items:center;font-size:18px;flex:none}
+  .li .t{font-weight:700}
+  .li .m{font-size:12px;color:var(--ink2)}
+  .li .r{margin-left:auto;text-align:right;white-space:nowrap}
+  .tip{background:var(--accent-l);border-radius:10px;padding:8px 10px;font-size:12px;color:#78350f;margin-top:8px}
+  .warnbox{background:var(--bad-l);border-radius:10px;padding:8px 10px;font-size:12px;color:#7f1d1d}
+  .dd{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @container app (max-width:800px){ .dd{grid-template-columns:1fr} }
+  .dd ul{margin:0;padding-left:0;list-style:none}
+  .dd li{padding:6px 0;border-bottom:1px dashed var(--line)}
+  .dd li:last-child{border-bottom:0}
+
+  /* cost */
+  .ctable td.num, .ctable th.num{text-align:right;white-space:nowrap}
+  .ctable tr.tot td{font-weight:800;font-size:15px;border-top:2px solid var(--ink)}
+  .ctable th.selcol, .ctable td.selcol{background:var(--brand-xl)}
+  .check{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .check:last-child{border-bottom:0}
+  .check input{width:18px;height:18px;accent-color:var(--brand)}
+  .check .it{flex:1}
+  .check .it b{display:block}
+  .check .pr{font-weight:800;white-space:nowrap}
+  .check.done .it{text-decoration:line-through;color:var(--muted)}
+  .progress{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:6px 0 12px}
+  .progress i{display:block;height:100%;background:var(--brand);width:0;transition:width .2s}
+  .disclaimer{font-size:12px;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin-top:16px}
+  .sample{position:fixed;right:14px;bottom:14px;background:#0b1220;color:#fbbf24;font-size:11px;font-weight:700;padding:6px 10px;border-radius:8px;z-index:60}
+</style>
+</head>
+<body>
+
+<div class="review">
+  <b>TripSaver · design mockup</b>
+  <button data-screen="home" class="on">1 · Home &amp; search</button>
+  <button data-screen="results">2 · Results page</button>
+  <span class="sp"></span>
+  <span class="note">View:</span>
+  <button id="vDesk" class="on">Desktop</button>
+  <button id="vMob">Mobile</button>
+</div>
+
+<div class="app">
+
+<!-- ======================= HOME ======================= -->
+<section class="screen on" id="s-home">
+  <header class="hdr">
+    <div class="logo"><div class="mark">₹</div>Trip<span>Saver</span></div>
+    <nav class="nav"><a>Destinations</a><a>Deals</a><a>How it works</a></nav>
+    <div class="sp"></div>
+    <span class="pill lang">EN · हिं · বাং</span>
+    <span class="pill">₹ INR</span>
+    <button class="btn sm ghost">Sign in</button>
+  </header>
+
+  <div class="hero" id="hero">
+    <div class="bg on" style="background-image:url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1800&q=70')"></div>
+    <div class="bg" style="background-image:url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=1800&q=70')"></div>
+    <div class="bg" style="background-image:url('https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=1800&q=70')"></div>
+    <div class="bg" style="background-image:url('https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1800&q=70')"></div>
+    <div class="in">
+      <h1>Beaches or mountains: your whole trip at the cheapest price.</h1>
+      <p>Tell us where you're going and for how long. We'll find the cheapest dates and build three complete plans, with hotels, trains, buses, flights, food and sightseeing, and show you where to book each part for less.</p>
+      <div class="dots" id="dots"><i class="on"></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="cap" id="cap">🏖️ Sun, sand &amp; sea</div>
+  </div>
+
+  <div class="search">
+    <div class="sgrid">
+      <div class="fld"><label>From</label><div class="v">Kolkata</div><div class="s">Howrah (HWH) · CCU airport · Esplanade bus</div></div>
+      <div class="fld"><label>To</label><div class="v">Goa</div><div class="s">Region · North &amp; South Goa</div></div>
+      <div class="fld"><label>Days</label><div class="stepper"><i>−</i><b>10</b><i>+</i></div></div>
+      <div class="fld"><label>Month</label><div class="v">Dec 2026</div><div class="s">We find the cheapest dates</div></div>
+      <div class="fld"><label>Hotel type</label><div class="v">Any type</div><div class="s">3★+ and 5★ always shown</div></div>
+      <div class="fld focus"><label>Travellers</label><div class="v">2 adults · 2 children</div><div class="s">1 room (suggested)</div>
+        <div class="popover">
+          <div class="row"><div><b>Adults</b><small>Age 8+ · full price</small></div><div class="stepper"><i>−</i><b>2</b><i>+</i></div></div>
+          <div class="row" style="display:block">
+            <div style="display:flex;justify-content:space-between;align-items:center"><div><b>Children</b><small>Under 8</small></div><div class="stepper"><i>−</i><b>2</b><i>+</i></div></div>
+            <div class="ages"><span>Child 1: <b>3 yrs</b> · free</span><span>Child 2: <b>6 yrs</b> · half</span></div>
+          </div>
+          <div class="row"><div><b>Rooms</b><small>Suggested from head count</small></div><div class="stepper"><i>−</i><b>1</b><i>+</i></div></div>
+          <div class="rule">Estimated cost rule: <b>under 4 free · 4–7 half · 8+ full</b>. If a train, airline or hotel has its own child price, we use theirs.</div>
+        </div>
+      </div>
+    </div>
+    <div class="srow2">
+      <span class="small muted">Hotel type:</span>
+      <div class="chips">
+        <span class="chip">Budget</span><span class="chip on">3-star</span><span class="chip on">4-star</span><span class="chip on">5-star</span>
+        <span class="chip">Homestay / Villa</span><span class="chip">Resort</span><span class="chip">Hostel</span>
+      </div>
+      <a class="more" id="moreBtn">▾ More preferences</a>
+    </div>
+    <div class="morep" id="morep" style="display:none">
+      <div class="fld"><label>Stay near</label><div class="v">Calangute Beach</div></div>
+      <div class="fld"><label>Total budget</label><div class="v">₹60,000</div></div>
+      <div class="fld"><label>Travel mode</label><div class="v">Any · AC · Sleeper</div></div>
+      <div class="fld"><label>Food</label><div class="v">Veg + Non-veg</div></div>
+      <div class="fld"><label>With</label><div class="v">Kids</div></div>
+      <div class="fld" style="grid-column:span 3"><label>Interests</label>
+        <div class="chips" style="margin-top:4px"><span class="chip on">Beaches</span><span class="chip">Temples</span><span class="chip">Adventure</span><span class="chip">Nightlife</span><span class="chip on">Shopping</span><span class="chip on">Nature</span></div></div>
+    </div>
+    <button class="btn acc go" data-goto="results">Find my cheapest trip →</button>
+  </div>
+
+  <div class="sect">
+    <h2>Popular destinations</h2>
+    <p class="sub">Typical total for 2 adults over 5 days, at the cheapest time of year</p>
+    <div class="dests">
+      <div class="dest"><div class="ph" style="height:140px;background:linear-gradient(0deg,rgba(0,0,0,.45),transparent 55%),url('https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=500&q=70') center/cover,#0ea5e9">Goa</div><div class="bd"><b>from ₹21,400</b><small>Cheapest: Jun–Sep · Best: Nov–Feb</small></div></div>
+      <div class="dest"><div class="ph" style="height:140px;background:linear-gradient(0deg,rgba(0,0,0,.45),transparent 55%),url('https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=500&q=70') center/cover,#64748b">Manali</div><div class="bd"><b>from ₹18,900</b><small>Cheapest: Jan–Feb · Best: Mar–Jun</small></div></div>
+      <div class="dest"><div class="ph" style="height:140px;background:linear-gradient(0deg,rgba(0,0,0,.45),transparent 55%),url('https://images.unsplash.com/photo-1477587458883-47145ed94245?w=500&q=70') center/cover,#f97316">Jaipur</div><div class="bd"><b>from ₹14,200</b><small>Cheapest: May–Jul · Best: Oct–Mar</small></div></div>
+      <div class="dest"><div class="ph" style="height:140px;background:linear-gradient(0deg,rgba(0,0,0,.45),transparent 55%),url('https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=500&q=70') center/cover,#16a34a">Kerala</div><div class="bd"><b>from ₹24,600</b><small>Cheapest: Jun–Aug · Best: Sep–Mar</small></div></div>
+      <div class="dest"><div class="ph" style="height:140px;background:linear-gradient(0deg,rgba(0,0,0,.45),transparent 55%),url('https://images.unsplash.com/photo-1622308644420-b20142dc993c?w=500&q=70') center/cover,#334155">Darjeeling</div><div class="bd"><b>from ₹12,800</b><small>Cheapest: Jul–Aug · Best: Mar–May</small></div></div>
+    </div>
+  </div>
+
+  <div class="sect">
+    <h2>Seasonal deals</h2>
+    <p class="sub">Months when a destination is much cheaper than usual</p>
+    <div class="deals">
+      <div class="deal"><b>Goa in mid-January</b><div class="muted small">About 25% cheaper than late December, and the weather is still sunny</div></div>
+      <div class="deal"><b>Kerala backwaters in September</b><div class="muted small">Post-monsoon greenery · houseboats 30% off peak</div></div>
+      <div class="deal"><b>Darjeeling in early March</b><div class="muted small">Clear views of Kanchenjunga · before the April rush</div></div>
+    </div>
+  </div>
+
+  <div class="scenic">
+    <h2>Plan smart. Travel more.</h2>
+    <p class="sub">From Goa's beaches to the Himalayan hills: the same trip for less.</p>
+    <div class="trust" style="max-width:1180px;margin:0 auto">
+      <div><b>Every price shows its source</b><span>…and a booking link with your dates and travellers already filled in</span></div>
+      <div><b>Cheapest dates, found for you</b><span>We check every possible start date in your month</span></div>
+      <div><b>Three ways to travel</b><span>Offbeat, Budget and Comfort plans, side by side</span></div>
+      <div><b>You book with the partner</b><span>We compare and plan. We never take card payments.</span></div>
+    </div>
+  </div>
+
+  <div class="foot" style="margin-top:0"><b>TripSaver</b> is a comparison and planning service. Bookings are completed on partner sites. Prices and availability can change, so always confirm on the partner site. · Affiliate disclosure · Privacy policy (DPDP Act) · Terms</div>
+</section>
+
+<!-- ======================= RESULTS ======================= -->
+<section class="screen" id="s-results">
+  <header class="hdr">
+    <div class="logo" data-goto="home" style="cursor:pointer"><div class="mark">₹</div>Trip<span>Saver</span></div>
+    <div class="sp"></div>
+    <button class="btn sm ghost">Save trip</button>
+    <button class="btn sm ghost">Share</button>
+    <button class="btn sm">Export PDF</button>
+  </header>
+
+  <div class="sumbar">
+    <div>
+      <div class="trip">Kolkata → Goa · 10 days</div>
+      <div class="meta">2 adults + 2 children (3 y, 6 y) · 1 room · Dec 2026</div>
+    </div>
+    <span class="best" id="selDates">★ Cheapest dates: 1–10 Dec</span>
+    <button class="pill" data-goto="home">✎ Change search</button>
+    <div class="sp"></div>
+    <div class="tot"><b id="selTotal">₹36,900</b><small id="selLabel">Budget plan · approx. total for group</small></div>
+  </div>
+
+  <div class="rbanner">
+    <div><h2>Your Goa trip</h2><p>North &amp; South Goa · beaches, forts, spice farms and Western Ghats waterfalls</p></div>
+    <div class="wx">☀️ Dec: 32° / 21°<br><span style="opacity:.8">Dry and sunny · best season</span></div>
+  </div>
+
+  <div class="wrap">
+
+    <div class="plans">
+      <div class="plan" data-plan="offbeat" data-total="₹41,200" data-pp="≈ ₹10,300 / person">
+        <div class="pimg" style="background-image:url('https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=600&q=70')"></div>
+        <h3><span class="ic" style="background:#dcfce7">🌿</span>Offbeat</h3>
+        <div class="desc">Divar Island, Netravali &amp; Cabo de Rama · homestays · shared jeeps &amp; local buses</div>
+        <div class="price">₹41,200</div><div class="pp">for 4 travellers · ≈ ₹10,300 / person</div>
+        <div class="bar"><span class="c-tr" style="width:32%"></span><span class="c-ho" style="width:34%"></span><span class="c-lo" style="width:13%"></span><span class="c-fo" style="width:12%"></span><span class="c-si" style="width:5%"></span><span class="c-bu" style="width:4%"></span></div>
+      </div>
+      <div class="plan on" data-plan="budget" data-total="₹36,900" data-pp="≈ ₹9,225 / person">
+        <span class="tag">CHEAPEST</span>
+        <div class="pimg" style="background-image:url('https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600&q=70')"></div>
+        <h3><span class="ic" style="background:#ccfbf1">💰</span>Budget</h3>
+        <div class="desc">3A train both ways · well-rated budget hotel (3.5★+) · Kadamba buses &amp; scooter rental</div>
+        <div class="price">₹36,900</div><div class="pp">for 4 travellers · ≈ ₹9,225 / person</div>
+        <div class="bar"><span class="c-tr" style="width:36%"></span><span class="c-ho" style="width:31%"></span><span class="c-lo" style="width:11%"></span><span class="c-fo" style="width:14%"></span><span class="c-si" style="width:5%"></span><span class="c-bu" style="width:3%"></span></div>
+        <div class="legend"><span><i class="c-tr"></i>Transport</span><span><i class="c-ho"></i>Hotels</span><span><i class="c-lo"></i>Local</span><span><i class="c-fo"></i>Food</span><span><i class="c-si"></i>Sights</span><span><i class="c-bu"></i>Buffer</span></div>
+      </div>
+      <div class="plan" data-plan="comfort" data-total="₹78,500" data-pp="≈ ₹19,625 / person">
+        <div class="pimg" style="background-image:url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=70')"></div>
+        <h3><span class="ic" style="background:#fef3c7">🛎️</span>Comfort</h3>
+        <div class="desc">Direct flights · 3★+ beach hotel · cabs for every leg · well-rated restaurants</div>
+        <div class="price">₹78,500</div><div class="pp">for 4 travellers · ≈ ₹19,625 / person</div>
+        <div class="bar"><span class="c-tr" style="width:30%"></span><span class="c-ho" style="width:38%"></span><span class="c-lo" style="width:14%"></span><span class="c-fo" style="width:12%"></span><span class="c-si" style="width:4%"></span><span class="c-bu" style="width:2%"></span></div>
+        <div class="alt">With 5★ hotels: <b>₹1,42,300</b> (≈ ₹35,575 / person)</div>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-tab="dates"><span class="n">1</span>Best dates</button>
+      <button class="tab" data-tab="plan"><span class="n">2</span>Day-by-day</button>
+      <button class="tab" data-tab="getting"><span class="n">3</span>Getting there</button>
+      <button class="tab" data-tab="hotels"><span class="n">4</span>Hotels</button>
+      <button class="tab" data-tab="local"><span class="n">5</span>Local transport</button>
+      <button class="tab" data-tab="sights"><span class="n">6</span>Sightseeing</button>
+      <button class="tab" data-tab="food"><span class="n">7</span>Food</button>
+      <button class="tab" data-tab="shop"><span class="n">8</span>Shopping</button>
+      <button class="tab" data-tab="dos"><span class="n">9</span>Do's &amp; don'ts</button>
+      <button class="tab" data-tab="cost"><span class="n">10</span>Total &amp; book</button>
+    </div>
+
+    <!-- 1. BEST DATES -->
+    <div class="pane on" id="p-dates">
+      <div class="g2">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
+            <h4>December 2026: total trip cost by start date</h4>
+            <span class="small muted">Budget plan · 4 travellers · click a date</span>
+          </div>
+          <div class="cal" id="cal"></div>
+          <div class="scale">Cheapest <i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="b4"></i><i class="b5"></i> Most expensive · <span style="color:#cbd5e1">■</span> trip would run past 31 Dec</div>
+        </div>
+        <div class="stack">
+          <div class="card">
+            <h4>3 cheapest date windows</h4>
+            <div class="win"><div class="rk">1</div><div><div class="dt">1–10 Dec</div><div class="sv">Save ₹27,000 vs 22–31 Dec</div></div><div class="pr">₹36,900</div></div>
+            <div class="win"><div class="rk">2</div><div><div class="dt">7–16 Dec</div><div class="sv">Save ₹26,700</div></div><div class="pr">₹37,200</div></div>
+            <div class="win"><div class="rk">3</div><div><div class="dt">13–22 Dec</div><div class="sv">Save ₹24,300</div></div><div class="pr">₹39,600</div></div>
+          </div>
+          <div class="card">
+            <h4>Why some dates cost more</h4>
+            <ul class="why small" style="padding-left:18px;margin:0">
+              <li><span class="badge b-bad">Peak</span> <b>Christmas–New Year (20–31 Dec):</b> hotels cost 2–3× more and trains are waitlisted</li>
+              <li><span class="badge b-warn">Holiday</span> <b>Goa Liberation Day, 19 Dec:</b> a state holiday that makes a long weekend</li>
+              <li><span class="badge b-warn">Event</span> <b>Feast of St Francis Xavier, 3 Dec:</b> Old Goa is crowded and nearby rooms cost more</li>
+              <li><span class="badge">Weekends</span> Fri–Sat nights cost about 15% more</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="g3" style="margin-top:14px">
+        <div class="card">
+          <h4>Is another month cheaper?</h4>
+          <div class="mbars" id="mbars"></div>
+          <div class="tip">💡 <b>Mid-January</b> saves about 25% compared with December, and the weather is still sunny (31°/21°).</div>
+        </div>
+        <div class="card">
+          <h4>When to book</h4>
+          <div class="li"><div class="ic">🚆</div><div><div class="t">Train booking opens 60 days ahead</div><div class="m">For 1 Dec, booking opens on <b>2 Oct, 08:00</b> (IRCTC advance reservation period)</div></div></div>
+          <div class="li"><div class="ic">⚡</div><div><div class="t">Tatkal: the day before travel</div><div class="m">AC classes at 10:00, sleeper at 11:00 · higher fare</div></div></div>
+          <div class="li"><div class="ic">✈️</div><div><div class="t">Flights: book 4–8 weeks ahead</div><div class="m">Fares on this route rise sharply in the last 2 weeks</div></div></div>
+          <div class="li"><div class="ic">🏨</div><div><div class="t">Goa hotels in December: book 6–8 weeks ahead</div><div class="m">Pick a free-cancellation rate</div></div></div>
+        </div>
+        <div class="card">
+          <h4>🔔 Price alert</h4>
+          <p class="small muted" style="margin-top:0">We'll email you when this trip drops below your target.</p>
+          <div class="alert"><span>Tell me when it's below</span><input value="₹34,000"><button class="btn sm">Set alert</button></div>
+          <p class="small muted">Prices checked 6 min ago. Today's prices for these dates are <b style="color:var(--good)">lower than usual</b>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. DAY BY DAY -->
+    <div class="pane" id="p-plan">
+      <div class="g2">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+            <h4 style="margin:0">Budget plan · 1–10 Dec · 10 days</h4>
+            <div style="display:flex;gap:6px"><button class="btn sm ghost">↻ Re-optimise</button><button class="btn sm ghost">📅 Add to Google Calendar</button><button class="btn sm ghost">WhatsApp</button></div>
+          </div>
+          <div class="tip">🚆 This plan takes the train to stay cheap: 2 of the 10 days are spent travelling each way. <b>Fly instead for +₹8,400</b> and get 2 more days in Goa. <a>Switch →</a></div>
+          <div id="days"></div>
+        </div>
+        <div class="stack">
+          <div class="card"><h4>Map · Day 4</h4>
+            <div class="map">
+              <div class="pin" style="left:22%;top:20%"><span>1</span></div><div class="lbl" style="left:22%;top:32%">Mapusa market</div>
+              <div class="pin" style="left:15%;top:52%"><span>2</span></div><div class="lbl" style="left:9%;top:64%">Chapora Fort</div>
+              <div class="pin" style="left:42%;top:60%;background:var(--accent)"><span>3</span></div><div class="lbl" style="left:38%;top:72%">Vagator sunset</div>
+              <div class="pin" style="left:62%;top:38%;background:#334155"><span>H</span></div><div class="lbl" style="left:58%;top:50%">Hotel, Calangute</div>
+            </div>
+          </div>
+          <div class="card"><h4>How this plan was checked</h4>
+            <div class="small">✅ 10 separate days, matching the trip length<br>✅ No day has more than 9 active hours (busiest: Day 5, 8.5 h)<br>✅ Nothing is planned on a day it's closed (Goa State Museum is closed Mondays, so it isn't on Day 7)<br>✅ Arrival and departure days are kept light<br>✅ Free day added because the trip is longer than 7 days</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. GETTING THERE -->
+    <div class="pane" id="p-getting">
+      <div class="sumcards">
+        <div class="sc" style="border-color:var(--good)"><div class="k" style="color:var(--good)">Cheapest</div><div class="v">Train · 3A · ₹6,625</div><div class="small muted">Amaravati Express · ~38 h · 4 travellers</div></div>
+        <div class="sc"><div class="k" style="color:#6366f1">Fastest</div><div class="v">Flight · ₹19,800</div><div class="small muted">CCU → GOX non-stop · 2 h 45 m · 4 travellers</div></div>
+        <div class="sc"><div class="k" style="color:var(--warn)">Best overnight option</div><div class="v">Train · 2A · ₹9,725</div><div class="small muted">More legroom, fewer people per bay</div></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div class="mtabs"><button class="on">🚆 Train</button><button>🚌 Bus</button><button>✈️ Flight</button><button>🔀 Combined routes</button></div>
+          <div class="mtabs"><button class="on">Onward · Tue 1 Dec</button><button>Return · Wed 9 Dec</button></div>
+        </div>
+        <div class="tblwrap"><table>
+          <tr><th>Train</th><th>Depart → Arrive</th><th>Duration</th><th>Class · fare / adult</th><th>Availability</th><th>Group fare</th><th></th></tr>
+          <tr><td><b>18047 Amaravati Exp</b><div class="small muted">Howrah → Madgaon</div></td><td>Tue 11:55 → Wed 22:10</td><td>34 h 15 m</td>
+            <td>SL ₹1,005 · <b>3A ₹2,650</b> · 2A ₹3,890</td><td><span class="avail" style="color:var(--good)">AVL 42</span><br><span class="conf"><i style="width:95%"></i></span> <span class="small">95% chance of confirmation</span></td>
+            <td><b>₹6,625</b><span class="est">est.</span><div class="src">2 adults ₹5,300 + child (6 y) ½ ₹1,325 + child (3 y) free</div></td><td><button class="btn sm">Book on IRCTC</button></td></tr>
+          <tr><td><b>12779 Vasco Exp</b><div class="small muted">via Hyderabad · change at Secunderabad</div></td><td>Tue 07:40 → Thu 06:15</td><td>46 h 35 m</td>
+            <td>SL ₹1,120 · 3A ₹2,940</td><td><span class="avail" style="color:var(--warn)">RAC 12</span><br><span class="conf"><i style="width:70%;background:var(--accent)"></i></span> <span class="small">70% chance of confirmation</span></td>
+            <td><b>₹7,350</b><span class="est">est.</span></td><td><button class="btn sm ghost">Book on IRCTC</button></td></tr>
+          <tr><td><b>22897 Superfast</b><div class="small muted">Shalimar → Vasco da Gama</div></td><td>Tue 21:30 → Thu 07:50</td><td>34 h 20 m</td>
+            <td>3A ₹2,780 · 2A ₹4,050</td><td><span class="avail" style="color:var(--bad)">WL 38</span><br><span class="conf"><i style="width:25%;background:var(--bad)"></i></span> <span class="small">25% chance of confirmation</span></td>
+            <td><b>₹6,950</b><span class="est">est.</span></td><td><button class="btn sm ghost">Book on IRCTC</button></td></tr>
+        </table></div>
+        <div class="tip">🔀 <b>Combined route:</b> train to Hyderabad, then an overnight AC sleeper bus to Panjim. 31 h · ₹8,900 for the group. · 🚌 There is <b>no direct bus</b> from Kolkata to Goa (over 2,000 km).</div>
+        <p class="small muted" style="margin-bottom:0">Total transport for 4 travellers, both ways: <b>₹13,250</b> · Train timings and fares are sample data · Checked 6 min ago · The child fare is our estimate; IRCTC's own child rules apply when you book.</p>
+      </div>
+    </div>
+
+    <!-- 4. HOTELS -->
+    <div class="pane" id="p-hotels">
+      <div class="card" style="margin-bottom:14px;border-left:4px solid var(--brand)">
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <div><span class="badge b-brand">BUDGET PLAN STAY</span><div style="font-weight:700;font-size:15px;margin-top:4px">Casa Calangute Inn · 3.9 ★ guest rating · 650 m from Calangute Beach</div><div class="small muted">7 nights (2–9 Dec) · 1 family room · breakfast included</div></div>
+          <div style="margin-left:auto;text-align:right"><div style="font-weight:800;font-size:20px">₹11,550</div><div class="src">cheapest on <b>Agoda</b> · incl. taxes</div></div>
+          <button class="btn">Book on Agoda</button>
+        </div>
+      </div>
+      <div class="filters">
+        <select><option>Sort: Cheapest</option><option>Nearest to landmark</option><option>Best value</option><option>Highest rated</option></select>
+        <span class="chip on">Guest rating 3.5+</span><span class="chip">Free cancellation</span><span class="chip on">Breakfast included</span><span class="chip">Couple-friendly</span><span class="chip">Pool</span><span class="chip">Parking</span><span class="chip">≤ 2 km from Calangute</span>
+      </div>
+      <div class="g2e">
+        <div class="card hcol"><h4>3-star and above <span class="badge">24 hotels</span></h4><div id="h3"></div></div>
+        <div class="card hcol"><h4>5-star <span class="badge">9 hotels</span></h4><div id="h5"></div></div>
+      </div>
+    </div>
+
+    <!-- 5. LOCAL -->
+    <div class="pane" id="p-local">
+      <div class="card">
+        <h4>Getting around Goa: every journey in your plan</h4>
+        <div class="tblwrap"><table>
+          <tr><th>Journey</th><th>Option</th><th>Fare (group)</th><th>Time</th><th>Where to book</th></tr>
+          <tr><td rowspan="3"><b>Madgaon station → hotel</b><div class="small muted">Day 2 · 38 km</div></td><td>Prepaid taxi <span class="badge b-brand">Most convenient</span></td><td>₹1,800–2,100</td><td>60 min</td><td>Prepaid counter, Platform 1 exit</td></tr>
+          <tr><td>GoaMiles app cab</td><td>₹1,650<span class="est">approx.</span></td><td>60 min</td><td><button class="btn sm ghost">Open app</button></td></tr>
+          <tr><td>Kadamba bus via Panjim <span class="badge b-good">Cheapest</span></td><td>₹190</td><td>2 h 20 m</td><td>Madgaon KTC stand · every 15 min</td></tr>
+          <tr><td rowspan="2"><b>Hotel → North Goa sights</b><div class="small muted">Days 3–5</div></td><td>Scooter rental (2) <span class="badge b-good">Cheapest</span></td><td>₹400 / day each</td><td>—</td><td>Calangute rental shops · licence needed</td></tr>
+          <tr><td>Local taxi for the day</td><td>₹2,500–3,000 / day</td><td>8 h</td><td>Goa Tourism taxi counter</td></tr>
+          <tr><td><b>Ribandar → Divar Island</b><div class="small muted">Day 5</div></td><td>Government ferry <span class="badge b-good">Free</span></td><td>₹0 (walk-on)</td><td>15 min</td><td>Ribandar jetty · every 15–30 min</td></tr>
+        </table></div>
+        <div class="tip">⚠️ Uber and Ola don't operate in Goa. Use GoaMiles, a prepaid taxi or a local taxi, and agree the fare before you get into a taxi.</div>
+      </div>
+    </div>
+
+    <!-- 6. SIGHTS -->
+    <div class="pane" id="p-sights">
+      <div class="filters"><span class="chip on">All</span><span class="chip">Must-see</span><span class="chip">Nature</span><span class="chip">Religious</span><span class="chip">Adventure</span><span class="chip">Museums</span><span class="chip">Nightlife</span><span class="chip">Kid-friendly</span></div>
+      <div class="g2e">
+        <div class="card"><h4>Within 10 km of your hotel</h4>
+          <div class="li"><div class="ic">🏰</div><div><div class="t">Fort Aguada</div><div class="m">Open 09:30–18:00 · daily · ~1.5 h · best in late afternoon · 6 km</div></div><div class="r"><b>Free</b><div class="src">4.4 ★ (52k)</div></div></div>
+          <div class="li"><div class="ic">🏖️</div><div><div class="t">Baga &amp; Calangute beaches</div><div class="m">Open all day · ~3 h · avoid red-flag zones · 1 km</div></div><div class="r"><b>Free</b><div class="src">4.2 ★</div></div></div>
+          <div class="li"><div class="ic">🌅</div><div><div class="t">Chapora Fort</div><div class="m">Open all day · ~1 h · best at sunset · 9 km</div></div><div class="r"><b>Free</b><div class="src">4.3 ★</div></div></div>
+        </div>
+        <div class="card"><h4>Day trips</h4>
+          <div class="li"><div class="ic">⛪</div><div><div class="t">Basilica of Bom Jesus, Old Goa</div><div class="m">Open 09:00–18:30 · Sun from 10:30 · cover your shoulders · 24 km</div></div><div class="r"><b>Free</b><div class="src">4.6 ★</div></div></div>
+          <div class="li"><div class="ic">💧</div><div><div class="t">Dudhsagar Falls jeep safari</div><div class="m">Open 08:00–15:00 · ~5 h · from Collem · 70 km</div></div><div class="r"><b>₹600 / seat</b><div class="src">Govt jeep counter</div></div></div>
+          <div class="li"><div class="ic">🛶</div><div><div class="t">Mandovi sunset cruise</div><div class="m">17:30 and 18:45 · 1 h · kid-friendly</div></div><div class="r"><b>₹500</b><div class="src">cheapest on <b>Klook</b></div><button class="btn sm" style="margin-top:4px">Book</button></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. FOOD -->
+    <div class="pane" id="p-food">
+      <div class="g2e">
+        <div class="card"><h4>Goan dishes to try</h4>
+          <div class="li"><div class="ic">🍛</div><div><div class="t">Fish curry rice <span class="badge b-bad">Non-veg</span></div><div class="m">The everyday Goan meal: coconut and kokum curry with rice</div></div><div class="r">₹150–250</div></div>
+          <div class="li"><div class="ic">🍲</div><div><div class="t">Chicken xacuti <span class="badge b-bad">Non-veg</span></div><div class="m">Roasted coconut and poppy-seed gravy</div></div><div class="r">₹250–400</div></div>
+          <div class="li"><div class="ic">🥥</div><div><div class="t">Khatkhatem <span class="badge b-good">Veg</span></div><div class="m">Mixed-vegetable stew, a Hindu festive dish</div></div><div class="r">₹120–200</div></div>
+          <div class="li"><div class="ic">🍰</div><div><div class="t">Bebinca <span class="badge b-good">Veg</span></div><div class="m">Layered coconut dessert, popular at Christmas</div></div><div class="r">₹80 / slice</div></div>
+        </div>
+        <div class="card"><h4>Where to eat near your hotel</h4>
+          <div class="li"><div class="ic">🍽️</div><div><div class="t">Fish-thali place (sample)</div><div class="m">Street food · 0.4 km · 11:30–15:30, 19:00–22:30</div></div><div class="r"><b>₹400 for two</b><div class="src">4.5 ★ (2.1k)</div></div></div>
+          <div class="li"><div class="ic">🍽️</div><div><div class="t">Udupi veg restaurant (sample)</div><div class="m">Pure veg · 0.8 km · 07:00–22:00</div></div><div class="r"><b>₹350 for two</b><div class="src">4.2 ★ (980)</div></div></div>
+          <div class="li"><div class="ic">🏨</div><div><div class="t">Your hotel's restaurant</div><div class="m">Breakfast included · dinner ₹600–900 for two</div></div><div class="r"><span class="badge b-good">In-house</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. SHOPPING -->
+    <div class="pane" id="p-shop">
+      <div class="g2e">
+        <div class="card"><h4>Markets</h4>
+          <div class="li"><div class="ic">🧺</div><div><div class="t">Mapusa Friday Market</div><div class="m">Fridays 08:00–18:00 · spices, cashews, local sausages · 7 km</div><div style="margin-top:4px"><span class="badge b-warn">Bargain: start at 50–60% of the asking price</span></div></div></div>
+          <div class="li"><div class="ic">🎪</div><div><div class="t">Anjuna Flea Market</div><div class="m">Wednesdays 08:00–sunset · clothes, jewellery, handicrafts · 11 km</div><div style="margin-top:4px"><span class="badge b-warn">Bargain hard: start at 40–50%</span></div></div></div>
+          <div class="li"><div class="ic">🌙</div><div><div class="t">Arpora Saturday Night Market</div><div class="m">Saturdays 18:00–midnight · food stalls, live music · 5 km</div></div></div>
+        </div>
+        <div class="card"><h4>Fair-price shops and what to buy</h4>
+          <div class="li"><div class="ic">🏛️</div><div><div class="t">Government handicrafts emporium, Panjim</div><div class="m">Closed Sundays · azulejo tiles, shell craft</div><div style="margin-top:4px"><span class="badge b-good">Government emporium · fixed fair price</span></div></div></div>
+          <div class="li"><div class="ic">🥜</div><div><div class="t">Cashews and feni</div><div class="m">Buy sealed packs from cooperative stores · ₹800–1,100 / kg cashews</div></div></div>
+          <div class="warnbox" style="margin-top:8px">⚠️ <b>Tourist trap:</b> "saffron" and "pure silver" sold at beach shacks are often fake.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. DOS -->
+    <div class="pane" id="p-dos">
+      <div class="dd">
+        <div class="card"><h4 style="color:var(--good)">✅ Do</h4><ul class="small">
+          <li>Cover your shoulders and knees in churches and temples</li>
+          <li>Wear a helmet and carry your licence when you ride a rented scooter</li>
+          <li>Swim only between the lifeguard flags</li>
+          <li>Carry cash for markets and ferries. North Goa has plenty of ATMs; Netravali has few.</li>
+          <li>Pack sunscreen, a hat and light cotton clothes (Dec: 32° / 21°)</li>
+        </ul></div>
+        <div class="card"><h4 style="color:var(--bad)">⛔ Don't</h4><ul class="small">
+          <li>Drink alcohol or cook on beaches (you can be fined)</li>
+          <li>Leave plastic on the beach; single-use plastic is restricted</li>
+          <li>Accept drug offers; penalties under the NDPS Act are severe</li>
+          <li>Photograph people or naval areas without permission</li>
+          <li>Rent a scooter without checking it for existing damage first</li>
+        </ul></div>
+        <div class="card"><h4>🚨 Emergency</h4><div class="small">All emergencies <b>112</b> · Ambulance <b>108</b> · Nearest hospital: North Goa District Hospital, Mapusa (7 km) · Calangute police station (1.2 km)</div></div>
+        <div class="card"><h4>📶 Network &amp; permits</h4><div class="small">Good 4G/5G in North and South Goa · weak signal at Netravali and Cabo de Rama · no permits needed · <span class="muted">Last checked 2 Nov 2026</span></div></div>
+      </div>
+    </div>
+
+    <!-- 10. COST -->
+    <div class="pane" id="p-cost">
+      <div class="g2">
+        <div class="card">
+          <h4>Total trip cost · 4 travellers · 1–10 Dec</h4>
+          <div class="tblwrap"><table class="ctable">
+            <tr><th></th><th class="num">Offbeat</th><th class="num selcol">Budget</th><th class="num">Comfort 3★+</th><th class="num">Comfort 5★</th></tr>
+            <tr><td>Transport there and back</td><td class="num">₹13,250</td><td class="num selcol">₹13,250</td><td class="num">₹23,400</td><td class="num">₹23,400</td></tr>
+            <tr><td>Hotels (all nights)</td><td class="num">₹14,000</td><td class="num selcol">₹11,550</td><td class="num">₹30,100</td><td class="num">₹91,500</td></tr>
+            <tr><td>Local transport</td><td class="num">₹5,400</td><td class="num selcol">₹4,200</td><td class="num">₹11,200</td><td class="num">₹11,200</td></tr>
+            <tr><td>Sights &amp; activities</td><td class="num">₹2,100</td><td class="num selcol">₹1,600</td><td class="num">₹3,600</td><td class="num">₹3,600</td></tr>
+            <tr><td>Food <span class="est">est.</span></td><td class="num">₹4,900</td><td class="num selcol">₹5,300</td><td class="num">₹8,400</td><td class="num">₹10,800</td></tr>
+            <tr><td>Shopping &amp; buffer</td><td class="num">₹1,550</td><td class="num selcol">₹1,000</td><td class="num">₹1,800</td><td class="num">₹1,800</td></tr>
+            <tr class="tot"><td>Total for the group</td><td class="num">₹41,200</td><td class="num selcol">₹36,900</td><td class="num">₹78,500</td><td class="num">₹1,42,300</td></tr>
+            <tr><td class="muted">Per person (÷4)</td><td class="num muted">₹10,300</td><td class="num selcol muted">₹9,225</td><td class="num muted">₹19,625</td><td class="num muted">₹35,575</td></tr>
+          </table></div>
+          <div class="rule" style="margin-top:12px">Approx. total for <b>2 adults + 2 children</b>: adults pay full price, the 6-year-old half, the 3-year-old travels free. The airline's own child fares are used for flights. The exact price is confirmed on the booking site.</div>
+        </div>
+        <div class="card">
+          <h4>Book everything · Budget plan</h4>
+          <div class="small muted"><span id="doneN">0</span> of 6 booked</div>
+          <div class="progress"><i id="prog"></i></div>
+          <div id="checks"></div>
+        </div>
+      </div>
+      <div class="disclaimer">TripSaver is a comparison and planning service. You complete each booking on the partner's site, and we may earn an affiliate commission. Prices and availability can change, so always check the final price on the partner site. Every price above shows its source and when it was checked.</div>
+    </div>
+
+  </div>
+</section>
+</div>
+
+<div class="sample">MOCKUP · SAMPLE DATA</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const inr=n=>'₹'+n.toLocaleString('en-IN');
+
+/* screens */
+function show(id){ $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+id));
+  $$('.review [data-screen]').forEach(b=>b.classList.toggle('on',b.dataset.screen===id)); window.scrollTo(0,0); }
+$$('[data-screen]').forEach(b=>b.onclick=()=>show(b.dataset.screen));
+$$('[data-goto]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.goto)));
+$('#vDesk').onclick=()=>{document.body.classList.remove('mobile');$('#vDesk').classList.add('on');$('#vMob').classList.remove('on')};
+$('#vMob').onclick=()=>{document.body.classList.add('mobile');$('#vMob').classList.add('on');$('#vDesk').classList.remove('on')};
+$('#moreBtn').onclick=()=>{const m=$('#morep');const open=m.style.display==='none';m.style.display=open?'grid':'none';$('#moreBtn').textContent=(open?'▴':'▾')+' More preferences'};
+
+/* hero slideshow: beaches and mountains */
+(()=>{const bgs=$$('#hero .bg'),dots=$$('#dots i'),caps=['🏖️ Sun, sand & sea','🏔️ Himalayan trails','🌴 Goa coastline','❄️ Snow peaks of Himachal'];let i=0;
+ setInterval(()=>{bgs[i].classList.remove('on');dots[i].classList.remove('on');i=(i+1)%bgs.length;bgs[i].classList.add('on');dots[i].classList.add('on');$('#cap').textContent=caps[i];},5000);})();
+
+/* tabs */
+$$('.tab').forEach(t=>t.onclick=()=>{ $$('.tab').forEach(x=>x.classList.toggle('on',x===t)); $$('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+t.dataset.tab)); });
+
+/* plan cards */
+$$('.plan').forEach(p=>p.onclick=()=>{ $$('.plan').forEach(x=>x.classList.toggle('on',x===p));
+  $('#selTotal').textContent=p.dataset.total;
+  $('#selLabel').textContent=p.querySelector('h3').textContent.trim()+' plan · approx. total for group'; });
+
+/* price calendar – Dec 2026 starts Tuesday */
+const cost=[36900,37400,38800,40200,39100,37800,37200,37600,38900,41000,42300,40800,39600,41800,43900,46200,48900,52400,55800,58600,61200,63900];
+const sorted=[...cost].sort((a,b)=>a-b);
+const band=v=>{const r=sorted.indexOf(v)/(sorted.length-1);return r<.2?1:r<.4?2:r<.6?3:r<.8?4:5};
+const cal=$('#cal'); ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d=>cal.insertAdjacentHTML('beforeend',`<div class="dow">${d}</div>`));
+cal.insertAdjacentHTML('beforeend','<div></div>');
+for(let d=1;d<=31;d++){
+  if(d<=22){ const c=cost[d-1];
+    cal.insertAdjacentHTML('beforeend',`<div class="d b${band(c)} ${d===1?'sel':''}" data-d="${d}"><div class="dn">${d}</div><div class="dp">${(c/1000).toFixed(1)}k</div></div>`);
+  } else cal.insertAdjacentHTML('beforeend',`<div class="d na"><div class="dn">${d}</div><div class="dp">—</div></div>`);
+}
+function markWin(s){ $$('.cal .d').forEach(x=>{const d=+x.dataset.d||+x.querySelector('.dn').textContent; x.classList.toggle('inwin',d>=s&&d<=s+9); x.classList.toggle('sel',d===s&&!x.classList.contains('na'))}); }
+markWin(1);
+$$('.cal .d[data-d]').forEach(x=>x.onclick=()=>{const s=+x.dataset.d; markWin(s);
+  $('#selDates').textContent=(s===1?'★ Cheapest dates: ':'Selected: ')+s+'–'+(s+9)+' Dec';
+  if($('.plan.on').dataset.plan==='budget') $('#selTotal').textContent=inr(cost[s-1]); });
+
+/* month comparison */
+const months=[['Oct',72,'#ecfccb','normal'],['Nov',80,'#fef9c3','normal'],['Dec',100,'#fee2e2','peak'],['Jan',75,'#ecfccb','normal'],['Feb',68,'#dcfce7','cheap'],['Mar',62,'#dcfce7','cheap']];
+$('#mbars').innerHTML=months.map(([m,h,c,l])=>`<div class="${m==='Dec'?'cur':''}"><small>${l}</small><span style="height:${h}%;background:${c};border:1px solid #cbd5e1"></span>${m}</div>`).join('');
+
+/* days */
+const days=[
+ ['Day 1','Tue 1 Dec','Travel','₹6,625 + meals',[['travel','All day','Board 18047 Amaravati Express','Howrah 11:55 · 3A · 2 nights on the train'],['travel','Evening','Dinner on board','Order from IRCTC e-catering · ₹600'],['travel','Night','Night on the train','']]],
+ ['Day 2','Wed 2 Dec','Arrive · light','₹1,900',[['travel','Day','On the train','Arrives Madgaon 22:10'],['travel','Night','Prepaid taxi to hotel','₹1,900 · 60 min'],['','Late','Check in at Casa Calangute Inn','Breakfast included']],'1.0 h'],
+ ['Day 3','Thu 3 Dec','North Goa beaches','₹2,300',[['','Morning','Calangute → Baga beach','Walk 1 km · free'],['','Afternoon','Fort Aguada','Kadamba bus ₹30 · free entry'],['','Evening','Candolim sunset + fish thali','₹400 for two']],'7.0 h'],
+ ['Day 4','Fri 4 Dec','Markets & forts','₹2,700',[['','Morning','Mapusa Friday Market','Scooter ₹400 × 2 · open Fridays only'],['','Afternoon','Chapora Fort','11 km · free'],['','Evening','Vagator sunset','Café ₹500 for two']],'8.0 h'],
+ ['Day 5','Sat 5 Dec','Old Goa & Divar','₹2,900',[['','Morning','Basilica of Bom Jesus, Se Cathedral','Bus ₹40 · cover shoulders'],['','Afternoon','Divar Island village walk 🌿','Free government ferry from Ribandar'],['','Evening','Arpora Saturday Night Market','Saturdays only · ₹1,000 shopping buffer']],'8.5 h'],
+ ['Day 6','Sun 6 Dec','Free day','₹1,400',[['free','All day','Free / rest day','Beach, pool or anything you missed'],['free','',' ',''],['free','',' ','']],'—'],
+ ['Day 7','Mon 7 Dec','South Goa','₹3,200',[['','Morning','Cabo de Rama fort 🌿','Day taxi ₹2,800 · weak network'],['','Afternoon','Palolem beach','Lunch ₹600 for two'],['','Evening','Back to hotel','Goa State Museum is closed Mondays, so it isn\'t planned today']],'8.0 h'],
+ ['Day 8','Tue 8 Dec','Dudhsagar','₹3,500',[['','Morning','Dudhsagar jeep safari','₹600 / seat · 3 seats (3-year-old free)'],['','Afternoon','Spice plantation lunch','₹500 / person'],['','Evening','Pack · hotel dinner','₹700 for two']],'8.5 h'],
+ ['Day 9','Wed 9 Dec','Check out · travel','₹7,300',[['','Morning','Check out 07:00','Prepaid taxi to Madgaon ₹1,800'],['travel','Day','Board return train','Madgaon 09:15 · 3A'],['travel','Night','Night on the train','']],'1.5 h'],
+ ['Day 10','Thu 10 Dec','Arrive home','₹600',[['travel','Day','On the train','Meals on board ₹600'],['travel','Evening','Arrive Howrah 21:30',''],['','','Trip complete ✓','']],'—']
+];
+$('#days').innerHTML=days.map(([d,dt,ttl,sp,sl,h])=>`
+ <div class="day"><div class="dh"><b>${d}</b><small>${dt} · ${ttl}</small><div class="spend">${sp}</div><div class="hrs">Active: ${h||'travel'}</div></div>
+  <div class="slots">${sl.map(([k,w,a,b])=>`<div class="slot ${k}"><span class="drag">⋮⋮</span><div class="when">${w}</div><div class="what">${a}</div><div class="how">${b}</div></div>`).join('')}</div>
+  ${d==='Day 3'||d==='Day 5'?'<div class="dayfoot">🏨 Tonight: <b>Casa Calangute Inn (3★+, ₹1,650)</b> · or 5★ <b>Azure Bay Resort (₹13,070)</b> · 🍴 Lunch nearby: fish-thali place (0.4 km)</div>':''}
+ </div>`).join('');
+
+/* hotels */
+const h3=[
+ ['Casa Calangute Inn','★★★','3.9','1.4k','650 m',1650,{Agoda:11550,'Booking.com':11900,MakeMyTrip:12180,Goibibo:12050},'linear-gradient(135deg,#fcd34d,#f97316)','Breakfast · free cancellation'],
+ ['Sea Breeze Residency','★★★','4.1','2.2k','1.2 km',1890,{'Booking.com':13230,Agoda:13600,MakeMyTrip:13450,'Hotel site':13900},'linear-gradient(135deg,#7dd3fc,#0ea5e9)','Pool · breakfast'],
+ ['Palm Grove Retreat','★★★★','4.3','3.1k','2.0 km',3100,{MakeMyTrip:21700,'Booking.com':22400,Agoda:22100,Goibibo:21950},'linear-gradient(135deg,#86efac,#16a34a)','Pool · parking · couple-friendly']];
+const h5=[
+ ['Azure Bay Resort & Spa','★★★★★','4.6','5.8k','1.8 km',13070,{'Booking.com':91500,Agoda:93800,Expedia:94200,'Hotel site':95000},'linear-gradient(135deg,#a5b4fc,#6366f1)','Beachfront · breakfast · kids club'],
+ ['The Fort Cliff Palace','★★★★★','4.7','4.2k','5.5 km',15400,{Agoda:107800,'Booking.com':109900,MakeMyTrip:110500,Expedia:112000},'linear-gradient(135deg,#fda4af,#e11d48)','Sea view · 3 restaurants']];
+const hcard=([n,s,r,rc,dist,pn,sites,bg,am])=>{const min=Math.min(...Object.values(sites));const low=Object.keys(sites).find(k=>sites[k]===min);
+ return `<div class="hotel"><div class="ph" style="background:${bg}"></div><div>
+  <div class="nm">${n}</div><div class="st">${s}</div>
+  <div class="rt"><b>${r}</b>${rc} reviews · ${dist} from Calangute Beach · <span class="muted">${am}</span></div>
+  <div class="sites">${Object.entries(sites).map(([k,v])=>`<div class="${v===min?'low':''}">${k}<b>${inr(v)}</b></div>`).join('')}</div>
+  <div class="cta"><div><span class="tp">${inr(min)}</span> <span class="small muted">7 nights · ${inr(pn)}/night · incl. taxes</span><div class="src">Cheapest on <b>${low}</b> · checked 6 min ago</div></div><button class="btn sm">Book on ${low}</button></div>
+ </div></div>`};
+$('#h3').innerHTML=h3.map(hcard).join(''); $('#h5').innerHTML=h5.map(hcard).join('');
+
+/* checklist */
+const items=[['Onward train · 18047 · 3A','Tue 1 Dec · 2A + 2C','IRCTC',6625],['Hotel · Casa Calangute Inn','2–9 Dec · 7 nights · 1 room','Agoda',11550],['Dudhsagar jeep safari','Tue 8 Dec · 3 seats','Govt counter',1800],['Mandovi sunset cruise','Sat 5 Dec · optional','Klook',1500],['Scooter rental × 2','3–5 Dec','Local (pay on site)',2400],['Return train · 3A','Wed 9 Dec · 2A + 2C','IRCTC',6625]];
+$('#checks').innerHTML=items.map(([a,b,s,p],i)=>`<label class="check"><input type="checkbox" data-i="${i}"><div class="it"><b>${a}</b><span class="small muted">${b} · cheapest on <b>${s}</b></span></div><div class="pr">${inr(p)}</div><button class="btn sm" onclick="event.preventDefault()">Book</button></label>`).join('');
+$$('#checks input').forEach(c=>c.onchange=()=>{c.closest('.check').classList.toggle('done',c.checked);const n=$$('#checks input:checked').length;$('#doneN').textContent=n;$('#prog').style.width=(n/items.length*100)+'%'});
+</script>
+</body>
+</html>

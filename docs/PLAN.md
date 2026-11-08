@@ -26,7 +26,7 @@ Primary market: Indian travellers, INR. International destinations must be addab
 
 | # | Assumption |
 |---|---|
-| A1 | "N days" = N calendar days and **N−1 hotel nights**. Day 1 = onward travel/arrival; Day N = return. |
+| A1 | "N days" = N calendar days. Day 1 = onward travel/arrival; Day N = return. **Hotel nights = nights actually spent at the destination** (at most N−1). Nights on an overnight train or bus are not hotel nights. When a slow mode eats more than 20% of the trip, the plan suggests the faster alternative with its extra cost (e.g. "Fly instead for +₹8,400 and get 2 more days in Goa"). |
 | A2 | The whole trip must fit **inside the chosen month** (10 days in December → start dates 1–22 Dec). |
 | A3 | The half-price band is **inclusive**: ages 4, 5, 6 and 7 pay half. |
 | A4 | MVP has no login, no payments, no real APIs — mock providers only. Accounts and alerts are Phase 2. |
@@ -203,8 +203,12 @@ Inputs for a month M (D days) and trip length N, per plan style:
 For each start date `s` in `1 … D−N+1`:
 
 ```
-cost(s) = onward[s] + ret[s+N−1] + Σ night[s … s+N−2] + localPerDay × N
+cost(s) = onward[s] + ret[r] + Σ night[a … r−1] + localPerDay × (r − a + 1)
+  where a = arrival date of the onward option chosen for start s,
+        r = latest return departure date whose arrival is ≤ s+N−1
 ```
+
+With flights or short trips, a = s and r = s+N−1, so this is the same as N−1 hotel nights.
 
 The hotel sum uses a prefix-sum array → O(D) per plan.
 
@@ -319,6 +323,24 @@ Per plan: transport to/from, hotels (all nights), local transport, sights & acti
 Every price is rendered through one `<Price offer={…} />` component that always shows amount, source, "checked X min ago", estimate badge, and a booking button — enforcing rule 1 in a single place.
 
 Mobile-first; INR formatting (`₹38,400`, Indian digit grouping); currency switch later.
+
+### 9.1 Visual design (approved 2026-11-08)
+
+The approved mockup is [docs/design/tripsaver-mockup.html](design/tripsaver-mockup.html). Open it in a browser; it has a Desktop/Mobile toggle. The real UI follows it.
+
+- **Colours:** teal brand `#0f766e` (dark `#115e59`, light `#ccfbf1`); saffron accent `#f59e0b` for the main call-to-action; slate text `#0f172a`; background `#f8fafc`. Price-calendar bands go from green `#dcfce7` to red `#fee2e2` in 5 steps.
+- **Type:** Inter or the system sans-serif font. Large prices are bold with tight letter spacing.
+- **Shapes:** cards with 14 px corners, soft shadows, pill-shaped chips.
+- **Photography:**
+  - The home page banner is a slideshow that crossfades between beach and mountain photos with a slow zoom and a dark tint so the text stays readable.
+  - Destination cards have photos.
+  - A full-width mountain photo sits behind the "Plan smart. Travel more." section.
+  - The results page has a destination banner with the weather.
+  - Each plan card has a photo strip along the top.
+  - The mockup loads photos from Unsplash. Production stores licensed images on our own CDN, with credits.
+- **Home page layout:** a search card overlapping the banner holds the 6 inputs, a travellers popover with the child-pricing rule, and a collapsible "More preferences" section.
+- **Results page layout:** a sticky summary bar, the destination banner, 3 plan cards (the cheapest marked "CHEAPEST"), then 10 numbered tabs.
+- **Estimates:** shown with an amber `est.` / `approx.` badge. Each price's source appears under it as "cheapest on **Site** · checked X min ago".
 
 ---
 
