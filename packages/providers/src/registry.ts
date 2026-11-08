@@ -9,6 +9,8 @@ import type {
   TrainProvider,
   WeatherProvider,
 } from './interfaces.js';
+import { MockCalendarEventsProvider, MockWeatherProvider } from './mock/calendar.js';
+import { mockPlaceDirectory } from './mock/data/places.js';
 
 type Factory<T> = (clock: Clock) => T;
 
@@ -22,17 +24,15 @@ export interface Factories {
   places: PlaceDirectory;
 }
 
-const emptyDirectory: PlaceDirectory = { places: () => [], get: () => undefined };
-
 /** Built-in providers. Real adapters are added here as their access is approved. */
 export const DEFAULT_FACTORIES: Factories = {
   train: {},
   bus: {},
   flight: {},
   hotel: {},
-  calendar: {},
-  weather: {},
-  places: emptyDirectory,
+  calendar: { mock: () => new MockCalendarEventsProvider() },
+  weather: { mock: () => new MockWeatherProvider() },
+  places: mockPlaceDirectory,
 };
 
 const ENV_KEYS = {
