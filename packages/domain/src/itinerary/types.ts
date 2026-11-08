@@ -105,6 +105,8 @@ export interface ItineraryInput {
   /** When the return journey gets home; days after it are at home, before it in transit. */
   home?: string;
   arrivalPoint: LatLng;
+  /** Where the return journey leaves from (defaults to the arrival point). */
+  departurePoint?: LatLng;
   bases: BaseStay[];
   attractions: AttractionLike[];
   limits?: Partial<ItineraryLimits>;

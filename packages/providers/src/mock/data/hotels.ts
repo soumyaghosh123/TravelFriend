@@ -57,6 +57,14 @@ const NAMES: Record<string, string[]> = {
   ],
 };
 
+/** Where each named property is (by landmark), so a name like "Casa Calangute Inn" really is in Calangute. */
+const NEAR: Record<string, string[]> = {
+  GOA: [
+    'Baga Beach', 'Calangute Beach', 'Baga Beach', 'Calangute Beach', 'Calangute Beach', 'Colva Beach', 'Panjim (Panaji)', 'Calangute Beach',
+    'Panjim (Panaji)', 'Baga Beach', 'Calangute Beach', 'Panjim (Panaji)', 'Old Goa', 'Colva Beach', 'Colva Beach', 'Calangute Beach',
+  ],
+};
+
 const SUFFIXES = [
   'Budget Inn', 'Rest House', 'Backpackers', 'Hostel', 'Residency', 'Comfort Hotel', 'Lodge', 'Grand',
   'Heritage Hotel', 'Palace Hotel', 'Royal Retreat', 'Luxury Suites', 'Family Homestay', 'Village Stay',
@@ -78,7 +86,8 @@ export const MOCK_HOTELS: Record<string, MockHotel[]> = Object.fromEntries(
       const hotelId = `${d.code}-H${String(i + 1).padStart(2, '0')}`;
       // Each hotel sits within about 2 km of one of the destination's landmarks.
       const marks = MOCK_LANDMARKS[d.code] ?? [];
-      const near = marks[Math.floor(draw(`${hotelId}|near`) * marks.length)] ?? d;
+      const named = marks.find((m) => m.name === NEAR[d.code]?.[i]);
+      const near = named ?? marks[Math.floor(draw(`${hotelId}|near`) * marks.length)] ?? d;
       const roomRate = Math.round(baseRate * (PRICE_LEVEL[d.code] ?? 1));
       const breakfastIncluded = draw(`${hotelId}|bf`) < 0.6;
       const amenities = type !== 'hostel' && draw(`${hotelId}|cf`) < 0.5 ? [...specAmenities, 'Couple-friendly'] : specAmenities;

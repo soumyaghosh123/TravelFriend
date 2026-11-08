@@ -1,19 +1,20 @@
 'use client';
 
-import type { DatesSection, HotelsSection, TransportSection } from '@tripsaver/providers';
+import type { DatesSection, HotelsSection, ItinerarySection, TransportSection } from '@tripsaver/providers';
 import { useCallback, useEffect, useState } from 'react';
 
 export type SectionState<T> = { status: 'loading' } | { status: 'ok'; data: T } | { status: 'error' };
 
 export interface ResultsState {
   dates: SectionState<DatesSection>;
-  /** transport and hotels: for the Budget plan's cheapest dates (the default selection). */
+  /** transport, hotels, itinerary: for the Budget plan's cheapest dates (the default selection). */
   transport: SectionState<TransportSection>;
   hotels: SectionState<HotelsSection>;
+  itinerary: SectionState<ItinerarySection>;
 }
 
-const SECTIONS = ['dates', 'transport', 'hotels'] as const;
-const INITIAL: ResultsState = { dates: { status: 'loading' }, transport: { status: 'loading' }, hotels: { status: 'loading' } };
+const SECTIONS = ['dates', 'transport', 'hotels', 'itinerary'] as const;
+const INITIAL: ResultsState = { dates: { status: 'loading' }, transport: { status: 'loading' }, hotels: { status: 'loading' }, itinerary: { status: 'loading' } };
 
 /**
  * Opens the SSE stream for a search and fills sections as they arrive (PLAN §7).

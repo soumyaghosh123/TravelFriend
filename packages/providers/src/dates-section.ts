@@ -16,8 +16,8 @@ import type { Clock } from './clock.js';
 import type { ProviderSet } from './interfaces.js';
 import type { DatesSection, StyleDates, WindowDetail } from './results-contract.js';
 
-/** Plan styles that have a price calendar today. Offbeat arrives with the PlanBuilder (build step 6). */
-export const DATE_STYLES: TripStyle[] = ['budget', 'comfort'];
+/** Plan styles with a price calendar, in display order (brief §2.3). */
+export const DATE_STYLES: TripStyle[] = ['offbeat', 'budget', 'comfort'];
 
 /** Rejects if `p` takes longer than `ms` (PLAN §7: per-provider timeouts). */
 export function withTimeout<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
@@ -61,6 +61,7 @@ export function datesArgs(input: ValidSearchInput, style: TripStyle): CheapestDa
     travellers: input.travellers,
     style,
     localPerDay: estimateLocalPerDay(input.travellers, style),
+    ...(input.preferences?.stayNear ? { stayNear: input.preferences.stayNear } : {}),
   };
 }
 

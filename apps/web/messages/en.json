@@ -269,7 +269,7 @@
         "name": "Comfort",
         "desc": "Faster, more comfortable travel · 4★ hotel"
       },
-      "desc": "{mode} {cls} both ways · {stars}★ hotel rated 3.5+"
+      "descType": "{mode} {cls} both ways · {type} stay rated 3.5+"
     },
     "modes": {
       "train": "Train",
@@ -451,6 +451,64 @@
       "extraBeds": "+{beds, plural, one {# extra bed} other {# extra beds}}",
       "sample": "Hotels and prices are sample data until live providers are connected.",
       "taxesNote": "Prices are for the whole stay and all rooms, including taxes. * marks prices with children estimated by our default rule."
+    },
+    "plan": {
+      "loading": "Building your day-by-day plan…",
+      "title": "{plan} plan · {dates} · {days} days",
+      "baseNights": "{nights, plural, one {# night} other {# nights}} {name}",
+      "slowTip": "This plan saves money by going overland: {lost} of the {days} days go on the journey. Fly both ways for about {gained, plural, one {# more day} other {# more days}} at the destination.",
+      "slowTipExtra": "extra for the group, both ways",
+      "dayN": "Day {n}",
+      "kind": {
+        "travel": "Travel",
+        "arrival": "Arrive · light day",
+        "sightseeing": "Sightseeing",
+        "transfer": "Change base",
+        "free": "Free day",
+        "departure": "Check out · head home"
+      },
+      "spendNote": "entry {entry} · local {local} · meals {meals}",
+      "active": "Active: {h} h {m} m",
+      "activeNone": "Active: travel only",
+      "slot": {
+        "morning": "Morning",
+        "afternoon": "Afternoon",
+        "evening": "Evening"
+      },
+      "travelLeg": "{min} min · ~{km} km by road",
+      "visitFor": "about {h} h {m} m",
+      "onBoard": "On board: {mode} {service}",
+      "toHotel": "Arrive at {from}, go to the hotel",
+      "checkIn": "Check in · {place}",
+      "checkOut": "Check out",
+      "moveBase": "Move to {to}",
+      "backToHotel": "Back to the hotel",
+      "toStation": "Leave for {to}",
+      "freeDay": "Free day",
+      "freeDayHow": "Rest, the beach or pool, or anything you missed",
+      "tonight": "Tonight:",
+      "perNight": "per night",
+      "orFiveStar": "or 5★:",
+      "noOffbeatTitle": "No good offbeat places near this destination",
+      "noOffbeatAlt": "Rather than force a plan, here is the nearest alternative: {name} near {destination} (about {km} km away).",
+      "noOffbeatNone": "We could not find an offbeat alternative nearby either.",
+      "showBudget": "Show the Budget plan instead",
+      "notesTitle": "Before you go",
+      "ifTime": "If you have time, also see:",
+      "notesNone": "Nothing to flag for this plan.",
+      "sample": "Sights, hours and fees are sample data until live content is connected.",
+      "spendBasis": "Daily spend is an estimate: entry fees (children by our default rule), local travel by distance, and meals for the plan style.",
+      "checks": {
+        "title": "How this plan was checked",
+        "days": "{n} separate days, matching the trip length",
+        "maxHours": "No day has more than {max} active hours (busiest: Day {day}, {h} h {m} m)",
+        "closed": "Nothing is planned on a day it is closed: {list}",
+        "closedNone": "None of these sights has a weekly closed day",
+        "light": "Arrival and departure days are kept light (at most {first} h and {last} h of sightseeing)",
+        "free": "Free day on Day {day} because the trip is longer than 7 days",
+        "freeNone": "No free day needed: the trip is 7 days or shorter",
+        "nights": "Hotel nights: {n}, only the nights spent at the destination"
+      }
     }
   }
 }

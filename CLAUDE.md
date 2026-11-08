@@ -59,7 +59,7 @@ pnpm dev                 # web http://localhost:3000 + api http://localhost:4000
 pnpm --filter @tripsaver/api test         # NestJS + supertest, via Vitest with SWC (decorator metadata)
 ```
 
-Results stream over SSE (`GET /api/search/:id/stream`: `dates` first, then `transport` and `hotels` as they complete, then `done`). Searches live in Redis when `REDIS_URL` is set. Section orchestration lives in `packages/providers` (`buildDatesSection`, `buildTransportSection`, `buildHotelsSection`); its response types are in `packages/providers/src/results-contract.ts`, which the web app imports as types only. `apps/web/test/results-render.test.tsx` renders the results components with real mock data in en/hi/bn and fails on any missing translation.
+Results stream over SSE (`GET /api/search/:id/stream`: `dates` first, then `transport` and `hotels` as they complete, `itinerary` after `hotels`, then `done`). Searches live in Redis when `REDIS_URL` is set. Section orchestration lives in `packages/providers` (`buildDatesSection`, `buildTransportSection`, `buildHotelsSection`, `buildItinerarySection`); the itinerary rules are enforced by `validateItinerary` in `packages/domain`, which throws on any violation; its response types are in `packages/providers/src/results-contract.ts`, which the web app imports as types only. `apps/web/test/results-render.test.tsx` renders the results components with real mock data in en/hi/bn and fails on any missing translation.
 
 The browser calls `/api/*` on the web origin; `next.config.ts` proxies it to `API_URL`. Validation lives once in `packages/domain` (`makeSearchInputSchema`); its messages are i18n keys under `search.errors` in `apps/web/messages/*.json`, and a test keeps en/hi/bn in sync.
 

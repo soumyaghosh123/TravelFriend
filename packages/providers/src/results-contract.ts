@@ -6,10 +6,13 @@ import type {
   MonthComparison,
   PeakWarning,
   PriceLevel,
+  DaySpend,
+  ItineraryDay,
+  ItineraryLimits,
   WindowReason,
 } from '@tripsaver/domain';
 import type { PricedWindow, TripStyle } from './assemble.js';
-import type { HotelOffer, TransportOffer } from './interfaces.js';
+import type { Attraction, HotelOffer, TransportOffer } from './interfaces.js';
 
 /** API ↔ web contract for the "Best dates & price calendar" section (SSE event `dates`). */
 
@@ -132,3 +135,62 @@ export interface HotelsSection {
   sampleData: boolean;
   fetchedAt: string;
 }
+
+// ── "Day-by-day plan" section (SSE event `itinerary`, and GET /api/search/:id/itinerary) ──
+
+export interface PlannedDay extends ItineraryDay {
+  /** Estimated spend for the group (entry fees, local travel, meals); always approx. */
+  spend: DaySpend;
+}
+
+/** Where you sleep, for how long, and in which hotel (the plan's choice and a 5★ option). */
+export interface PlanBase {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  nights: number;
+  checkIn: string;
+  hotel: HotelListing | null;
+  /** Price for this base's nights: exact for a single base, estimated (per night × nights) when the stay is split. */
+  hotelTotal: number | null;
+  hotelTotalIsEstimate: boolean;
+  fiveStar: HotelListing | null;
+}
+
+/** What "How this plan was checked" shows: the hard rules with the actual numbers. */
+export interface ItineraryChecks {
+  days: number;
+  busiest: { index: number; activeMin: number };
+  /** Scheduled sights that have closed days, and the days they are shut. */
+  closedDays: { name: string; closedDays: number[] }[];
+  freeDay: number | null;
+  first: { kind: ItineraryDay['kind']; sightMin: number };
+  last: { kind: ItineraryDay['kind']; sightMin: number };
+  nightsAtBases: number;
+}
+
+export type ItinerarySection =
+  | {
+      style: TripStyle;
+      available: true;
+      start: string;
+      end: string;
+      days: PlannedDay[];
+      bases: PlanBase[];
+      /** The plan's sights by id (scheduled and unscheduled). */
+      attractions: Record<string, Attraction>;
+      unscheduled: string[];
+      arrivalPoint: string;
+      departurePoint: string;
+      checks: ItineraryChecks;
+      limits: ItineraryLimits;
+      sampleData: boolean;
+      fetchedAt: string;
+    }
+  | {
+      style: TripStyle;
+      available: false;
+      reason: 'noOffbeat';
+      nearestAlternative: { name: string; destination: string; destinationName: string; distanceKm: number } | null;
+    };

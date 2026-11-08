@@ -23,7 +23,7 @@ const ICON = { offbeat: ['🌿', '#dcfce7'], budget: ['💰', '#ccfbf1'], comfor
 
 /**
  * Offbeat / Budget / Comfort side by side (brief §2.3). Each card shows that plan's cheapest window.
- * Offbeat arrives with the PlanBuilder (build step 6).
+ * Offbeat comes first, as in the mockup.
  */
 export function PlanCards({ styles, selected, onSelect, people }: Props) {
   const t = useTranslations('results');
@@ -47,12 +47,6 @@ export function PlanCards({ styles, selected, onSelect, people }: Props) {
 
   return (
     <div className="grid grid-cols-1 gap-3.5 md:grid-cols-3" role="radiogroup" aria-label={t('plansLabel')}>
-      <div className="relative rounded-2xl border-2 border-line bg-white px-4 py-3.5 opacity-70">
-        {strip('offbeat')}
-        {heading('offbeat')}
-        <p className="mb-2.5 mt-1.5 min-h-[38px] text-[13px] text-muted">{t('plans.offbeat.desc')}</p>
-        <span className="rounded-full bg-line px-2 py-0.5 text-[11px] font-bold text-ink2">{t('comingSoon')}</span>
-      </div>
       {styles.map((s) => {
         const w = s.top[0];
         const on = s.style === selected;
@@ -73,11 +67,11 @@ export function PlanCards({ styles, selected, onSelect, people }: Props) {
             {strip(s.style)}
             {heading(s.style)}
             <p className="mb-2.5 mt-1.5 min-h-[38px] text-[13px] text-muted">
-              {w
-                ? t('plans.desc', {
+              {w && w.hotel
+                ? t('plans.descType', {
                     mode: t(`modes.${w.onward.mode}`),
                     cls: w.onward.travelClass,
-                    stars: w.hotel?.stars ?? 0,
+                    type: w.hotel.stars > 0 ? `${w.hotel.stars}★` : t(`hotels.type.${w.hotel.type}`),
                   })
                 : t(`plans.${s.style}.desc`)}
             </p>

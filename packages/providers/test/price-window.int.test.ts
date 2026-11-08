@@ -1,6 +1,6 @@
-import { computeWindows, topWindows } from '@tripsaver/domain';
+import { computeWindows, distanceKm, topWindows } from '@tripsaver/domain';
 import { describe, expect, test } from 'vitest';
-import { buildCheapestDatesInput, priceWindow } from '../src/assemble.js';
+import { buildCheapestDatesInput, priceWindow, STAY_NEAR_KM } from '../src/assemble.js';
 import { fixedClock } from '../src/clock.js';
 import { createRegistry } from '../src/registry.js';
 
@@ -58,5 +58,25 @@ describe('priceWindow: a date window priced with real, bookable offers', () => {
   test('an infeasible window is rejected', async () => {
     const w = { ...topWindows(computeWindows(await buildCheapestDatesInput(set, args)))[0]!, feasible: false, legs: undefined };
     await expect(priceWindow(set, args, w)).rejects.toThrow(/not feasible/);
+  });
+});
+
+describe('priceWindow honours "Stay near"', () => {
+  const set = createRegistry({}, fixedClock('2026-11-08T10:00:00Z'));
+  const base = { from: 'KOL', to: 'GOA', year: 2026, month: 12, days: 10, travellers: { adults: 2, childAges: [3, 6], rooms: 1 }, style: 'budget' as const, localPerDay: 1750 };
+
+  test('picks a hotel within 5 km of the landmark when there is one', async () => {
+    const args = { ...base, stayNear: 'Calangute Beach' };
+    const best = topWindows(computeWindows(await buildCheapestDatesInput(set, args)))[0]!;
+    const p = await priceWindow(set, args, best);
+    const calangute = set.places.landmarks('GOA').find((l) => l.name === 'Calangute Beach')!;
+    expect(distanceKm(calangute, p.hotel!)).toBeLessThanOrEqual(STAY_NEAR_KM);
+  });
+
+  test('an unknown landmark changes nothing', async () => {
+    const best = topWindows(computeWindows(await buildCheapestDatesInput(set, base)))[0]!;
+    const plain = await priceWindow(set, base, best);
+    const unknown = await priceWindow(set, { ...base, stayNear: 'Somewhere else' }, best);
+    expect(unknown.hotel!.hotelId).toBe(plain.hotel!.hotelId);
   });
 });

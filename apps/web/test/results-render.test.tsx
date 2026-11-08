@@ -2,11 +2,13 @@ import { makeSearchInputSchema } from '@tripsaver/domain';
 import {
   buildDatesSection,
   buildHotelsSection,
+  buildItinerarySection,
   buildTransportSection,
   createRegistry,
   fixedClock,
   type DatesSection,
   type HotelsSection,
+  type ItinerarySection,
   type TransportSection,
 } from '@tripsaver/providers';
 import { NextIntlClientProvider } from 'next-intl';
@@ -15,6 +17,7 @@ import type { ReactNode } from 'react';
 import { renderToString } from 'react-dom/server';
 import { beforeAll, describe, expect, test } from 'vitest';
 import { BestDatesTab } from '../components/best-dates-tab';
+import { DayPlanTab } from '../components/day-plan-tab';
 import { DestinationBanner } from '../components/destination-banner';
 import { GettingThereTab } from '../components/getting-there-tab';
 import { HotelsTab } from '../components/hotels-tab';
@@ -26,6 +29,7 @@ const clock = fixedClock('2026-11-08T06:00:00Z');
 let dates: DatesSection;
 let transport: TransportSection;
 let hotels: HotelsSection;
+let itinerary: ItinerarySection;
 
 beforeAll(async () => {
   const input = makeSearchInputSchema('2026-11-08').parse({
@@ -49,6 +53,7 @@ beforeAll(async () => {
     { to: 'GOA', checkIn: top.onward.arriveDate, checkOut: top.return.departDate, travellers: input.travellers, stayNear: 'Calangute' },
     { clock, timeoutMs: 4000 },
   );
+  itinerary = await buildItinerarySection(set, input, 'budget', top, hotels, { clock, timeoutMs: 4000 });
 });
 
 function render(locale: string, node: ReactNode): { html: string; errors: string[] } {
@@ -143,5 +148,33 @@ describe('Hotels tab renders with real mock data', () => {
     expect(html).toMatch(/aria-label="Book on [^"]+ · cheapest site"/);
     const top = dates.styles.find((s) => s.style === 'budget')!.top[0]!;
     expect(html).toContain(`checkin=${top.onward.arriveDate}`); // booking links carry the stay dates
+  });
+});
+
+function dayPlan() {
+  const top = dates.styles.find((s) => s.style === 'budget')!.top[0]!;
+  return <DayPlanTab plan={itinerary} window={top} transport={transport} onPickPlan={() => {}} />;
+}
+
+describe('Day-by-day tab renders with real mock data', () => {
+  test.each(['en', 'hi', 'bn'])('%s: no missing translations or render errors', (locale) => {
+    const { html, errors } = render(locale, dayPlan());
+    expect(errors).toEqual([]);
+    expect(html.length).toBeGreaterThan(8000);
+  });
+
+  test('en: 10 days with slots, a free day, the hotel for each night with a booking link, and the rule checks', () => {
+    const { html } = render('en', dayPlan());
+    for (let n = 1; n <= 10; n++) expect(html).toContain(`Day ${n}<`);
+    for (const s of ['Morning', 'Afternoon', 'Evening', 'Free day', 'Tonight:', 'How this plan was checked', 'No day has more than 9 active hours', 'Hotel nights: '])
+      expect(html).toContain(s);
+    expect(html).toMatch(/aria-label="Book on [^"]+"/);
+  });
+
+  test('plan cards: Offbeat, Budget and Comfort all have totals', () => {
+    const { html } = render('en', page());
+    for (const s of ['Offbeat', 'Budget', 'Comfort']) expect(html).toContain(s);
+    expect(dates.styles.map((s) => s.style)).toEqual(['offbeat', 'budget', 'comfort']);
+    expect(html).not.toContain('0★');
   });
 });

@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { createRegistry, fixedClock, type DatesSection, type HotelsSection, type ProviderSet, type TransportSection } from '@tripsaver/providers';
+import { createRegistry, fixedClock, type DatesSection, type HotelsSection, type ItinerarySection, type ProviderSet, type TransportSection } from '@tripsaver/providers';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { AppModule } from '../src/app.module.js';
@@ -64,6 +64,7 @@ describe('results stream — brief §12: Kolkata → Goa, 10 days, Dec 2026, 2 a
   let dates: DatesSection;
   let transport: TransportSection;
   let hotels: HotelsSection;
+  let itinerary: ItinerarySection;
 
   beforeAll(async () => {
     app = await makeApp();
@@ -72,9 +73,10 @@ describe('results stream — brief §12: Kolkata → Goa, 10 days, Dec 2026, 2 a
     // dates first, done last; the others arrive as they complete.
     expect(events[0]!.event).toBe('dates');
     expect(events.at(-1)!.event).toBe('done');
-    expect(events.map((e) => e.event).sort()).toEqual(['dates', 'done', 'hotels', 'transport']);
+    expect(events.map((e) => e.event).sort()).toEqual(['dates', 'done', 'hotels', 'itinerary', 'transport']);
     const get = (name: string) => events.find((e) => e.event === name)!.data;
-    for (const name of ['dates', 'transport', 'hotels']) expect(get(name).status).toBe('ok');
+    for (const name of ['dates', 'transport', 'hotels', 'itinerary']) expect(get(name).status).toBe('ok');
+    itinerary = get('itinerary').data as ItinerarySection;
     dates = get('dates').data as DatesSection;
     transport = get('transport').data as TransportSection;
     hotels = get('hotels').data as HotelsSection;
@@ -89,6 +91,28 @@ describe('results stream — brief §12: Kolkata → Goa, 10 days, Dec 2026, 2 a
     // The plan's hotel is one of the listed ones, at the same price.
     const planHotel = hotels.hotels.find((h) => h.hotelId === best.hotel!.hotelId)!;
     expect(planHotel.totalPrice).toBe(best.hotel!.cheapest.price.amount);
+  });
+
+  test('itinerary is streamed for the Budget plan: 10 days, one Goa base with the plan hotel, rules checked', () => {
+    if (!itinerary.available) throw new Error('expected a plan');
+    const best = dates.styles.find((s) => s.style === 'budget')!.top[0]!;
+    expect(itinerary.style).toBe('budget');
+    expect(itinerary.days).toHaveLength(10);
+    expect(itinerary.start).toBe(best.start);
+    expect(itinerary.bases).toHaveLength(1);
+    expect(itinerary.bases[0]!.hotel?.hotelId).toBe(best.hotel!.hotelId);
+    expect(itinerary.checks.busiest.activeMin).toBeLessThanOrEqual(540);
+    expect(itinerary.checks.freeDay).not.toBeNull();
+  });
+
+  test('itinerary endpoint: offbeat and comfort plans for other dates; bad input → 400/404', async () => {
+    const offbeat = dates.styles.find((s) => s.style === 'offbeat')!.top[0]!;
+    const res = await request(app.getHttpServer()).get(`/api/search/${id}/itinerary?style=offbeat&start=${offbeat.start}`).expect(200);
+    expect(res.body).toMatchObject({ style: 'offbeat', available: true, start: offbeat.start });
+    expect(res.body.bases[0].hotel.type).toBe('homestay');
+    await request(app.getHttpServer()).get(`/api/search/${id}/itinerary?style=comfort&start=2026-12-05`).expect(200);
+    await request(app.getHttpServer()).get(`/api/search/${id}/itinerary?style=luxury&start=2026-12-05`).expect(400);
+    await request(app.getHttpServer()).get(`/api/search/${id}/itinerary?style=budget&start=2026-12-28`).expect(404);
   });
 
   test('hotels endpoint: another stay; bad or too-long stays → 400', async () => {
@@ -203,7 +227,7 @@ describe('results stream — a failing provider', () => {
       expect(events.at(-1)!.event).toBe('done');
       // No dates → nothing to build transport or hotels for; every section says so and the stream finishes.
       for (const e of events.slice(0, -1)) expect(e.data).toEqual({ status: 'error', message: 'unavailable' });
-      expect(events.map((e) => e.event).sort()).toEqual(['dates', 'done', 'hotels', 'transport']);
+      expect(events.map((e) => e.event).sort()).toEqual(['dates', 'done', 'hotels', 'itinerary', 'transport']);
     } finally {
       await app.close();
     }

@@ -1,4 +1,4 @@
-import type { CalendarEvent, ISODate, MonthClimate, PricedOffer, Travellers } from '@tripsaver/domain';
+import type { AttractionLike, CalendarEvent, ISODate, MonthClimate, PricedOffer, Travellers } from '@tripsaver/domain';
 
 export interface Place {
   code: string;
@@ -9,6 +9,10 @@ export interface Place {
   busPoints: string[];
   lat: number;
   lng: number;
+  /** Typical local road speed (km/h) for itinerary travel times: slower in the hills. */
+  localSpeedKmh?: number;
+  /** Where you arrive by each mode (station, airport, bus stand), for timing the transfer to the hotel. */
+  gateways?: Partial<Record<'train' | 'bus' | 'flight', { name: string; lat: number; lng: number }>>;
 }
 
 /** A named spot to stay near (beach, old town, mall road); the first per destination is its main area. */
@@ -16,6 +20,8 @@ export interface Landmark {
   name: string;
   lat: number;
   lng: number;
+  /** A place to base yourself for a few nights (BaseSplitter candidates, PLAN §6.4). */
+  isBase?: boolean;
 }
 
 export interface PlaceDirectory {
@@ -132,7 +138,20 @@ export interface WeatherProvider {
   climate(destination: string): Promise<MonthClimate[]>;
 }
 
+/** A sight or experience at a destination (brief §2.3, §3.5). */
+export interface Attraction extends AttractionLike {
+  destination: string;
+  description: string;
+  kidFriendly: boolean;
+}
+
+export interface AttractionsProvider {
+  id: string;
+  attractions(destination: string): Promise<Attraction[]>;
+}
+
 export interface ProviderSet {
+  attractions: AttractionsProvider[];
   train: TrainProvider[];
   bus: BusProvider[];
   flight: FlightProvider[];

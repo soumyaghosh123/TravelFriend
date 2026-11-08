@@ -1,6 +1,8 @@
 import {
   type DateWindow,
   daysInMonth,
+  distanceKm,
+  matchLandmark,
   isoDate,
   type CheapestDatesInput,
   type ISODate,
@@ -15,7 +17,7 @@ import type {
   TransportProvider,
 } from './interfaces.js';
 
-export type TripStyle = 'budget' | 'comfort';
+export type TripStyle = 'offbeat' | 'budget' | 'comfort';
 
 export interface CheapestDatesArgs {
   from: string;
@@ -26,10 +28,14 @@ export interface CheapestDatesArgs {
   travellers: Travellers;
   style: TripStyle;
   localPerDay: number;
+  /** "Stay near" from More preferences: the plan hotel is picked near this landmark when it is known. */
+  stayNear?: string;
 }
 
 /** Which classes and hotel type each style may use (PLAN §6.3). */
-const STYLE: Record<TripStyle, { train: string[]; bus?: string[]; hotel: HotelType }> = {
+/** Classes and hotel type per plan (PLAN §6.3). Offbeat: cheapest suitable travel, homestay near the spots. */
+export const STYLE: Record<TripStyle, { train: string[]; bus?: string[]; hotel: HotelType }> = {
+  offbeat: { train: ['SL', '3A'], hotel: 'homestay' },
   budget: { train: ['SL', '3A'], hotel: '3star' },
   comfort: { train: ['2A', '1A', '3A'], bus: ['AC Sleeper'], hotel: '4star' },
 };
@@ -149,6 +155,8 @@ export async function buildCheapestDatesInput(set: ProviderSet, args: CheapestDa
 
 /** Minimum guest rating for hotels in any plan (brief §2.3 B). */
 export const MIN_HOTEL_RATING = 3.5;
+/** With a "Stay near" landmark, the plan hotel must be within this distance of it (if any such hotel exists). */
+export const STAY_NEAR_KM = 5;
 
 /** A date window priced with the actual offers the user would book, each with source, fetchedAt and link. */
 export interface PricedWindow {
@@ -195,10 +203,13 @@ export async function priceWindow(set: ProviderSet, args: CheapestDatesArgs, w: 
       : Promise.resolve([] as HotelOffer[][]),
   ]);
 
-  const best = hotels
-    .flat()
-    .filter((h) => h.guestRating >= MIN_HOTEL_RATING)
-    .reduce<HotelOffer | undefined>((b, h) => (!b || h.cheapest.price.amount < b.cheapest.price.amount ? h : b), undefined);
+  const rated = hotels.flat().filter((h) => h.guestRating >= MIN_HOTEL_RATING);
+  const mark = matchLandmark(args.stayNear, set.places.landmarks(args.to));
+  const near = mark ? rated.filter((h) => distanceKm(mark, h) <= STAY_NEAR_KM) : [];
+  const best = (near.length ? near : rated).reduce<HotelOffer | undefined>(
+    (b, h) => (!b || h.cheapest.price.amount < b.cheapest.price.amount ? h : b),
+    undefined,
+  );
   if (w.hotelNights > 0 && !best) throw new Error(`No ${STYLE[args.style].hotel} hotel available in ${args.to} for ${checkIn}`);
 
   const local = { perDay: args.localPerDay, days: w.daysAtDestination, amount: args.localPerDay * w.daysAtDestination };

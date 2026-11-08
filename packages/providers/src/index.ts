@@ -16,3 +16,6 @@ export * from './results-contract.js';
 export * from './dates-section.js';
 export * from './transport-section.js';
 export * from './hotels-section.js';
+export * from './mock/data/attractions.js';
+export * from './mock/attractions.js';
+export * from './itinerary-section.js';

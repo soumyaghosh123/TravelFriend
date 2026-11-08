@@ -1,5 +1,6 @@
 import { systemClock, type Clock } from './clock.js';
 import type {
+  AttractionsProvider,
   BusProvider,
   CalendarEventsProvider,
   FlightProvider,
@@ -9,6 +10,7 @@ import type {
   TrainProvider,
   WeatherProvider,
 } from './interfaces.js';
+import { MockAttractionsProvider } from './mock/attractions.js';
 import { MockCalendarEventsProvider, MockWeatherProvider } from './mock/calendar.js';
 import { mockPlaceDirectory } from './mock/data/places.js';
 import { MockHotelProvider } from './mock/hotels.js';
@@ -17,6 +19,7 @@ import { MockBusProvider, MockFlightProvider, MockTrainProvider } from './mock/t
 type Factory<T> = (clock: Clock) => T;
 
 export interface Factories {
+  attractions: Record<string, Factory<AttractionsProvider>>;
   train: Record<string, Factory<TrainProvider>>;
   bus: Record<string, Factory<BusProvider>>;
   flight: Record<string, Factory<FlightProvider>>;
@@ -28,6 +31,7 @@ export interface Factories {
 
 /** Built-in providers. Real adapters are added here as their access is approved. */
 export const DEFAULT_FACTORIES: Factories = {
+  attractions: { mock: () => new MockAttractionsProvider() },
   train: { mock: (c) => new MockTrainProvider(c) },
   bus: { mock: (c) => new MockBusProvider(c) },
   flight: { mock: (c) => new MockFlightProvider(c) },
@@ -38,6 +42,7 @@ export const DEFAULT_FACTORIES: Factories = {
 };
 
 const ENV_KEYS = {
+  attractions: 'ATTRACTION_PROVIDERS',
   train: 'TRAIN_PROVIDERS',
   bus: 'BUS_PROVIDERS',
   flight: 'FLIGHT_PROVIDERS',
@@ -70,6 +75,7 @@ export function createRegistry(
   factories: Partial<Factories> = {},
 ): ProviderSet {
   const f: Factories = {
+    attractions: { ...DEFAULT_FACTORIES.attractions, ...factories.attractions },
     train: { ...DEFAULT_FACTORIES.train, ...factories.train },
     bus: { ...DEFAULT_FACTORIES.bus, ...factories.bus },
     flight: { ...DEFAULT_FACTORIES.flight, ...factories.flight },
@@ -79,6 +85,7 @@ export function createRegistry(
     places: factories.places ?? DEFAULT_FACTORIES.places,
   };
   return {
+    attractions: pick(env, ENV_KEYS.attractions, f.attractions, clock),
     train: pick(env, ENV_KEYS.train, f.train, clock),
     bus: pick(env, ENV_KEYS.bus, f.bus, clock),
     flight: pick(env, ENV_KEYS.flight, f.flight, clock),

@@ -9,8 +9,9 @@ import { dateRange, monthLabel } from '../lib/format';
 import { tripSources } from '../lib/trip-sources';
 import { useResultsStream } from '../lib/use-results-stream';
 import { useSelectedWindow } from '../lib/use-selected-window';
-import { useHotels, useTransport } from '../lib/use-transport';
+import { useHotels, useItinerary, useTransport } from '../lib/use-transport';
 import { BestDatesTab } from './best-dates-tab';
+import { DayPlanTab } from './day-plan-tab';
 import { DestinationBanner } from './destination-banner';
 import { GettingThereTab } from './getting-there-tab';
 import { HotelsTab } from './hotels-tab';
@@ -34,7 +35,7 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
   const t = useTranslations('results');
   const ts = useTranslations('search');
   const locale = useLocale();
-  const { dates, transport: streamedTransport, hotels: streamedHotels, retry } = useResultsStream(searchId);
+  const { dates, transport: streamedTransport, hotels: streamedHotels, itinerary: streamedItinerary, retry } = useResultsStream(searchId);
   const [tab, setTab] = useState<TabId>('dates');
   const [style, setStyle] = useState<TripStyle>('budget');
   const [start, setStart] = useState<string | null>(null);
@@ -49,6 +50,7 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
   const selection = useSelectedWindow(searchId, current, start);
   const transport = useTransport(searchId, selection.window, streamedTransport);
   const hotels = useHotels(searchId, selection.window, streamedHotels);
+  const itinerary = useItinerary(searchId, style, start, streamedItinerary);
   const people = input.travellers.adults + input.travellers.childAges.length;
   const selected = current && start ? current.cells.find((c) => c.start === start) : undefined;
 
@@ -113,6 +115,23 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
               )}
               {transport.status === 'ok' && selection.window && (
                 <GettingThereTab transport={transport.data} window={selection.window} style={style} people={people} />
+              )}
+            </>
+          )}
+
+          {tab === 'plan' && dates.status === 'ok' && current && (
+            <>
+              {(itinerary.status === 'loading' || selection.status === 'loading') && <SkeletonBlock label={t('plan.loading')} className="h-[420px]" />}
+              {(itinerary.status === 'error' || selection.status === 'error') && (
+                <SectionError onRetry={selection.status === 'error' ? selection.retry : itinerary.retry} />
+              )}
+              {itinerary.status === 'ok' && selection.window && (
+                <DayPlanTab
+                  plan={itinerary.data}
+                  window={selection.window}
+                  transport={transport.status === 'ok' ? transport.data : null}
+                  onPickPlan={setStyle}
+                />
               )}
             </>
           )}

@@ -159,6 +159,7 @@ export function planItinerary(input: ItineraryInput): Itinerary {
   const homeDate = input.home?.slice(0, 10) ?? leaveDate;
   const dates = eachDay(input.start, addDays(input.start, input.days - 1));
   const bases = input.bases;
+  const departurePoint = input.departurePoint ?? input.arrivalPoint;
 
   // Each sight belongs to its nearest base.
   const pools = new Map(bases.map((b) => [b.id, new Set<string>()]));
@@ -216,7 +217,7 @@ export function planItinerary(input: ItineraryInput): Itinerary {
         return make('departure', null, stops);
       }
       const start = toMin(l.dayStart);
-      const toStation = travelMinutes(base, input.arrivalPoint, l);
+      const toStation = travelMinutes(base, departurePoint, l);
       const latestCheckout = leaveAt - l.departureBufferMin - toStation - CHECK_OUT_MIN;
       const checkoutAt = Math.max(0, Math.min(start, latestCheckout));
       stops.push(fixed('check-out', checkoutAt, CHECK_OUT_MIN, true));
@@ -224,9 +225,9 @@ export function planItinerary(input: ItineraryInput): Itinerary {
       let pos: LatLng = base;
       if (latestCheckout > start) {
         // Sights must leave time to reach the station: route towards it.
-        const r = route({ date, from: base, returnTo: input.arrivalPoint, t, budget: l.departureMin, deadline: leaveAt - l.departureBufferMin, pool: pools.get(base.id)!, byId, l });
+        const r = route({ date, from: base, returnTo: departurePoint, t, budget: l.departureMin, deadline: leaveAt - l.departureBufferMin, pool: pools.get(base.id)!, byId, l });
         // The leg to the station is the journey home, not sightseeing; drop sights that would make us late.
-        while (r.stops.length && toMin(r.stops.at(-1)!.start) + r.stops.at(-1)!.durationMin + travelMinutes(byId.get(r.stops.at(-1)!.attractionId!)!, input.arrivalPoint, l) > leaveAt - l.departureBufferMin) {
+        while (r.stops.length && toMin(r.stops.at(-1)!.start) + r.stops.at(-1)!.durationMin + travelMinutes(byId.get(r.stops.at(-1)!.attractionId!)!, departurePoint, l) > leaveAt - l.departureBufferMin) {
           const dropped = r.stops.pop()!;
           pools.get(base.id)!.add(dropped.attractionId!);
         }
@@ -237,8 +238,8 @@ export function planItinerary(input: ItineraryInput): Itinerary {
           pos = last;
         }
       }
-      const toStationStart = Math.max(t, leaveAt - l.departureBufferMin - travelMinutes(pos, input.arrivalPoint, l));
-      stops.push(travelStop('to-station', toStationStart, pos, input.arrivalPoint, l));
+      const toStationStart = Math.max(t, leaveAt - l.departureBufferMin - travelMinutes(pos, departurePoint, l));
+      stops.push(travelStop('to-station', toStationStart, pos, departurePoint, l));
       return make('departure', base.id, stops);
     }
 

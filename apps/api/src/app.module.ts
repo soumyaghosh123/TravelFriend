@@ -5,6 +5,7 @@ import { PlacesController } from './places/places.controller.js';
 import { ProvidersModule } from './providers.module.js';
 import { DatesService } from './results/dates.service.js';
 import { HotelsService } from './results/hotels.service.js';
+import { ItineraryService } from './results/itinerary.service.js';
 import { ResultsController } from './results/results.controller.js';
 import { TransportService } from './results/transport.service.js';
 import { SearchController } from './search/search.controller.js';
@@ -17,6 +18,7 @@ import { searchStoreProvider } from './search/search-store.provider.js';
     DatesService,
     TransportService,
     HotelsService,
+    ItineraryService,
     searchStoreProvider(),
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
