@@ -31,17 +31,20 @@ pnpm + Turborepo monorepo, TypeScript strict throughout.
 
 ## Commands
 
-The scaffold is created in build step 0.
+Working now (Milestone 1: `packages/domain` and `packages/providers`, on mock data):
 
 ```bash
-docker compose up -d     # Postgres + Redis
+npm i -g pnpm@9          # once; corepack needs admin on this machine
 pnpm install
-pnpm db:migrate && pnpm db:seed
-pnpm dev                 # web :3000, api :4000
-pnpm test                # Vitest/Jest across workspaces
-pnpm test:e2e            # Playwright
+pnpm test                # Vitest in every package (turbo builds dependencies first)
+pnpm --filter @tripsaver/domain test      # one package
 pnpm lint && pnpm typecheck
+pnpm build
 ```
+
+Coming in later milestones: `docker compose up -d` (Postgres + Redis), `pnpm db:migrate && pnpm db:seed`, `pnpm dev` (web :3000, api :4000), `pnpm test:e2e` (Playwright).
+
+Mock providers are selected by `*_PROVIDERS` env vars (see `.env.example`); `createRegistry(process.env)` builds them. Tests that need fixed timestamps use `fixedClock(...)`.
 
 ## Conventions
 
