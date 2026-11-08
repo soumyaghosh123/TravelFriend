@@ -10,6 +10,8 @@ export interface LegOption {
   arriveTime?: string;
   groupFare: number;
   source: string;
+  /** Opaque id of the offer behind this leg, so it can be re-fetched with its booking link. */
+  ref?: string;
 }
 
 export interface CheapestDatesInput {
@@ -36,6 +38,8 @@ export interface DateWindow {
   daysAtDestination: number;
   breakdown: { onward: number; return: number; hotel: number; local: number };
   band: Band | null;
+  /** The legs this window uses (feasible windows only). */
+  legs?: { onward: LegOption; return: LegOption };
 }
 
 function infeasible(start: ISODate, end: ISODate): DateWindow {
@@ -93,6 +97,7 @@ function evaluate(input: CheapestDatesInput, start: ISODate, end: ISODate): Date
     daysAtDestination,
     breakdown: { onward: onward.groupFare, return: ret.groupFare, hotel, local },
     band: null,
+    legs: { onward, return: ret },
   };
 }
 

@@ -87,6 +87,9 @@ importers:
       '@tripsaver/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@tripsaver/providers':
+        specifier: workspace:*
+        version: link:../../packages/providers
       next:
         specifier: 16.4.5
         version: 16.4.5(@types/node@20.19.43)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)

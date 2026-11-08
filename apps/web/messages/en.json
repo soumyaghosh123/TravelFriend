@@ -207,17 +207,146 @@
     "terms": "Terms"
   },
   "trip": {
-    "title": "{from} → {to}",
-    "meta": "{days} days · {month}",
-    "changeSearch": "✎ Change search",
-    "building": "Your search is saved",
-    "buildingBody": "The price calendar, three plans and booking links are the next build step. For now, this page confirms what you asked for.",
-    "searchedFor": "You searched for",
-    "hotelTypes": "Hotel types",
-    "preferences": "Preferences",
-    "none": "None",
     "notFound": "We couldn't find that search",
     "notFoundBody": "It may have expired. Start a new one.",
     "newSearch": "New search"
+  },
+  "price": {
+    "approx": "approx.",
+    "approxHint": "Estimate: the final price is confirmed on the booking site.",
+    "cheapestOn": "cheapest on <b>{site}</b>",
+    "builtFrom": "built from {sites} prices",
+    "ownEstimate": "TripSaver estimate",
+    "checked": "checked {ago}",
+    "book": "Book on {site}",
+    "notPrefilled": "You may need to enter your dates and travellers on the site."
+  },
+  "results": {
+    "days": "{days} days",
+    "cheapestDates": "Cheapest dates",
+    "selectedDates": "Selected",
+    "changeSearch": "✎ Change search",
+    "planTotal": {
+      "budget": "Budget plan · approx. total for group",
+      "comfort": "Comfort plan · approx. total for group"
+    },
+    "loading": "Finding the cheapest dates…",
+    "unavailable": "Temporarily unavailable.",
+    "retry": "Retry",
+    "tabsLabel": "Trip details",
+    "comingSoon": "Coming soon",
+    "tabs": {
+      "dates": "Best dates",
+      "plan": "Day-by-day",
+      "getting": "Getting there",
+      "hotels": "Hotels",
+      "local": "Local transport",
+      "sights": "Sightseeing",
+      "food": "Food",
+      "shopping": "Shopping",
+      "dos": "Do's & don'ts",
+      "cost": "Total & book"
+    },
+    "yourTrip": "Your {name} trip",
+    "bannerKind": {
+      "city": "City break",
+      "region": "Region · several bases possible"
+    },
+    "weather": "☀️ {month}: {max}° / {min}°",
+    "plansLabel": "Travel style",
+    "cheapestTag": "CHEAPEST",
+    "plans": {
+      "offbeat": {
+        "name": "Offbeat",
+        "desc": "Lesser-known places nearby · homestays · local transport"
+      },
+      "budget": {
+        "name": "Budget",
+        "desc": "Cheapest train, bus or flight · well-rated budget hotel"
+      },
+      "comfort": {
+        "name": "Comfort",
+        "desc": "Faster, more comfortable travel · 4★ hotel"
+      },
+      "desc": "{mode} {cls} both ways · {stars}★ hotel rated 3.5+"
+    },
+    "modes": {
+      "train": "Train",
+      "bus": "Bus",
+      "flight": "Flight"
+    },
+    "forGroup": "for {people} travellers · ≈ {perPerson} / person",
+    "noWindows": "No dates in this month work for this trip length.",
+    "calendarTitle": "{month}: total trip cost by start date",
+    "calendarSub": "{plan} plan · {people} travellers · click a date",
+    "pricingDates": "Pricing these dates…",
+    "noTripThatDay": "No trip can start on this day",
+    "pastMonthEnd": "trip would run past the end of the month",
+    "cellLabel": "Start {date}: approx. {amount} for the group",
+    "cheapest": "Cheapest",
+    "mostExpensive": "Most expensive",
+    "calendarBasis": "Each day: cheapest suitable travel both ways + cheapest well-rated hotel each night + about {perDay}/day for local transport, food and sights.",
+    "calendarFrom": "cheapest start date",
+    "topTitle": "3 cheapest date windows",
+    "saveVs": "Save {amount} vs {dates}",
+    "save": "Save {amount}",
+    "whyTitle": "Why some dates cost more",
+    "whyNone": "No festivals or holidays push prices up this month.",
+    "reasons": {
+      "kind": {
+        "season": "Peak",
+        "holiday": "Holiday",
+        "festival": "Festival",
+        "longWeekend": "Long weekend",
+        "school": "School holidays",
+        "local": "Event",
+        "weekend": "Weekends"
+      },
+      "impact": "prices up to {pct}% higher",
+      "weekend": "Friday and Saturday nights cost more",
+      "weekendCount": "Includes {nights} Friday/Saturday nights"
+    },
+    "windowRank": "Cheapest #{rank}",
+    "windowSelected": "Selected dates",
+    "windowStay": "{days} days at the destination · {nights} hotel nights",
+    "onward": "Onward",
+    "return": "Return",
+    "legTimes": "{depart} {from} → {arrive} {to}",
+    "hotelLine": "{rating} guest rating · {reviews} reviews · {nights} nights",
+    "noHotel": "No hotel night needed",
+    "noHotelSub": "You travel back the same day you arrive.",
+    "localLine": "Local transport, food & sights",
+    "localSub": "about {perDay} a day × {days} days · detailed in later tabs",
+    "estimateNote": "The calendar showed {estimate} for this date: it uses the cheapest hotel each night. This total keeps you in one hotel for the whole stay.",
+    "windowWhy": "Why these dates cost what they do",
+    "peak": {
+      "peakMonth": "{month} is peak season here.",
+      "bigEvent": "Some dates this month are much dearer.",
+      "event": "{name} ({dates}) pushes prices up to {pct}% higher.",
+      "alternative": "Going in <b>{month}</b> saves about {pct}%."
+    },
+    "monthsTitle": "Is another month cheaper?",
+    "monthBar": "{month}: {level}, {max}° / {min}°",
+    "level": {
+      "cheap": "cheap",
+      "normal": "normal",
+      "peak": "peak"
+    },
+    "alternativeTip": "<b>{month}</b> saves about {pct}% compared with your month. Weather then: {weather} ({max}°/{min}°).",
+    "monthsBasis": "Typical price level by month for this destination; hover a bar for the weather.",
+    "advice": {
+      "title": "When to book",
+      "trainTitle": "Train booking opens {days} days ahead",
+      "trainOpens": "For a {start} departure, booking opens on <b>{opens}</b> (IRCTC advance reservation period).",
+      "trainOpen": "Booking for {start} is already open (it opened on <b>{opens}</b>).",
+      "tatkalTitle": "Tatkal: the day before travel",
+      "tatkalBody": "AC classes open at {ac}, sleeper at {nonac} · higher fares, limited seats",
+      "flightsTitle": "Flights: usually cheapest 3–8 weeks ahead",
+      "flightsBody": "Fares tend to rise sharply in the last two weeks.",
+      "hotelsTitle": "Hotels: book once your dates are fixed",
+      "hotelsPeakTitle": "Peak month: book hotels early",
+      "hotelsBody": "Choose a free-cancellation rate so you can still change plans.",
+      "basis": "Train rules come from the rail provider; flight and hotel timing is general guidance."
+    }
   }
 }

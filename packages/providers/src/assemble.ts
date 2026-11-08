@@ -1,4 +1,5 @@
 import {
+  type DateWindow,
   daysInMonth,
   isoDate,
   type CheapestDatesInput,
@@ -6,7 +7,13 @@ import {
   type LegOption,
   type Travellers,
 } from '@tripsaver/domain';
-import type { HotelType, ProviderSet, TransportOffer, TransportProvider } from './interfaces.js';
+import type {
+  HotelOffer,
+  HotelType,
+  ProviderSet,
+  TransportOffer,
+  TransportProvider,
+} from './interfaces.js';
 
 export type TripStyle = 'budget' | 'comfort';
 
@@ -27,8 +34,14 @@ const STYLE: Record<TripStyle, { train: string[]; bus?: string[]; hotel: HotelTy
   comfort: { train: ['2A', '1A', '3A'], bus: ['AC Sleeper'], hotel: '4star' },
 };
 
+/** Stable id of an offer within one provider and date, so a chosen leg can be found again. */
+export function offerRef(o: TransportOffer): string {
+  return [o.source, o.number ?? o.operator, o.travelClass, o.departAt].join('|');
+}
+
 function toLeg(o: TransportOffer): LegOption {
   return {
+    ref: offerRef(o),
     departDate: o.departDate,
     arriveDate: o.arriveDate,
     departTime: o.departAt.slice(11, 16),
@@ -131,5 +144,77 @@ export async function buildCheapestDatesInput(set: ProviderSet, args: CheapestDa
     returnByDate: returnOptions(back),
     nightlyGroupPrice,
     localPerDay: args.localPerDay,
+  };
+}
+
+/** Minimum guest rating for hotels in any plan (brief §2.3 B). */
+export const MIN_HOTEL_RATING = 3.5;
+
+/** A date window priced with the actual offers the user would book, each with source, fetchedAt and link. */
+export interface PricedWindow {
+  start: ISODate;
+  end: ISODate;
+  style: TripStyle;
+  onward: TransportOffer;
+  return: TransportOffer;
+  /** null when no night is spent at the destination. */
+  hotel: HotelOffer | null;
+  /** Placeholder estimate (local transport, food, sights); always "approx.". */
+  local: { perDay: number; days: number; amount: number };
+  hotelNights: number;
+  daysAtDestination: number;
+  total: number;
+  perPerson: number;
+}
+
+async function findLeg(set: ProviderSet, from: string, to: string, leg: LegOption, args: CheapestDatesArgs): Promise<TransportOffer> {
+  const providers: TransportProvider[] = [...set.train, ...set.bus, ...set.flight];
+  const lists = await Promise.all(providers.map((p) => p.search({ from, to, date: leg.departDate, travellers: args.travellers })));
+  const offer = lists.flat().find((o) => offerRef(o) === leg.ref);
+  if (!offer) throw new Error(`Offer ${leg.ref ?? '(no ref)'} is no longer available`);
+  return offer;
+}
+
+/**
+ * Re-prices a window from `computeWindows` with bookable offers: the same onward and return legs,
+ * and the cheapest single hotel (rated 3.5+, the style's type) for the whole stay.
+ */
+export async function priceWindow(set: ProviderSet, args: CheapestDatesArgs, w: DateWindow): Promise<PricedWindow> {
+  if (!w.feasible || !w.legs) throw new Error(`Window ${w.start} is not feasible`);
+  const checkIn = w.legs.onward.arriveDate;
+  const checkOut = w.legs.return.departDate;
+  const [onward, back, hotels] = await Promise.all([
+    findLeg(set, args.from, args.to, w.legs.onward, args),
+    findLeg(set, args.to, args.from, w.legs.return, args),
+    w.hotelNights > 0
+      ? Promise.all(
+          set.hotel.map((h) =>
+            h.search({ destination: args.to, checkIn, checkOut, travellers: args.travellers, types: [STYLE[args.style].hotel] }),
+          ),
+        )
+      : Promise.resolve([] as HotelOffer[][]),
+  ]);
+
+  const best = hotels
+    .flat()
+    .filter((h) => h.guestRating >= MIN_HOTEL_RATING)
+    .reduce<HotelOffer | undefined>((b, h) => (!b || h.cheapest.price.amount < b.cheapest.price.amount ? h : b), undefined);
+  if (w.hotelNights > 0 && !best) throw new Error(`No ${STYLE[args.style].hotel} hotel available in ${args.to} for ${checkIn}`);
+
+  const local = { perDay: args.localPerDay, days: w.daysAtDestination, amount: args.localPerDay * w.daysAtDestination };
+  const total = onward.price.amount + back.price.amount + (best?.cheapest.price.amount ?? 0) + local.amount;
+  const people = args.travellers.adults + args.travellers.childAges.length;
+  return {
+    start: w.start,
+    end: w.end,
+    style: args.style,
+    onward,
+    return: back,
+    hotel: best ?? null,
+    local,
+    hotelNights: w.hotelNights,
+    daysAtDestination: w.daysAtDestination,
+    total,
+    perPerson: Math.round(total / people),
   };
 }

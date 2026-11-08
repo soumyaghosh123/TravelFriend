@@ -33,8 +33,8 @@ const neutral: CalendarEvent = { name: 'Quiet fair', start: '2026-12-01', end: '
 describe('explainWindow', () => {
   test('overlapping price-raising events, strongest first, with readable dates', () => {
     const reasons = explainWindow(win('2026-12-19', '2026-12-28'), [liberation, xmas, neutral]);
-    expect(reasons[0]).toEqual({ kind: 'season', text: 'Christmas–New Year peak (20–31 Dec)' });
-    expect(reasons[1]).toEqual({ kind: 'holiday', text: 'Goa Liberation Day (19 Dec)' });
+    expect(reasons[0]).toMatchObject({ kind: 'season', text: 'Christmas–New Year peak (20–31 Dec)' });
+    expect(reasons[1]).toMatchObject({ kind: 'holiday', text: 'Goa Liberation Day (19 Dec)' });
   });
 
   test('events outside the window and neutral events are not reasons', () => {
@@ -44,7 +44,7 @@ describe('explainWindow', () => {
   });
 
   test('counts Friday/Saturday nights inside the window', () => {
-    expect(explainWindow(win('2026-12-01', '2026-12-10'), [])).toContainEqual({
+    expect(explainWindow(win('2026-12-01', '2026-12-10'), [])).toContainEqual({ nights: 2,
       kind: 'weekend',
       text: 'Includes 2 Friday/Saturday nights',
     });
