@@ -9,3 +9,5 @@ export * from './mock/data/calendar.js';
 export * from './mock/calendar.js';
 export * from './mock/data/routes.js';
 export * from './mock/transport.js';
+export * from './mock/data/hotels.js';
+export * from './mock/hotels.js';
