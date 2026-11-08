@@ -9,7 +9,13 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:migrate": "pnpm --filter @tripsaver/db db:migrate",
+    "db:deploy": "pnpm --filter @tripsaver/db db:deploy",
+    "db:seed": "pnpm --filter @tripsaver/db db:seed",
+    "db:studio": "pnpm --filter @tripsaver/db db:studio"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",

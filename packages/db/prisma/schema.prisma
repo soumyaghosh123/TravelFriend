@@ -1,0 +1,390 @@
+// TripSaver data model — docs/PLAN.md §8 (minimum).
+// Conventions: money = integer rupees (Int), calendar dates = Postgres DATE (local dates, no TZ maths),
+// every price row carries providerId + fetchedAt (golden rule 1).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PricedMode {
+  train
+  bus
+  flight
+  hotel
+}
+
+enum TransportMode {
+  train
+  bus
+  flight
+}
+
+enum ProviderMode {
+  train
+  bus
+  flight
+  hotel
+  calendar
+  weather
+}
+
+enum ProviderKind {
+  mock
+  affiliate
+  api
+}
+
+enum FareType {
+  free
+  half
+  full
+}
+
+enum DaySlot {
+  morning
+  afternoon
+  evening
+}
+
+enum ItineraryKind {
+  attraction
+  meal
+  transfer
+  hotel
+}
+
+enum CalendarEventKind {
+  festival
+  holiday
+  longWeekend
+  school
+  season
+  local
+}
+
+enum VegType {
+  veg
+  nonveg
+  both
+}
+
+// ── Users & trips ────────────────────────────────────────────
+
+model User {
+  id        String       @id @default(cuid())
+  email     String?      @unique
+  phone     String?      @unique
+  name      String?
+  locale    String       @default("en")
+  createdAt DateTime     @default(now())
+  trips     Trip[]
+  alerts    PriceAlert[]
+}
+
+model Trip {
+  id           String                 @id @default(cuid())
+  userId       String?
+  user         User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  inputs       Json
+  selectedPlan String?
+  startDate    DateTime?              @db.Date
+  plans        Json?
+  shareSlug    String?                @unique
+  createdAt    DateTime               @default(now())
+  days         TripDay[]
+  alerts       PriceAlert[]
+  checklist    BookingChecklistItem[]
+  clicks       ClickEvent[]
+
+  @@index([userId])
+}
+
+model TripDay {
+  id            String          @id @default(cuid())
+  tripId        String
+  trip          Trip            @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  dayIndex      Int
+  date          DateTime        @db.Date
+  baseId        String?
+  activeMinutes Int
+  estSpend      Int
+  items         ItineraryItem[]
+
+  @@unique([tripId, dayIndex])
+}
+
+model ItineraryItem {
+  id          String        @id @default(cuid())
+  tripDayId   String
+  tripDay     TripDay       @relation(fields: [tripDayId], references: [id], onDelete: Cascade)
+  slot        DaySlot
+  kind        ItineraryKind
+  refId       String?
+  startTime   String // "HH:mm", local
+  durationMin Int
+  cost        Int
+
+  @@index([tripDayId])
+}
+
+// ── Destination content ──────────────────────────────────────
+
+model Destination {
+  id                   String                 @id @default(cuid())
+  slug                 String                 @unique
+  name                 String
+  state                String
+  country              String                 @default("India")
+  isRegion             Boolean                @default(false)
+  hubLat               Float
+  hubLng               Float
+  seasons              Json
+  candidateBases       String[]
+  landmarks            Landmark[]
+  hotels               Hotel[]
+  localTransport       LocalTransportOption[]
+  attractions          Attraction[]
+  restaurants          Restaurant[]
+  dishes               Dish[]
+  shops                Shop[]
+  dosAndDonts          DosAndDonts[]
+  calendarEvents       CalendarEvent[]
+}
+
+model Landmark {
+  id            String      @id @default(cuid())
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  name          String
+  lat           Float
+  lng           Float
+
+  @@index([destinationId])
+}
+
+model Hotel {
+  id             String       @id @default(cuid())
+  destinationId  String
+  destination    Destination  @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  name           String
+  type           String
+  stars          Int?
+  guestRating    Float?
+  reviewCount    Int?
+  lat            Float
+  lng            Float
+  amenities      String[]
+  childPolicy    Json?
+  restaurantInfo String?
+  prices         HotelPrice[]
+
+  @@index([destinationId])
+}
+
+model HotelPrice {
+  id         String   @id @default(cuid())
+  hotelId    String
+  hotel      Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  providerId String
+  provider   Provider @relation(fields: [providerId], references: [id])
+  date       DateTime @db.Date
+  price      Int
+  taxes      Int      @default(0)
+  fetchedAt  DateTime
+
+  @@unique([hotelId, providerId, date])
+}
+
+model TransportOption {
+  id           String        @id @default(cuid())
+  mode         TransportMode
+  providerId   String
+  provider     Provider      @relation(fields: [providerId], references: [id])
+  fromCode     String
+  toCode       String
+  date         DateTime      @db.Date
+  depart       String // "HH:mm", local
+  arrive       String // "HH:mm", local
+  durationMin  Int
+  class        String
+  fare         Int
+  availability String?
+  fetchedAt    DateTime
+
+  @@index([fromCode, toCode, date, mode])
+}
+
+model LocalTransportOption {
+  id            String      @id @default(cuid())
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  legType       String
+  mode          String
+  fareMin       Int
+  fareMax       Int
+  timeMin       Int
+  bookingInfo   String?
+  tips          String?
+
+  @@index([destinationId])
+}
+
+model Attraction {
+  id              String      @id @default(cuid())
+  destinationId   String
+  destination     Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  name            String
+  category        String
+  lat             Float
+  lng             Float
+  openingHours    Json
+  closedDays      String[]
+  entryFee        Int         @default(0)
+  avgDurationMin  Int
+  bestTime        String?
+  rating          Float?
+  footfall        String?
+  isOffbeat       Boolean     @default(false)
+  roadCondition   String?
+  networkCoverage String?
+  permitNote      String?
+
+  @@index([destinationId])
+}
+
+model Restaurant {
+  id            String      @id @default(cuid())
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  name          String
+  lat           Float
+  lng           Float
+  costForTwo    Int
+  rating        Float?
+  reviewCount   Int?
+  hours         String?
+  vegType       VegType
+
+  @@index([destinationId])
+}
+
+model Dish {
+  id            String      @id @default(cuid())
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  name          String
+  description   String?
+  vegType       VegType
+  typicalPrice  Int?
+
+  @@index([destinationId])
+}
+
+model Shop {
+  id            String      @id @default(cuid())
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  name          String
+  kind          String
+  whatToBuy     String[]
+  priceRange    String?
+  bargaining    Boolean     @default(false)
+  tags          String[]
+  rating        Float?
+  hours         String?
+  closedDays    String[]
+
+  @@index([destinationId])
+}
+
+model DosAndDonts {
+  id             String      @id @default(cuid())
+  destinationId  String
+  destination    Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  category       String
+  text           String
+  lastVerifiedOn DateTime    @db.Date
+
+  @@index([destinationId])
+}
+
+model CalendarEvent {
+  id            String            @id @default(cuid())
+  destinationId String?
+  destination   Destination?      @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  name          String
+  startDate     DateTime          @db.Date
+  endDate       DateTime          @db.Date
+  kind          CalendarEventKind
+  priceImpact   Float?
+
+  @@index([destinationId, startDate])
+}
+
+// ── Pricing, providers, alerts, analytics ────────────────────
+
+/// Child-fare rules. providerId = null → mode default; a provider's own rule always wins (golden rule 2).
+model PricingRule {
+  id         String     @id @default(cuid())
+  mode       PricedMode
+  providerId String?
+  provider   Provider?  @relation(fields: [providerId], references: [id])
+  minAge     Int
+  maxAge     Int?
+  multiplier Float
+  fareType   FareType
+
+  @@index([mode, providerId])
+}
+
+model PriceAlert {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tripId          String
+  trip            Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  thresholdAmount Int
+  active          Boolean   @default(true)
+  lastNotifiedAt  DateTime?
+}
+
+model Provider {
+  id               String            @id
+  name             String
+  mode             ProviderMode
+  kind             ProviderKind
+  enabled          Boolean           @default(true)
+  commission       Float?
+  brandingNotes    String?
+  hotelPrices      HotelPrice[]
+  transportOptions TransportOption[]
+  pricingRules     PricingRule[]
+  clicks           ClickEvent[]
+}
+
+model BookingChecklistItem {
+  id      String  @id @default(cuid())
+  tripId  String
+  trip    Trip    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  itemKey String
+  booked  Boolean @default(false)
+
+  @@unique([tripId, itemKey])
+}
+
+model ClickEvent {
+  id         String   @id @default(cuid())
+  providerId String
+  provider   Provider @relation(fields: [providerId], references: [id])
+  tripId     String?
+  trip       Trip?    @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  offerRef   String
+  createdAt  DateTime @default(now())
+
+  @@index([providerId, createdAt])
+}

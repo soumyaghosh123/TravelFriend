@@ -42,7 +42,17 @@ pnpm lint && pnpm typecheck
 pnpm build
 ```
 
-Coming in later milestones: `docker compose up -d` (Postgres + Redis), `pnpm db:migrate && pnpm db:seed`, `pnpm dev` (web :3000, api :4000), `pnpm test:e2e` (Playwright).
+Local database (Docker Desktop must be running; copy `.env.example` to `.env` first):
+
+```bash
+pnpm db:up               # docker compose up -d --wait  (Postgres :5432, Redis :6379)
+pnpm db:migrate          # prisma migrate dev  (reads the root .env)
+pnpm db:seed             # mock providers + default child-pricing rules (idempotent)
+pnpm db:studio           # browse data
+pnpm db:down             # stop containers (data kept; `docker compose down -v` wipes it)
+```
+
+Coming in later milestones: `pnpm dev` (web :3000, api :4000), `pnpm test:e2e` (Playwright).
 
 Mock providers are selected by `*_PROVIDERS` env vars (see `.env.example`); `createRegistry(process.env)` builds them. Tests that need fixed timestamps use `fixedClock(...)`.
 
