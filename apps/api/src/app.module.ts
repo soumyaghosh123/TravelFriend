@@ -7,8 +7,7 @@ import { DatesService } from './results/dates.service.js';
 import { ResultsController } from './results/results.controller.js';
 import { TransportService } from './results/transport.service.js';
 import { SearchController } from './search/search.controller.js';
-import { InMemorySearchStore } from './search/search-store.js';
-import { SEARCH_STORE } from './tokens.js';
+import { searchStoreProvider } from './search/search-store.provider.js';
 
 @Module({
   imports: [ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]), ProvidersModule],
@@ -16,7 +15,7 @@ import { SEARCH_STORE } from './tokens.js';
   providers: [
     DatesService,
     TransportService,
-    { provide: SEARCH_STORE, useValue: new InMemorySearchStore() },
+    searchStoreProvider(),
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
