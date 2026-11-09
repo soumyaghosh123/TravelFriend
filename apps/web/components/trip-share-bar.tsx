@@ -5,6 +5,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { dateRange, inr } from '../lib/format';
 import { googleCalendarUrl, planIcs, shareUrl, whatsappUrl } from '../lib/trip-export';
+import type { SavedTripState } from '../lib/use-saved-trip';
+import { SaveTripButton } from './save-trip-button';
 
 interface Props {
   searchId: string;
@@ -16,13 +18,26 @@ interface Props {
   fromName: string;
   toName: string;
   people: number;
+  saved: SavedTripState;
+  onSave: (title?: string) => Promise<'signin' | 'ok' | 'error'>;
 }
 
 const btn =
   'inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1.5 text-[13px] font-semibold text-ink2 hover:border-brand';
 
 /** PDF, share link, WhatsApp and calendar for the plan on screen (PLAN §12 step 10). */
-export function TripShareBar({ searchId, style, plan, window: w, total, fromName, toName, people }: Props) {
+export function TripShareBar({
+  searchId,
+  style,
+  plan,
+  window: w,
+  total,
+  fromName,
+  toName,
+  people,
+  saved,
+  onSave,
+}: Props) {
   const t = useTranslations('results.export');
   const tp = useTranslations('results.plan');
   const tr = useTranslations('results');
@@ -65,6 +80,13 @@ export function TripShareBar({ searchId, style, plan, window: w, total, fromName
 
   return (
     <div role="group" aria-label={t('label')} className="flex flex-wrap items-center gap-2">
+      <SaveTripButton
+        state={saved}
+        save={onSave}
+        title={title}
+        returnTo={`/trip/${encodeURIComponent(searchId)}?${new URLSearchParams({ plan: style, start: plan.start })}`}
+        className={btn}
+      />
       <a href={printHref} target="_blank" rel="noopener" className={btn}>
         📄 {t('pdf')}
       </a>

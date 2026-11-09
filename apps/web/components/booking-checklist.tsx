@@ -14,6 +14,8 @@ interface Props {
   items: ChecklistItem[];
   /** e.g. "2 adults + 2 children" */
   travellers: string;
+  /** The saved trip, when signed in: ticks sync to the account. */
+  tripId?: string | null;
 }
 
 function Row({ item, travellers }: { item: ChecklistItem; travellers: string }) {
@@ -106,9 +108,9 @@ function Row({ item, travellers }: { item: ChecklistItem; travellers: string }) 
 }
 
 /** "Book everything" (PLAN §6.7): each item → cheapest site → group price → link, with a "booked" tick that persists. */
-export function BookingChecklist({ searchId, style, start, items, travellers }: Props) {
+export function BookingChecklist({ searchId, style, start, items, travellers, tripId }: Props) {
   const t = useTranslations('results.cost.check');
-  const { booked, toggle } = useBooked(searchId, style, start);
+  const { booked, toggle } = useBooked(searchId, style, start, tripId);
   const done = items.filter((i) => booked.has(i.id)).length;
   return (
     <div>

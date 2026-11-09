@@ -1,6 +1,11 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { accountProviders } from './account/account.providers.js';
+import { AuthController } from './account/auth.controller.js';
+import { AuthService } from './account/auth.service.js';
+import { SessionGuard } from './account/session.guard.js';
+import { TripsController } from './account/trips.controller.js';
 import { DestinationsController } from './destinations/destinations.controller.js';
 import { PlacesController } from './places/places.controller.js';
 import { ProvidersModule } from './providers.module.js';
@@ -16,7 +21,14 @@ import { searchStoreProvider } from './search/search-store.provider.js';
 
 @Module({
   imports: [ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]), ProvidersModule],
-  controllers: [PlacesController, SearchController, ResultsController, DestinationsController],
+  controllers: [
+    PlacesController,
+    SearchController,
+    ResultsController,
+    DestinationsController,
+    AuthController,
+    TripsController,
+  ],
   providers: [
     DatesService,
     TransportService,
@@ -25,6 +37,9 @@ import { searchStoreProvider } from './search/search-store.provider.js';
     GuideService,
     CostService,
     searchStoreProvider(),
+    ...accountProviders(),
+    AuthService,
+    SessionGuard,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })

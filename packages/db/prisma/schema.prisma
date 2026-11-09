@@ -76,14 +76,41 @@ enum VegType {
 // ── Users & trips ────────────────────────────────────────────
 
 model User {
-  id        String       @id @default(cuid())
-  email     String?      @unique
-  phone     String?      @unique
-  name      String?
-  locale    String       @default("en")
-  createdAt DateTime     @default(now())
-  trips     Trip[]
-  alerts    PriceAlert[]
+  id              String       @id @default(cuid())
+  email           String?      @unique
+  /// Set when the email was proven (email link or Google's verified email).
+  emailVerifiedAt DateTime?
+  /// Google account id (OpenID "sub"), when signed in with Google.
+  googleSub       String?      @unique
+  phone           String?      @unique
+  name            String?
+  locale          String       @default("en")
+  createdAt       DateTime     @default(now())
+  trips           Trip[]
+  alerts          PriceAlert[]
+  sessions        Session[]
+}
+
+/// A signed-in browser. The id is the SHA-256 of the cookie value, so a database leak doesn't leak sessions.
+model Session {
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([userId])
+}
+
+/// A one-time email sign-in link. The id is the SHA-256 of the token in the link; usable once, briefly.
+model LoginToken {
+  id        String    @id
+  email     String
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  @@index([email])
 }
 
 model Trip {
@@ -91,17 +118,22 @@ model Trip {
   userId       String?
   user         User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
   inputs       Json
+  /// The search the trip was saved from (searches expire; `inputs` lets us run it again).
+  searchId     String?
+  title        String?
   selectedPlan String?
   startDate    DateTime?              @db.Date
   plans        Json?
   shareSlug    String?                @unique
   createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @default(now()) @updatedAt
   days         TripDay[]
   alerts       PriceAlert[]
   checklist    BookingChecklistItem[]
   clicks       ClickEvent[]
 
   @@index([userId])
+  @@unique([userId, searchId, selectedPlan, startDate])
 }
 
 model TripDay {

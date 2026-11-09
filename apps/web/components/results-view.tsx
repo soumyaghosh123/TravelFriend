@@ -9,6 +9,7 @@ import { dateRange, monthLabel } from '../lib/format';
 import { tripSources } from '../lib/trip-sources';
 import { useResultsStream } from '../lib/use-results-stream';
 import { useSelectedWindow } from '../lib/use-selected-window';
+import { useSavedTrip } from '../lib/use-saved-trip';
 import { useCost, useHotels, useItinerary, useTransport } from '../lib/use-transport';
 import { BestDatesTab } from './best-dates-tab';
 import { CostTab } from './cost-tab';
@@ -77,6 +78,7 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
   const hotels = useHotels(searchId, selection.window, streamedHotels);
   const itinerary = useItinerary(searchId, style, start, streamedItinerary);
   const cost = useCost(searchId, style, start, streamedCost);
+  const saved = useSavedTrip(searchId, style, start);
   // Every plan's column: the streamed ones (cheapest dates), the selected plan at the selected dates.
   const costPlans =
     streamedCost.status === 'ok'
@@ -167,6 +169,8 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
             fromName={fromName}
             toName={toName}
             people={people}
+            saved={saved.state}
+            onSave={saved.save}
           />
         )}
 
@@ -258,6 +262,7 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
                     children: input.travellers.childAges.length,
                   })}
                   childAges={input.travellers.childAges}
+                  tripId={saved.state.status === 'saved' ? saved.state.tripId : null}
                 />
               )}
             </>

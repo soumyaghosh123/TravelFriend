@@ -450,6 +450,8 @@ describe('Export: PDF, share link, WhatsApp, calendar (step 10)', () => {
           plan={plan}
           window={w}
           total={cost.cost.total}
+          saved={{ status: 'unsaved' }}
+          onSave={async () => 'ok'}
           fromName="Kolkata"
           toName="Goa"
           people={4}

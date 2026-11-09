@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import { AccountLink } from './account-link';
 import { LanguageSwitcher } from './language-switcher';
 
 export async function SiteHeader() {
@@ -30,6 +31,7 @@ export async function SiteHeader() {
         </a>
       </nav>
       <div className="flex-1" />
+      <AccountLink />
       <LanguageSwitcher />
       <span className="hidden rounded-full border border-line px-3 py-1.5 font-medium text-ink2 sm:inline">
         {t('currency')}

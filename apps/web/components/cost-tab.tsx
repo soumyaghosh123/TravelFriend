@@ -17,6 +17,8 @@ interface Props {
   travellers: string;
   /** For the "who pays what" note (default child rules: under 4 free, 4–7 half, 8+ full). */
   childAges: number[];
+  /** The saved trip for this plan and dates, when signed in. */
+  tripId?: string | null;
 }
 
 type Column = {
@@ -28,7 +30,7 @@ type Column = {
 };
 
 /** Tab 10 "Total & book" (brief §3.9, PLAN §6.7): every plan's cost by part, and the selected plan's checklist. */
-export function CostTab({ searchId, plans, selected, travellers, childAges }: Props) {
+export function CostTab({ searchId, plans, selected, travellers, childAges, tripId }: Props) {
   const t = useTranslations('results.cost');
   const tp = useTranslations('results.plans');
   const locale = useLocale();
@@ -155,6 +157,7 @@ export function CostTab({ searchId, plans, selected, travellers, childAges }: Pr
               start={current.start}
               items={current.checklist}
               travellers={travellers}
+              tripId={tripId ?? null}
             />
           ) : (
             <p className="mt-2 text-sm text-muted">{t('noPlan')}</p>
