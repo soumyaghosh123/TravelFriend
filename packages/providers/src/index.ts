@@ -26,3 +26,4 @@ export * from './mock/data/content.js';
 export * from './mock/content.js';
 export * from './guide-section.js';
 export * from './real/open-meteo-weather.js';
+export * from './cost-section.js';

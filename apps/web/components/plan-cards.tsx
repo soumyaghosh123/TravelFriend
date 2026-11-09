@@ -11,6 +11,8 @@ interface Props {
   selected: TripStyle;
   onSelect: (s: TripStyle) => void;
   people: number;
+  /** Totals from the day-by-day plans (Total & book), per plan, for the window each card shows. */
+  refined?: Partial<Record<TripStyle, { start: string; total: number; perPerson: number }>>;
 }
 
 // Mockup photo strips (Unsplash placeholders).
@@ -25,9 +27,21 @@ const ICON = { offbeat: ['🌿', '#dcfce7'], budget: ['💰', '#ccfbf1'], comfor
  * Offbeat / Budget / Comfort side by side (brief §2.3). Each card shows that plan's cheapest window.
  * Offbeat comes first, as in the mockup.
  */
-export function PlanCards({ styles, selected, onSelect, people }: Props) {
+export function PlanCards({ styles, selected, onSelect, people, refined }: Props) {
   const t = useTranslations('results');
-  const cheapest = styles.reduce<StyleDates | undefined>((a, s) => (s.top[0] && (!a || s.top[0].total < a.top[0]!.total) ? s : a), undefined);
+  // The detailed total once the day plan is built, so the cards and "Total & book" show the same number.
+  const shown = (s: StyleDates) => {
+    const w = s.top[0];
+    if (!w) return null;
+    const r = refined?.[s.style];
+    return r && r.start === w.start
+      ? { total: r.total, perPerson: r.perPerson, refined: true }
+      : { total: w.total, perPerson: w.perPerson, refined: false };
+  };
+  const cheapest = styles.reduce<StyleDates | undefined>(
+    (a, s) => (shown(s) && (!a || shown(s)!.total < shown(a)!.total) ? s : a),
+    undefined,
+  );
 
   const strip = (k: keyof typeof PHOTO) => (
     <div
@@ -38,7 +52,11 @@ export function PlanCards({ styles, selected, onSelect, people }: Props) {
   );
   const heading = (k: keyof typeof ICON) => (
     <h3 className="flex items-center gap-2 text-base font-bold">
-      <span className="grid size-7 place-items-center rounded-lg text-[15px]" style={{ background: ICON[k][1] }} aria-hidden>
+      <span
+        className="grid size-7 place-items-center rounded-lg text-[15px]"
+        style={{ background: ICON[k][1] }}
+        aria-hidden
+      >
         {ICON[k][0]}
       </span>
       {t(`plans.${k}.name`)}
@@ -62,7 +80,9 @@ export function PlanCards({ styles, selected, onSelect, people }: Props) {
             }`}
           >
             {cheapest?.style === s.style && (
-              <span className="absolute -top-2.5 right-3.5 z-[2] rounded-full bg-good px-2 py-0.5 text-[11px] font-bold text-white">{t('cheapestTag')}</span>
+              <span className="absolute -top-2.5 right-3.5 z-[2] rounded-full bg-good px-2 py-0.5 text-[11px] font-bold text-white">
+                {t('cheapestTag')}
+              </span>
             )}
             {strip(s.style)}
             {heading(s.style)}
@@ -77,11 +97,11 @@ export function PlanCards({ styles, selected, onSelect, people }: Props) {
             </p>
             {w ? (
               <Price
-                amount={w.total}
+                amount={shown(s)!.total}
                 isEstimate
                 size="lg"
                 sources={tripSources(w, s.fetchedAt)}
-                note={t('forGroup', { people, perPerson: inr(w.perPerson) })}
+                note={`${t('forGroup', { people, perPerson: inr(shown(s)!.perPerson) })}${shown(s)!.refined ? '' : ` · ${t('quickEstimate')}`}`}
               />
             ) : (
               <p className="text-sm text-muted">{t('noWindows')}</p>

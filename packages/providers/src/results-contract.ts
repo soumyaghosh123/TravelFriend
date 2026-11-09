@@ -10,6 +10,7 @@ import type {
   ItineraryDay,
   ItineraryLimits,
   LocalLegKind,
+  PlanCost,
   WindowReason,
 } from '@tripsaver/domain';
 import type { PricedWindow, TripStyle } from './assemble.js';
@@ -275,4 +276,54 @@ export interface GuideSection {
   sampleData: boolean;
   source: string;
   fetchedAt: string;
+}
+
+// ── "Total & book" (SSE event `cost`, GET /api/search/:id/cost) ──
+
+/** One thing to book for a plan (PLAN §6.7 checklist row). `amount` is for the group. */
+export type ChecklistItem =
+  | { id: string; kind: 'transport'; direction: 'onward' | 'return'; offer: TransportOffer; amount: number }
+  | {
+      id: string;
+      kind: 'hotel';
+      baseName: string;
+      hotelName: string;
+      checkIn: string;
+      nights: number;
+      rooms: number;
+      offer: HotelOffer['cheapest'];
+      amount: number;
+      /** Split stays are priced per night × nights until each base is searched on its own dates. */
+      isEstimate: boolean;
+    }
+  | { id: string; kind: 'ticket'; name: string; date: string; amount: number; ticketUrl?: string }
+  | {
+      id: string;
+      kind: 'local-extra';
+      name: string;
+      date: string;
+      amount: number;
+      booking: LocalMode['booking'];
+    };
+
+export type PlanCostView =
+  | {
+      style: TripStyle;
+      available: true;
+      start: string;
+      end: string;
+      cost: PlanCost;
+      /** Comfort only: the same plan with the 5★ option at every base (null if a base has none). */
+      fiveStar: PlanCost | null;
+      checklist: ChecklistItem[];
+      /** Sites whose prices are in the total. */
+      sources: string[];
+      sampleData: boolean;
+      fetchedAt: string;
+    }
+  | { style: TripStyle; available: false };
+
+export interface CostSection {
+  /** One per plan, each for that plan's cheapest dates (or the dates asked for). */
+  plans: PlanCostView[];
 }

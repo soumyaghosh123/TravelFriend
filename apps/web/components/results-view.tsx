@@ -9,8 +9,9 @@ import { dateRange, monthLabel } from '../lib/format';
 import { tripSources } from '../lib/trip-sources';
 import { useResultsStream } from '../lib/use-results-stream';
 import { useSelectedWindow } from '../lib/use-selected-window';
-import { useHotels, useItinerary, useTransport } from '../lib/use-transport';
+import { useCost, useHotels, useItinerary, useTransport } from '../lib/use-transport';
 import { BestDatesTab } from './best-dates-tab';
+import { CostTab } from './cost-tab';
 import { DayPlanTab } from './day-plan-tab';
 import { DestinationBanner } from './destination-banner';
 import { GettingThereTab } from './getting-there-tab';
@@ -43,6 +44,7 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
     hotels: streamedHotels,
     itinerary: streamedItinerary,
     guide,
+    cost: streamedCost,
     retry,
   } = useResultsStream(searchId);
   const [tab, setTab] = useState<TabId>('dates');
@@ -60,6 +62,24 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
   const transport = useTransport(searchId, selection.window, streamedTransport);
   const hotels = useHotels(searchId, selection.window, streamedHotels);
   const itinerary = useItinerary(searchId, style, start, streamedItinerary);
+  const cost = useCost(searchId, style, start, streamedCost);
+  // Every plan's column: the streamed ones (cheapest dates), the selected plan at the selected dates.
+  const costPlans =
+    streamedCost.status === 'ok'
+      ? streamedCost.data.plans.map((p) => (p.style === style && cost.status === 'ok' ? cost.data : p))
+      : cost.status === 'ok'
+        ? [cost.data]
+        : [];
+  const refined =
+    streamedCost.status === 'ok'
+      ? Object.fromEntries(
+          streamedCost.data.plans.flatMap((p) =>
+            p.available
+              ? [[p.style, { start: p.start, total: p.cost.total, perPerson: p.cost.perPerson }]]
+              : [],
+          ),
+        )
+      : undefined;
   const people = input.travellers.adults + input.travellers.childAges.length;
   const selected = current && start ? current.cells.find((c) => c.start === start) : undefined;
 
@@ -120,7 +140,7 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
         {dates.status === 'loading' && <SkeletonBlock label={t('loading')} className="h-[188px]" />}
         {dates.status === 'error' && <SectionError onRetry={retry} />}
         {dates.status === 'ok' && (
-          <PlanCards styles={styles} selected={style} onSelect={setStyle} people={people} />
+          <PlanCards styles={styles} selected={style} onSelect={setStyle} people={people} refined={refined} />
         )}
 
         <ResultTabs active={tab} onChange={setTab} />
@@ -194,6 +214,25 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
                 ) : (
                   <p className="rounded-card bg-white p-4 text-muted shadow-card">{t('local.noPlan')}</p>
                 ))}
+            </>
+          )}
+
+          {tab === 'cost' && dates.status === 'ok' && current && (
+            <>
+              {cost.status === 'loading' && <SkeletonBlock label={t('cost.loading')} className="h-[420px]" />}
+              {cost.status === 'error' && <SectionError onRetry={cost.retry} />}
+              {cost.status === 'ok' && (
+                <CostTab
+                  searchId={searchId}
+                  plans={costPlans}
+                  selected={style}
+                  travellers={ts('travellersSummary', {
+                    adults: input.travellers.adults,
+                    children: input.travellers.childAges.length,
+                  })}
+                  childAges={input.travellers.childAges}
+                />
+              )}
             </>
           )}
 

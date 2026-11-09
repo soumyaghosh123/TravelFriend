@@ -662,7 +662,59 @@
       "weather": "{month}: about {max}° by day, {min}° at night"
     },
     "weatherSource": "Weather: {name}, {from}–{to} average",
-    "weatherSample": "Sample weather"
+    "weatherSample": "Sample weather",
+    "quickEstimate": "quick estimate until the day plan is ready",
+    "cost": {
+      "loading": "Adding up every plan…",
+      "title": "Total trip cost · {travellers} · {dates}",
+      "titleNoDates": "Total trip cost · {travellers}",
+      "part": "Part of the cost",
+      "comfort3": "Comfort 4★",
+      "comfort5": "Comfort 5★",
+      "rows": {
+        "transport": "Transport there and back",
+        "hotels": "Hotels (all nights)",
+        "local": "Local transport",
+        "sights": "Sights & activities",
+        "food": "Food",
+        "buffer": "Shopping & buffer"
+      },
+      "est": "est.",
+      "total": "Total for the group",
+      "perPerson": "Per person (÷{people})",
+      "rule": "Approx. total for {travellers}: adults pay full price, {childRule}. A provider’s own child fares are used where it has them. The exact price is confirmed on the booking site.",
+      "ruleAdults": "Approx. total for {travellers}. The exact price is confirmed on the booking site.",
+      "child": {
+        "free": "the {age}-year-old travels free",
+        "half": "the {age}-year-old pays half",
+        "full": "the {age}-year-old pays full price"
+      },
+      "reconcile": "Every row comes from the other tabs: the plan’s train/bus/flight, its hotel at each base, and each day’s local travel, entry fees and meals. The buffer is our suggestion for shopping and small extras.",
+      "missing": "Not shown: {plans} (no plan for these dates).",
+      "checkTitle": "Book everything · {plan} plan",
+      "noPlan": "This plan is not available here; pick another plan.",
+      "sample": "Prices are sample data until live providers are connected.",
+      "disclaimer": "TripSaver is a comparison and planning service. You complete each booking on the partner’s site, and we may earn an affiliate commission. Prices and availability can change, so always check the final price on the partner site. Every price shows its source and when it was checked.",
+      "check": {
+        "progress": "{done} of {total} booked",
+        "markBooked": "Mark as booked",
+        "transport": {
+          "onward": "Onward {mode} · {name}",
+          "return": "Return {mode} · {name}"
+        },
+        "mode": {
+          "train": "train",
+          "bus": "bus",
+          "flight": "flight"
+        },
+        "hotel": "Hotel · {name}",
+        "nights": "{n, plural, one {# night} other {# nights}}",
+        "rooms": "{n, plural, one {# room} other {# rooms}}",
+        "ticket": "Tickets · {name}",
+        "officialTickets": "Official tickets",
+        "payAtGate": "Pay at the gate"
+      }
+    }
   },
   "guidePage": {
     "metaTitle": "{name} travel guide: sights, local food, shopping, do’s & don’ts · TripSaver",

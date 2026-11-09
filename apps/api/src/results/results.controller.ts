@@ -11,6 +11,7 @@ import {
 import type {
   DatesSection,
   HotelsSection,
+  PlanCostView,
   ItinerarySection,
   TransportSection,
   TripStyle,
@@ -19,6 +20,7 @@ import type {
 import type { Response } from 'express';
 import type { SearchStore } from '../search/search-store.js';
 import { SEARCH_STORE } from '../tokens.js';
+import { CostService } from './cost.service.js';
 import { DatesService, STYLES } from './dates.service.js';
 import { GuideService } from './guide.service.js';
 import { HotelsService } from './hotels.service.js';
@@ -26,7 +28,7 @@ import { ItineraryService } from './itinerary.service.js';
 import { TransportService } from './transport.service.js';
 
 /** Result sections (PLAN §7): `dates` first, then the others as they complete. `guide` needs no dates. */
-export const SECTIONS = ['dates', 'transport', 'hotels', 'itinerary', 'guide'] as const;
+export const SECTIONS = ['dates', 'transport', 'hotels', 'itinerary', 'guide', 'cost'] as const;
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -39,6 +41,7 @@ export class ResultsController {
     private readonly hotels: HotelsService,
     private readonly itinerary: ItineraryService,
     private readonly guide: GuideService,
+    private readonly cost: CostService,
   ) {}
 
   private async search(id: string) {
@@ -120,10 +123,14 @@ export class ResultsController {
               })
           : null,
       ).then((hotels) =>
-        section(
-          'itinerary',
-          best ? () => this.itinerary.compute(stored.input, 'budget', best, hotels) : null,
-        ),
+        Promise.all([
+          section(
+            'itinerary',
+            best ? () => this.itinerary.compute(stored.input, 'budget', best, hotels) : null,
+          ),
+          // Every plan's total and booking checklist (reuses the Budget plan's hotels).
+          section('cost', dates ? () => this.cost.all(stored.input, dates, hotels) : null),
+        ]),
       ),
     ]);
     send('done', { sections: SECTIONS });
@@ -174,6 +181,27 @@ export class ResultsController {
       .compute(stored.input, { checkIn: w.onward.arriveDate, checkOut: w.return.departDate })
       .catch(() => null);
     return this.itinerary.compute(stored.input, s, w, hotels);
+  }
+
+  /** Total & book for another plan or start date. */
+  @Get('cost')
+  async costFor(
+    @Param('id') id: string,
+    @Query('start') start?: string,
+    @Query('style') style?: string,
+  ): Promise<PlanCostView> {
+    const stored = await this.search(id);
+    if (!start || !ISO_DATE.test(start))
+      throw new BadRequestException({ statusCode: 400, message: 'start must be YYYY-MM-DD' });
+    const s = (style ?? 'budget') as TripStyle;
+    if (!STYLES.includes(s))
+      throw new BadRequestException({
+        statusCode: 400,
+        message: `style must be one of ${STYLES.join(', ')}`,
+      });
+    const detail = await this.dates.window(id, stored.input, s, start);
+    if (!detail) throw new NotFoundException({ statusCode: 404, message: 'No trip can start on that date' });
+    return this.cost.plan(stored.input, s, detail.window);
   }
 
   /** Getting there and back for other dates (user picked another window or plan). */

@@ -2,12 +2,14 @@ import { makeSearchInputSchema } from '@tripsaver/domain';
 import {
   buildDatesSection,
   buildGuideSection,
+  buildPlanCost,
   buildHotelsSection,
   buildItinerarySection,
   buildTransportSection,
   createRegistry,
   fixedClock,
   type DatesSection,
+  type PlanCostView,
   type GuideSection,
   type HotelsSection,
   type ItinerarySection,
@@ -19,6 +21,7 @@ import type { ReactNode } from 'react';
 import { renderToString } from 'react-dom/server';
 import { beforeAll, describe, expect, test } from 'vitest';
 import { BestDatesTab } from '../components/best-dates-tab';
+import { CostTab } from '../components/cost-tab';
 import { DayPlanTab } from '../components/day-plan-tab';
 import { DestinationBanner } from '../components/destination-banner';
 import { GettingThereTab } from '../components/getting-there-tab';
@@ -35,6 +38,7 @@ let transport: TransportSection;
 let hotels: HotelsSection;
 let itinerary: ItinerarySection;
 let guide: GuideSection;
+let costs: PlanCostView[];
 
 beforeAll(async () => {
   const input = makeSearchInputSchema('2026-11-08').parse({
@@ -73,6 +77,18 @@ beforeAll(async () => {
   );
   itinerary = await buildItinerarySection(set, input, 'budget', top, hotels, { clock, timeoutMs: 4000 });
   guide = await buildGuideSection(set, 'GOA', { clock, timeoutMs: 4000 });
+  costs = await Promise.all(
+    dates.styles.map((s) =>
+      buildPlanCost(
+        set,
+        input,
+        s.style,
+        s.top[0]!,
+        { clock, timeoutMs: 4000 },
+        s.style === 'budget' ? hotels : undefined,
+      ),
+    ),
+  );
 });
 
 function render(locale: string, node: ReactNode): { html: string; errors: string[] } {
@@ -291,5 +307,50 @@ describe('Guide tabs with the Budget plan (Goa)', () => {
     const food = render('en', <GuidePanel tab="food" guide={guide} plan={itinerary} style="budget" />).html;
     expect(food).toContain(`Food at your hotel, ${hotel.name}`);
     expect(food).toMatch(/Breakfast is (not )?included/);
+  });
+});
+
+describe('Total & book tab renders with real mock data', () => {
+  const tab = () => (
+    <CostTab
+      searchId="s1"
+      plans={costs}
+      selected="budget"
+      travellers="2 adults · 2 children"
+      childAges={[3, 6]}
+    />
+  );
+
+  test.each(['en', 'hi', 'bn'])('%s: no missing translations or render errors', (locale) => {
+    const { html, errors } = render(locale, tab());
+    expect(errors).toEqual([]);
+    expect(html.length).toBeGreaterThan(3000);
+  });
+
+  test('en: every plan with Comfort 4★ and 5★ columns, rows, child rule, checklist with booking links', () => {
+    const { html } = render('en', tab());
+    for (const s of [
+      'Offbeat',
+      'Budget',
+      'Comfort 4★',
+      'Comfort 5★',
+      'Transport there and back',
+      'Hotels (all nights)',
+      'Shopping &amp; buffer',
+      'Total for the group',
+      'Per person (÷4)',
+      'the 3-year-old travels free',
+      'the 6-year-old pays half',
+      'Book everything · Budget plan',
+      '0 of ',
+      'Onward train',
+      'Return',
+      'Mark as booked',
+    ])
+      expect(html).toContain(s);
+    const budget = costs.find((c) => c.style === 'budget')!;
+    if (!budget.available) throw new Error('expected a plan');
+    expect(html).toContain('Hotel · ');
+    expect(html).toContain(`₹${budget.cost.total.toLocaleString('en-IN')}`);
   });
 });

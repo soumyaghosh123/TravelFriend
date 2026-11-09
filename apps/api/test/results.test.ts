@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing';
 import {
   createRegistry,
   fixedClock,
+  type CostSection,
   type DatesSection,
   type GuideSection,
   type HotelsSection,
@@ -77,6 +78,7 @@ describe('results stream — brief §12: Kolkata → Goa, 10 days, Dec 2026, 2 a
   let hotels: HotelsSection;
   let itinerary: ItinerarySection;
   let guide: GuideSection;
+  let cost: CostSection;
 
   beforeAll(async () => {
     app = await makeApp();
@@ -87,6 +89,7 @@ describe('results stream — brief §12: Kolkata → Goa, 10 days, Dec 2026, 2 a
     expect(events[0]!.event).toBe('dates');
     expect(events.at(-1)!.event).toBe('done');
     expect(events.map((e) => e.event).sort()).toEqual([
+      'cost',
       'dates',
       'done',
       'guide',
@@ -95,13 +98,39 @@ describe('results stream — brief §12: Kolkata → Goa, 10 days, Dec 2026, 2 a
       'transport',
     ]);
     const get = (name: string) => events.find((e) => e.event === name)!.data;
-    for (const name of ['dates', 'transport', 'hotels', 'itinerary', 'guide'])
+    for (const name of ['dates', 'transport', 'hotels', 'itinerary', 'guide', 'cost'])
       expect(get(name).status).toBe('ok');
     guide = get('guide').data as GuideSection;
+    cost = get('cost').data as CostSection;
     itinerary = get('itinerary').data as ItinerarySection;
     dates = get('dates').data as DatesSection;
     transport = get('transport').data as TransportSection;
     hotels = get('hotels').data as HotelsSection;
+  });
+
+  test('cost is streamed for every plan; the Budget total matches the streamed day plan and legs', async () => {
+    expect(cost.plans.map((p) => p.style).sort()).toEqual(['budget', 'comfort', 'offbeat']);
+    const budget = cost.plans.find((p) => p.style === 'budget')!;
+    if (!budget.available || !itinerary.available) throw new Error('expected plans');
+    expect(budget.start).toBe(itinerary.start);
+    expect(budget.cost.food).toBe(itinerary.days.reduce((s, d) => s + d.spend.meals, 0));
+    const c = budget.cost;
+    expect(c.transport + c.hotels + c.local + c.sights + c.food + c.buffer).toBe(c.total);
+    const comfort = cost.plans.find((p) => p.style === 'comfort')!;
+    if (comfort.available) expect(comfort.fiveStar).not.toBeNull();
+  });
+
+  test('cost endpoint: another plan or date; bad input → 400/404', async () => {
+    const w = dates.styles.find((s) => s.style === 'comfort')!.top[1]!;
+    const res = await request(app.getHttpServer())
+      .get(`/api/search/${id}/cost?style=comfort&start=${w.start}`)
+      .expect(200);
+    expect(res.body).toMatchObject({ style: 'comfort', available: true, start: w.start });
+    await request(app.getHttpServer())
+      .get(`/api/search/${id}/cost?style=luxury&start=${w.start}`)
+      .expect(400);
+    await request(app.getHttpServer()).get(`/api/search/${id}/cost?start=nope`).expect(400);
+    await request(app.getHttpServer()).get(`/api/search/${id}/cost?start=2026-12-31`).expect(404);
   });
 
   test('guide is streamed: Goa sights, dishes, shops and do’s & don’ts', () => {
@@ -306,6 +335,7 @@ describe('results stream — a failing provider', () => {
         else expect(e.data).toEqual({ status: 'error', message: 'unavailable' });
       }
       expect(events.map((e) => e.event).sort()).toEqual([
+        'cost',
         'dates',
         'done',
         'guide',

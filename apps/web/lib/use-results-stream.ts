@@ -1,6 +1,7 @@
 'use client';
 
 import type {
+  CostSection,
   DatesSection,
   GuideSection,
   HotelsSection,
@@ -19,15 +20,18 @@ export interface ResultsState {
   itinerary: SectionState<ItinerarySection>;
   /** Sights, food, shopping, do's & don'ts: the same for every plan and date. */
   guide: SectionState<GuideSection>;
+  /** Every plan's total and booking checklist, at its cheapest dates. */
+  cost: SectionState<CostSection>;
 }
 
-const SECTIONS = ['dates', 'transport', 'hotels', 'itinerary', 'guide'] as const;
+const SECTIONS = ['dates', 'transport', 'hotels', 'itinerary', 'guide', 'cost'] as const;
 const INITIAL: ResultsState = {
   dates: { status: 'loading' },
   transport: { status: 'loading' },
   hotels: { status: 'loading' },
   itinerary: { status: 'loading' },
   guide: { status: 'loading' },
+  cost: { status: 'loading' },
 };
 
 /**

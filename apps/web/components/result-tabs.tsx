@@ -27,6 +27,7 @@ export const READY_TABS: readonly TabId[] = [
   'food',
   'shopping',
   'dos',
+  'cost',
 ];
 
 interface Props {
