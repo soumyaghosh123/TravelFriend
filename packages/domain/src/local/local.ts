@@ -26,8 +26,11 @@ export type LocalPricing =
   | { type: 'seat-km'; base: number; perKm: number }
   /** A fixed fare per adult (ferry, safari seat); 0 for free services. */
   | { type: 'flat'; perPerson: number }
-  /** Hire for the day (taxi for the day, scooter rental), per vehicle. */
-  | { type: 'day'; perVehicleDay: number };
+  /**
+   * Hire for the day (taxi for the day, scooter rental), per vehicle. A taxi package includes
+   * `includedKm`; each km beyond it costs `extraPerKm` per vehicle.
+   */
+  | { type: 'day'; perVehicleDay: number; includedKm?: number; extraPerKm?: number };
 
 /** What the local-transport engines need from a mode (brief §3.3). */
 export interface LocalModeLike {
@@ -79,9 +82,12 @@ export function localFare(m: LocalModeLike, legsKm: number[], t: Travellers, kin
     case 'flat':
       fare = groupEntryFee(p.perPerson, t) * legsKm.length;
       break;
-    case 'day':
-      fare = p.perVehicleDay * vehicles;
+    case 'day': {
+      const totalKm = legsKm.reduce((s, km) => s + km, 0);
+      const extraKm = p.includedKm !== undefined ? Math.max(0, totalKm - p.includedKm) : 0;
+      fare = (p.perVehicleDay + extraKm * (p.extraPerKm ?? 0)) * vehicles;
       break;
+    }
   }
   return { min: Math.round(fare * (1 - m.spread)), max: Math.round(fare * (1 + m.spread)) };
 }

@@ -128,6 +128,15 @@ describe('local transport (brief §3.3)', () => {
     }
     expect(tips.join(' ')).toMatch(/Uber and Ola/);
     expect(total.min).toBe(legs.reduce((s, l) => s + l.plan.min, 0));
+    // Taxi for the day covers 80 km; longer days pay ₹20 per extra km (± the 10% spread).
+    for (const l of legs.filter((l) => l.kind === 'day')) {
+      const taxi = l.options.find((o) => o.id === 'taxi-day');
+      if (!taxi) continue;
+      const mid = Math.round((taxi.min + taxi.max) / 2);
+      if (l.km <= 80) expect(mid).toBeCloseTo(2800, -1);
+      else expect(mid).toBeGreaterThan(2800 + (l.km - 81) * 20 - 20);
+    }
+    expect(legs.some((l) => l.kind === 'day' && l.km > 80)).toBe(true);
     const divarDay = legs.find((l) => l.stops.includes('Divar Island village walk'));
     if (divarDay) expect(divarDay.extras.map((e) => e.id)).toContain('divar-ferry');
   });

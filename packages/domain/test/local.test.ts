@@ -19,6 +19,12 @@ describe('localFare (group fare range for a set of legs)', () => {
     expect(localFare(scooter, [10, 20, 5], family, 'day')).toEqual({ min: 720, max: 880 }); // 3 seats (kids under 8 count half) → 2 scooters × 400 ± 10%
     expect(localFare(scooter, [30], family, 'arrival')).toBeNull();
   });
+  test('day hire with a km allowance: extra km charged per vehicle beyond it', () => {
+    const taxiDay: LocalModeLike = { id: 'taxi-day', kind: 'taxi-day', capacity: 4, pricing: { type: 'day', perVehicleDay: 2800, includedKm: 80, extraPerKm: 20 }, speedKmh: 32, waitMin: 0, public: false, doorToDoor: true, spread: 0 };
+    expect(localFare(taxiDay, [30, 40, 10], family, 'day')).toEqual({ min: 2800, max: 2800 }); // exactly 80 km
+    expect(localFare(taxiDay, [60, 60, 32], family, 'day')).toEqual({ min: 2800 + 72 * 20, max: 2800 + 72 * 20 }); // 152 km
+    expect(localFare(taxiDay, [100], { adults: 6, childAges: [] }, 'day')).toEqual({ min: 2 * (2800 + 400), max: 2 * (2800 + 400) }); // 2 taxis
+  });
   test('legs longer than the mode allows → not offered; minimum fare applies', () => {
     expect(localFare(auto, [20], family, 'day')).toBeNull();
     expect(localFare(auto, [0.5], family, 'day')).toEqual({ min: 34, max: 46 }); // one auto: 2 adults + 2 small children = 3 seats; max(30 + 7, 40) = 40 ± 15%
