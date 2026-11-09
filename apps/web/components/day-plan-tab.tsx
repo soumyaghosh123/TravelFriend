@@ -28,9 +28,15 @@ export function DayPlanTab({ plan, window: w, transport, onPickPlan }: Props) {
       <section className="rounded-card bg-white p-4 shadow-card">
         <h2 className="text-[15px] font-bold">{t('noOffbeatTitle')}</h2>
         <p className="mt-1 text-sm text-ink2">
-          {alt ? t('noOffbeatAlt', { name: alt.name, destination: alt.destinationName, km: alt.distanceKm }) : t('noOffbeatNone')}
+          {alt
+            ? t('noOffbeatAlt', { name: alt.name, destination: alt.destinationName, km: alt.distanceKm })
+            : t('noOffbeatNone')}
         </p>
-        <button type="button" onClick={() => onPickPlan('budget')} className="mt-3 rounded-[10px] bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-d">
+        <button
+          type="button"
+          onClick={() => onPickPlan('budget')}
+          className="mt-3 rounded-[10px] bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-d"
+        >
           {t('showBudget')}
         </button>
       </section>
@@ -38,7 +44,11 @@ export function DayPlanTab({ plan, window: w, transport, onPickPlan }: Props) {
   }
 
   // Days lost to the journey: on board, or arrival/departure days with no time for sights.
-  const lost = plan.days.filter((d) => d.kind === 'travel' || ((d.kind === 'arrival' || d.kind === 'departure') && !d.stops.some((s) => s.kind === 'visit'))).length;
+  const lost = plan.days.filter(
+    (d) =>
+      d.kind === 'travel' ||
+      ((d.kind === 'arrival' || d.kind === 'departure') && !d.stops.some((s) => s.kind === 'visit')),
+  ).length;
   const tip = slowModeTip(w, plan.days.length, lost, transport);
   const unscheduled = plan.unscheduled.map((id) => plan.attractions[id]).filter(Boolean);
   const warned = Object.values(plan.attractions).filter(
@@ -50,23 +60,44 @@ export function DayPlanTab({ plan, window: w, transport, onPickPlan }: Props) {
       <section className="rounded-card bg-white p-4 shadow-card">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-[15px] font-bold">
-            {t('title', { plan: tr(`plans.${plan.style}.name`), dates: dateRange(plan.start, plan.end, locale), days: plan.days.length })}
+            {t('title', {
+              plan: tr(`plans.${plan.style}.name`),
+              dates: dateRange(plan.start, plan.end, locale),
+              days: plan.days.length,
+            })}
           </h2>
-          <span className="text-xs text-muted">{plan.bases.map((b) => t('baseNights', { name: b.name, nights: b.nights })).join(' → ')}</span>
+          <span className="text-xs text-muted">
+            {plan.bases.map((b) => t('baseNights', { name: b.name, nights: b.nights })).join(' → ')}
+          </span>
         </div>
 
         {tip && (
           <div className="mt-2.5 flex flex-wrap items-center gap-3 rounded-[10px] bg-brand-xl px-3 py-2 text-sm text-brand-d">
-            <span>
-              🚆 {t('slowTip', { lost, days: plan.days.length, gained: tip.daysGained })}
-            </span>
-            <Price amount={tip.extra} isEstimate={tip.onward.isEstimate || tip.back.isEstimate} sources={{ names: [...new Set([tip.onward.sourceName, tip.back.sourceName])], fetchedAt: tip.onward.fetchedAt }} size="sm" note={t('slowTipExtra')} />
+            <span>🚆 {t('slowTip', { lost, days: plan.days.length, gained: tip.daysGained })}</span>
+            <Price
+              amount={tip.extra}
+              isEstimate={tip.onward.isEstimate || tip.back.isEstimate}
+              sources={{
+                names: [...new Set([tip.onward.sourceName, tip.back.sourceName])],
+                fetchedAt: tip.onward.fetchedAt,
+              }}
+              size="sm"
+              note={t('slowTipExtra')}
+            />
           </div>
         )}
 
         <div className="mt-1">
           {plan.days.map((d) => (
-            <ItineraryDay key={d.index} day={d} attractions={plan.attractions} bases={plan.bases} window={w} arrivalPoint={plan.arrivalPoint} departurePoint={plan.departurePoint} />
+            <ItineraryDay
+              key={d.index}
+              day={d}
+              attractions={plan.attractions}
+              bases={plan.bases}
+              window={w}
+              arrivalPoint={plan.arrivalPoint}
+              departurePoint={plan.departurePoint}
+            />
           ))}
         </div>
       </section>
@@ -79,7 +110,8 @@ export function DayPlanTab({ plan, window: w, transport, onPickPlan }: Props) {
             <ul className="mb-2 space-y-1 text-sm">
               {warned.map((a) => (
                 <li key={a.id}>
-                  ⚠️ <b>{a.name}:</b> {[a.warnings?.road, a.warnings?.network, a.warnings?.permit].filter(Boolean).join(' · ')}
+                  ⚠️ <b>{a.name}:</b>{' '}
+                  {[a.warnings?.road, a.warnings?.network, a.warnings?.permit].filter(Boolean).join(' · ')}
                 </li>
               ))}
             </ul>
@@ -89,7 +121,9 @@ export function DayPlanTab({ plan, window: w, transport, onPickPlan }: Props) {
               {t('ifTime')} {unscheduled.map((a) => a!.name).join(', ')}
             </p>
           )}
-          {warned.length === 0 && unscheduled.length === 0 && <p className="text-sm text-muted">{t('notesNone')}</p>}
+          {warned.length === 0 && unscheduled.length === 0 && (
+            <p className="text-sm text-muted">{t('notesNone')}</p>
+          )}
           <p className="mt-2 text-xs text-muted">
             {plan.sampleData && <b className="text-warn">{t('sample')} </b>}
             {t('spendBasis')}

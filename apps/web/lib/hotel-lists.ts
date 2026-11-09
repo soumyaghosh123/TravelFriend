@@ -1,4 +1,10 @@
-import { filterHotels, sortHotels, type HotelFilters, type HotelSort, type HotelType as SearchHotelType } from '@tripsaver/domain';
+import {
+  filterHotels,
+  sortHotels,
+  type HotelFilters,
+  type HotelSort,
+  type HotelType as SearchHotelType,
+} from '@tripsaver/domain';
 import type { HotelListing } from '@tripsaver/providers';
 
 /** Filters the tab starts with: the brief's minimum guest rating (3.5) on, everything else off. */
@@ -27,7 +33,12 @@ export interface HotelLists {
 }
 
 /** Splits the stay's hotels into the side-by-side lists, then filters and sorts each one. */
-export function hotelLists(hotels: HotelListing[], chosen: SearchHotelType[], filters: HotelFilters, sort: HotelSort): HotelLists {
+export function hotelLists(
+  hotels: HotelListing[],
+  chosen: SearchHotelType[],
+  filters: HotelFilters,
+  sort: HotelSort,
+): HotelLists {
   const wanted = new Set(chosen.map((c) => TYPE_MAP[c]));
   const threePlus = hotels.filter((h) => h.stars >= 3 && h.stars < 5);
   const fiveStar = hotels.filter((h) => h.stars === 5);

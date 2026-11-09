@@ -22,7 +22,8 @@ export function CombinedRouteCard({ route: r }: { route: CombinedRoute }) {
           {tr(`modes.${o.mode}`)} · {o.number ?? o.operator} · {o.travelClass}
         </div>
         <div className="text-xs text-muted">
-          {o.fromPoint} {when(o.departAt)} → {o.toPoint} {when(o.arriveAt)} · {t('duration', hm(o.durationMin))}
+          {o.fromPoint} {when(o.departAt)} → {o.toPoint} {when(o.arriveAt)} ·{' '}
+          {t('duration', hm(o.durationMin))}
         </div>
       </div>
       <div className="sm:w-56 sm:shrink-0 sm:text-right">
@@ -37,7 +38,16 @@ export function CombinedRouteCard({ route: r }: { route: CombinedRoute }) {
       <header className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="font-bold">{t('via', { hub: r.via.name })}</h3>
         <div className="text-sm">
-          <Price amount={r.groupFare} isEstimate={r.first.isEstimate || r.second.isEstimate} sources={{ names: [...new Set([r.first.sourceName, r.second.sourceName])], fetchedAt: r.first.fetchedAt }} size="md" note={t('combinedTotal', { h: total.h, m: total.m })} />
+          <Price
+            amount={r.groupFare}
+            isEstimate={r.first.isEstimate || r.second.isEstimate}
+            sources={{
+              names: [...new Set([r.first.sourceName, r.second.sourceName])],
+              fetchedAt: r.first.fetchedAt,
+            }}
+            size="md"
+            note={t('combinedTotal', { h: total.h, m: total.m })}
+          />
         </div>
       </header>
       <ul className="mt-1 divide-y divide-dashed divide-line">

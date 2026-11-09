@@ -39,9 +39,17 @@ export function BookingAdvice({ advice, start, isPeakMonth }: Props) {
         <Item
           icon="🚆"
           title={t('trainTitle', { days: advice.advanceDays })}
-          body={t.rich(open ? 'trainOpen' : 'trainOpens', { start: dayMonth(start, locale), opens: dayMonth(opens, locale), b: (c) => <b>{c}</b> })}
+          body={t.rich(open ? 'trainOpen' : 'trainOpens', {
+            start: dayMonth(start, locale),
+            opens: dayMonth(opens, locale),
+            b: (c) => <b>{c}</b>,
+          })}
         />
-        <Item icon="⚡" title={t('tatkalTitle')} body={t('tatkalBody', { ac: advice.tatkalAcOpens, nonac: advice.tatkalNonAcOpens })} />
+        <Item
+          icon="⚡"
+          title={t('tatkalTitle')}
+          body={t('tatkalBody', { ac: advice.tatkalAcOpens, nonac: advice.tatkalNonAcOpens })}
+        />
         <Item icon="✈️" title={t('flightsTitle')} body={t('flightsBody')} />
         <Item icon="🏨" title={t(isPeakMonth ? 'hotelsPeakTitle' : 'hotelsTitle')} body={t('hotelsBody')} />
       </ul>

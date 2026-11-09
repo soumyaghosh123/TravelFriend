@@ -37,6 +37,7 @@ export function useSectionFor<T>(
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
   if (fromStream) return { ...fromStream, retry };
-  if (qs === null || streamed.status === 'loading' || !fetched || fetched.qs !== qs) return { status: 'loading', retry };
+  if (qs === null || streamed.status === 'loading' || !fetched || fetched.qs !== qs)
+    return { status: 'loading', retry };
   return { ...fetched.state, retry };
 }

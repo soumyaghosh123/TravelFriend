@@ -29,13 +29,21 @@ export function HotelCard({ hotel: h, landmark, inPlan }: Props) {
     h.distanceKm === null || !landmark
       ? null
       : h.distanceKm < 1
-        ? t('distanceM', { m: Math.round(h.distanceKm * 1000 / 10) * 10, landmark })
+        ? t('distanceM', { m: Math.round((h.distanceKm * 1000) / 10) * 10, landmark })
         : t('distanceKm', { km: h.distanceKm.toFixed(1), landmark });
-  const tags = [h.breakfastIncluded && t('breakfast'), h.freeCancellation && t('freeCancellation'), ...h.amenities.map((a) => t.has(`amenity.${a}`) ? t(`amenity.${a}`) : a)].filter(Boolean);
+  const tags = [
+    h.breakfastIncluded && t('breakfast'),
+    h.freeCancellation && t('freeCancellation'),
+    ...h.amenities.map((a) => (t.has(`amenity.${a}`) ? t(`amenity.${a}`) : a)),
+  ].filter(Boolean);
 
   return (
     <article className="grid grid-cols-1 gap-3 border-b border-line py-3 last:border-0 sm:grid-cols-[110px_1fr]">
-      <div className="hidden h-[100px] rounded-[10px] sm:block" style={{ background: PHOTO[h.type] }} aria-hidden />
+      <div
+        className="hidden h-[100px] rounded-[10px] sm:block"
+        style={{ background: PHOTO[h.type] }}
+        aria-hidden
+      />
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="font-bold">{h.name}</h3>
@@ -44,8 +52,14 @@ export function HotelCard({ hotel: h, landmark, inPlan }: Props) {
               {'★'.repeat(h.stars)}
             </span>
           )}
-          <span className="rounded-full bg-line px-2 py-px text-[11px] font-semibold text-ink2">{t(`type.${h.type}`)}</span>
-          {inPlan && <span className="rounded-full bg-brand px-2 py-px text-[11px] font-bold text-white">{t('inPlan', { plan: inPlan })}</span>}
+          <span className="rounded-full bg-line px-2 py-px text-[11px] font-semibold text-ink2">
+            {t(`type.${h.type}`)}
+          </span>
+          {inPlan && (
+            <span className="rounded-full bg-brand px-2 py-px text-[11px] font-bold text-white">
+              {t('inPlan', { plan: inPlan })}
+            </span>
+          )}
         </div>
         <div className="mt-0.5 text-xs">
           <b className="mr-1 rounded-md bg-good px-1.5 py-px text-white">{h.guestRating.toFixed(1)}</b>
@@ -78,7 +92,12 @@ export function HotelCard({ hotel: h, landmark, inPlan }: Props) {
         <ul className="mt-2 flex flex-wrap gap-1.5" aria-label={t('sitePrices')}>
           {h.sitePrices.map((p) => (
             <li key={p.site}>
-              <Price amount={p.price.amount} isEstimate={p.isEstimate} offer={p} chip={{ highlight: p.site === h.cheapest.site }} />
+              <Price
+                amount={p.price.amount}
+                isEstimate={p.isEstimate}
+                offer={p}
+                chip={{ highlight: p.site === h.cheapest.site }}
+              />
             </li>
           ))}
         </ul>

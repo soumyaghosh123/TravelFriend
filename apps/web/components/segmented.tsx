@@ -19,7 +19,9 @@ export function Segmented<T extends string>({ label, value, options, onChange }:
           disabled={o.disabled}
           onClick={() => onChange(o.id)}
           className={`rounded-[10px] border px-3 py-1.5 font-semibold ${
-            o.id === value ? 'border-ink bg-ink text-white' : 'border-line bg-white text-ink2 hover:border-ink/40'
+            o.id === value
+              ? 'border-ink bg-ink text-white'
+              : 'border-line bg-white text-ink2 hover:border-ink/40'
           } disabled:opacity-40`}
         >
           {o.label}

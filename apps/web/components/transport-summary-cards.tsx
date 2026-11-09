@@ -12,12 +12,25 @@ const CARDS = [
 ] as const;
 
 /** Cheapest / Fastest / Best overnight for one direction (mockup "Getting there"). */
-export function TransportSummaryCards({ summary, people }: { summary: DirectionTransport['summary']; people: number }) {
+export function TransportSummaryCards({
+  summary,
+  people,
+}: {
+  summary: DirectionTransport['summary'];
+  people: number;
+}) {
   const t = useTranslations('results.transport');
   const tr = useTranslations('results');
   const line = (o: TransportOffer) => {
     const d = hm(o.durationMin);
-    return t('summaryLine', { service: o.number ?? o.operator, from: o.fromPoint, to: o.toPoint, h: d.h, m: d.m, people });
+    return t('summaryLine', {
+      service: o.number ?? o.operator,
+      from: o.fromPoint,
+      to: o.toPoint,
+      h: d.h,
+      m: d.m,
+      people,
+    });
   };
   return (
     <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
@@ -25,7 +38,9 @@ export function TransportSummaryCards({ summary, people }: { summary: DirectionT
         const o = summary[key];
         return (
           <div key={key} className={`rounded-xl border bg-white px-3 py-2.5 ${border}`}>
-            <div className={`text-[11px] font-bold uppercase tracking-[.06em] ${color}`}>{t(`cards.${key}`)}</div>
+            <div className={`text-[11px] font-bold uppercase tracking-[.06em] ${color}`}>
+              {t(`cards.${key}`)}
+            </div>
             {o ? (
               <>
                 <div className="text-[15px] font-extrabold">

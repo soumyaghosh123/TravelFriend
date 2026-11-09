@@ -9,9 +9,14 @@ export async function TrustSection() {
     <section
       id="how"
       className="relative mt-10 bg-cover bg-center px-3.5 py-[60px] text-white md:bg-fixed md:px-6"
-      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1800&q=70')" }}
+      style={{
+        backgroundImage: "url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1800&q=70')",
+      }}
     >
-      <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-[rgba(15,23,42,.55)] to-[rgba(15,23,42,.75)]" />
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-gradient-to-b from-[rgba(15,23,42,.55)] to-[rgba(15,23,42,.75)]"
+      />
       <div className="relative">
         <h2 className="mb-1.5 text-center text-2xl font-bold">{t('title')}</h2>
         <p className="mb-[22px] text-center text-[#cbd5e1]">{t('sub')}</p>

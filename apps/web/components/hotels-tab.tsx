@@ -26,7 +26,8 @@ export function HotelsTab({ section: s, window: w, style, chosenTypes }: Props) 
   const planName = tr(`plans.${style}.name`);
   const landmark = s.landmark?.name ?? null;
 
-  if (s.nights === 0) return <p className="rounded-card bg-white p-4 text-muted shadow-card">{t('noNights')}</p>;
+  if (s.nights === 0)
+    return <p className="rounded-card bg-white p-4 text-muted shadow-card">{t('noNights')}</p>;
 
   const lists = hotelLists(s.hotels, chosenTypes, filters, sort);
   const planHotel = w.hotel ? s.hotels.find((h) => h.hotelId === w.hotel!.hotelId) : undefined;
@@ -42,7 +43,14 @@ export function HotelsTab({ section: s, window: w, style, chosenTypes }: Props) 
       {hotels.length === 0 ? (
         <p className="mt-2 text-sm text-muted">{t('noneMatch')}</p>
       ) : (
-        hotels.map((h) => <HotelCard key={h.hotelId} hotel={h} landmark={landmark} inPlan={h.hotelId === planHotel?.hotelId ? planName : undefined} />)
+        hotels.map((h) => (
+          <HotelCard
+            key={h.hotelId}
+            hotel={h}
+            landmark={landmark}
+            inPlan={h.hotelId === planHotel?.hotelId ? planName : undefined}
+          />
+        ))
       )}
     </section>
   );
@@ -51,7 +59,9 @@ export function HotelsTab({ section: s, window: w, style, chosenTypes }: Props) 
     <div className="space-y-3.5">
       {planHotel && (
         <section className="rounded-card border-l-4 border-brand bg-white p-4 shadow-card">
-          <span className="rounded-full bg-brand-l px-2 py-px text-[11px] font-bold uppercase text-brand-d">{t('planStay', { plan: planName })}</span>
+          <span className="rounded-full bg-brand-l px-2 py-px text-[11px] font-bold uppercase text-brand-d">
+            {t('planStay', { plan: planName })}
+          </span>
           <HotelCard hotel={planHotel} landmark={landmark} />
         </section>
       )}
@@ -67,12 +77,20 @@ export function HotelsTab({ section: s, window: w, style, chosenTypes }: Props) 
       </p>
 
       {s.priceHint && s.priceHint.level !== 'usual' && (
-        <p className={`rounded-[10px] px-3 py-2 text-sm ${s.priceHint.level === 'lower' ? 'bg-good-l text-good' : 'bg-warn-l text-warn'}`}>
+        <p
+          className={`rounded-[10px] px-3 py-2 text-sm ${s.priceHint.level === 'lower' ? 'bg-good-l text-good' : 'bg-warn-l text-warn'}`}
+        >
           {t(`hint.${s.priceHint.level}`, { pct: s.priceHint.pct })}
         </p>
       )}
 
-      <HotelFiltersBar filters={filters} sort={sort} landmark={landmark} onFilters={setFilters} onSort={setSort} />
+      <HotelFiltersBar
+        filters={filters}
+        sort={sort}
+        landmark={landmark}
+        onFilters={setFilters}
+        onSort={setSort}
+      />
 
       <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
         {column('threePlus', lists.threePlus)}

@@ -21,7 +21,11 @@ export function ReasonText({ reason }: { reason: WindowReason }) {
   const e = reason.event;
   return (
     <>
-      <span className={`mr-1 inline-block rounded-full px-2 py-px text-[11px] font-bold ${BADGE[reason.kind]}`}>{t(`kind.${reason.kind}`)}</span>
+      <span
+        className={`mr-1 inline-block rounded-full px-2 py-px text-[11px] font-bold ${BADGE[reason.kind]}`}
+      >
+        {t(`kind.${reason.kind}`)}
+      </span>
       {e ? (
         <>
           <b>
@@ -29,8 +33,10 @@ export function ReasonText({ reason }: { reason: WindowReason }) {
           </b>
           {e.priceImpact > 1 && <> · {t('impact', { pct: Math.round((e.priceImpact - 1) * 100) })}</>}
         </>
+      ) : reason.nights ? (
+        t('weekendCount', { nights: reason.nights })
       ) : (
-        reason.nights ? t('weekendCount', { nights: reason.nights }) : t('weekend')
+        t('weekend')
       )}
     </>
   );

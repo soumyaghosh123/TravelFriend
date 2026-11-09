@@ -15,7 +15,11 @@ export function FareBreakdown({ lines }: { lines: TravellerPriceLine[] }) {
         ? t('adultsLine', { count: l.count, amount: inr(l.amount) })
         : l.fareType === 'free'
           ? t('childFreeLine', { age: ts('ageYears', { age: l.age }) })
-          : t('childLine', { age: ts('ageYears', { age: l.age }), fare: ts(`fare.${l.fareType}`), amount: inr(l.amount) }),
+          : t('childLine', {
+              age: ts('ageYears', { age: l.age }),
+              fare: ts(`fare.${l.fareType}`),
+              amount: inr(l.amount),
+            }),
     );
   return <div className="text-[11px] text-muted">{parts.join(' + ')}</div>;
 }

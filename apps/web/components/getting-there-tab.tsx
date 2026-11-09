@@ -38,7 +38,9 @@ export function GettingThereTab({ transport, window: w, style, people }: Props) 
   useEffect(() => setView(chosen.mode), [chosen.mode, dir]);
 
   const services = view === 'combined' ? [] : d.services.filter((s) => s.mode === view);
-  const anyEstimate = [...transport.onward.services, ...transport.return.services].some((s) => s.offers.some((o) => o.isEstimate));
+  const anyEstimate = [...transport.onward.services, ...transport.return.services].some((s) =>
+    s.offers.some((o) => o.isEstimate),
+  );
   const legsTotal = w.onward.price.amount + w.return.price.amount;
 
   return (
@@ -48,8 +50,22 @@ export function GettingThereTab({ transport, window: w, style, people }: Props) 
         value={dir}
         onChange={setDir}
         options={[
-          { id: 'onward', label: t('onwardTab', { date: dayMonth(transport.onward.date, locale), from: transport.onward.from.name, to: transport.onward.to.name }) },
-          { id: 'return', label: t('returnTab', { date: dayMonth(transport.return.date, locale), from: transport.return.from.name, to: transport.return.to.name }) },
+          {
+            id: 'onward',
+            label: t('onwardTab', {
+              date: dayMonth(transport.onward.date, locale),
+              from: transport.onward.from.name,
+              to: transport.onward.to.name,
+            }),
+          },
+          {
+            id: 'return',
+            label: t('returnTab', {
+              date: dayMonth(transport.return.date, locale),
+              from: transport.return.from.name,
+              to: transport.return.to.name,
+            }),
+          },
         ]}
       />
 
@@ -57,7 +73,9 @@ export function GettingThereTab({ transport, window: w, style, people }: Props) 
 
       <section className="rounded-card bg-white p-4 shadow-card">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-[15px] font-bold">{t('title', { from: d.from.name, to: d.to.name, date: dayMonth(d.date, locale) })}</h2>
+          <h2 className="text-[15px] font-bold">
+            {t('title', { from: d.from.name, to: d.to.name, date: dayMonth(d.date, locale) })}
+          </h2>
           <Segmented<View>
             label={t('modes')}
             value={view}
@@ -75,7 +93,11 @@ export function GettingThereTab({ transport, window: w, style, people }: Props) 
             {d.combined.length > 0 && (
               <>
                 {' '}
-                <button type="button" className="font-semibold text-brand hover:underline" onClick={() => setView('combined')}>
+                <button
+                  type="button"
+                  className="font-semibold text-brand hover:underline"
+                  onClick={() => setView('combined')}
+                >
                   {t('seeCombined')}
                 </button>
               </>
@@ -88,9 +110,15 @@ export function GettingThereTab({ transport, window: w, style, people }: Props) 
             <TransportServiceCard key={s.key} service={s} chosen={chosen} planName={planName} />
           ))}
           {view === 'combined' &&
-            (d.combined.length ? d.combined.map((c) => <CombinedRouteCard key={c.key} route={c} />) : <p className="text-sm text-muted">{t('noCombined')}</p>)}
+            (d.combined.length ? (
+              d.combined.map((c) => <CombinedRouteCard key={c.key} route={c} />)
+            ) : (
+              <p className="text-sm text-muted">{t('noCombined')}</p>
+            ))}
         </div>
-        {view === 'combined' && d.combined.length > 0 && <p className="mt-2 text-xs text-muted">{t('combinedNote')}</p>}
+        {view === 'combined' && d.combined.length > 0 && (
+          <p className="mt-2 text-xs text-muted">{t('combinedNote')}</p>
+        )}
       </section>
 
       <section className="flex flex-wrap items-start justify-between gap-3 rounded-card bg-white p-4 shadow-card">
@@ -106,7 +134,10 @@ export function GettingThereTab({ transport, window: w, style, people }: Props) 
         <Price
           amount={legsTotal}
           isEstimate={w.onward.isEstimate || w.return.isEstimate}
-          sources={{ names: [...new Set([w.onward.sourceName, w.return.sourceName])], fetchedAt: w.onward.fetchedAt }}
+          sources={{
+            names: [...new Set([w.onward.sourceName, w.return.sourceName])],
+            fetchedAt: w.onward.fetchedAt,
+          }}
           size="lg"
         />
       </section>

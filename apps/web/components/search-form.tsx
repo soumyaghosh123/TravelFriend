@@ -80,15 +80,38 @@ export function SearchForm({ initial, today, initialMoreOpen = false }: Props) {
       className="relative z-10 mx-3 -mt-16 scroll-mt-4 rounded-[18px] bg-white p-3 shadow-card sm:p-[18px] xl:mx-auto xl:max-w-[1180px]"
     >
       <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-[1.2fr_1.2fr_.7fr_.9fr_1.2fr_1.1fr]">
-        <PlaceField label={t('from')} placeholder={t('fromPlaceholder')} value={form.from} onChange={(from) => set({ from })} error={err('from')} />
-        <PlaceField label={t('to')} placeholder={t('toPlaceholder')} value={form.to} onChange={(to) => set({ to })} error={err('to')} />
+        <PlaceField
+          label={t('from')}
+          placeholder={t('fromPlaceholder')}
+          value={form.from}
+          onChange={(from) => set({ from })}
+          error={err('from')}
+        />
+        <PlaceField
+          label={t('to')}
+          placeholder={t('toPlaceholder')}
+          value={form.to}
+          onChange={(to) => set({ to })}
+          error={err('to')}
+        />
         <div className="min-w-0">
           <FieldBox label={t('days')} invalid={!!err('days')}>
-            <Stepper label={t('days')} value={form.days} min={MIN_DAYS} max={MAX_DAYS} onChange={(days) => set({ days })} />
+            <Stepper
+              label={t('days')}
+              value={form.days}
+              min={MIN_DAYS}
+              max={MAX_DAYS}
+              onChange={(days) => set({ days })}
+            />
           </FieldBox>
           <FieldError id="days-err" message={err('days')} />
         </div>
-        <MonthField today={today} value={form.month} onChange={(month) => set({ month })} error={err('month')} />
+        <MonthField
+          today={today}
+          value={form.month}
+          onChange={(month) => set({ month })}
+          error={err('month')}
+        />
         <div className="min-w-0">
           <FieldBox label={t('hotelType')} invalid={!!err('hotelTypes')}>
             <div className="mt-0.5 truncate text-[15px] font-semibold">{hotelSummary}</div>
@@ -96,7 +119,12 @@ export function SearchForm({ initial, today, initialMoreOpen = false }: Props) {
           </FieldBox>
           <FieldError id="hotel-err" message={err('hotelTypes')} />
         </div>
-        <TravellersField value={travellers} dispatch={dispatch} error={err('travellers')} forceOpen={openTravellers} />
+        <TravellersField
+          value={travellers}
+          dispatch={dispatch}
+          error={err('travellers')}
+          forceOpen={openTravellers}
+        />
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2.5">

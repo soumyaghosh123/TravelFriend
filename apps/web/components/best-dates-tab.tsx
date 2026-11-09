@@ -31,15 +31,28 @@ export function BestDatesTab({ dates, style, people, selectedStart, selection, o
 
   return (
     <div className="space-y-3.5">
-      {dates.peakWarning && <PeakWarning warning={dates.peakWarning} destinationMonth={monthLabel(month, locale, 'long')} />}
+      {dates.peakWarning && (
+        <PeakWarning warning={dates.peakWarning} destinationMonth={monthLabel(month, locale, 'long')} />
+      )}
 
       <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-[1.5fr_1fr]">
         <section className="rounded-card bg-white p-4 shadow-card">
           <div className="mb-2.5 flex flex-wrap items-baseline justify-between gap-1.5">
-            <h2 className="text-[15px] font-bold">{t('calendarTitle', { month: monthLabel(month, locale, 'long') })}</h2>
-            <span className="text-xs text-muted">{t('calendarSub', { plan: t(`plans.${style.style}.name`), people })}</span>
+            <h2 className="text-[15px] font-bold">
+              {t('calendarTitle', { month: monthLabel(month, locale, 'long') })}
+            </h2>
+            <span className="text-xs text-muted">
+              {t('calendarSub', { plan: t(`plans.${style.style}.name`), people })}
+            </span>
           </div>
-          <PriceCalendar year={dates.year} month={dates.month} days={dates.days} style={style} selectedStart={selectedStart} onSelect={onSelect} />
+          <PriceCalendar
+            year={dates.year}
+            month={dates.month}
+            days={dates.days}
+            style={style}
+            selectedStart={selectedStart}
+            onSelect={onSelect}
+          />
         </section>
 
         <div className="space-y-3.5">
@@ -66,7 +79,11 @@ export function BestDatesTab({ dates, style, people, selectedStart, selection, o
       <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
         <MonthCompare months={dates.months} chosen={dates.month} alternative={dates.bestAlternative} />
         {dates.bookingAdvice && selectedStart && (
-          <BookingAdvice advice={dates.bookingAdvice} start={selectedStart} isPeakMonth={!!dates.peakWarning?.isPeakMonth} />
+          <BookingAdvice
+            advice={dates.bookingAdvice}
+            start={selectedStart}
+            isPeakMonth={!!dates.peakWarning?.isPeakMonth}
+          />
         )}
       </div>
     </div>

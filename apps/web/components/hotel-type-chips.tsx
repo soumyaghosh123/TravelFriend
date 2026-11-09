@@ -13,7 +13,11 @@ interface Props {
 export function HotelTypeChips({ value, onChange }: Props) {
   const t = useTranslations('search');
   const toggle = (h: HotelType) =>
-    onChange(value.includes(h) ? value.filter((v) => v !== h) : HOTEL_TYPES.filter((x) => x === h || value.includes(x)));
+    onChange(
+      value.includes(h)
+        ? value.filter((v) => v !== h)
+        : HOTEL_TYPES.filter((x) => x === h || value.includes(x)),
+    );
   return (
     <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('hotelType')}>
       {HOTEL_TYPES.map((h) => (

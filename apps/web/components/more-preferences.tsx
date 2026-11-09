@@ -15,7 +15,8 @@ interface Props {
   errors: { stayNear?: string; budget?: string };
 }
 
-const control = 'mt-0.5 w-full bg-transparent text-[13px] font-semibold outline-none placeholder:font-normal placeholder:text-muted/70';
+const control =
+  'mt-0.5 w-full bg-transparent text-[13px] font-semibold outline-none placeholder:font-normal placeholder:text-muted/70';
 
 function toggleIn<T>(list: T[] | undefined, v: T): T[] {
   const l = list ?? [];
@@ -37,7 +38,12 @@ export function MorePreferences({ id, value, onChange, errors }: Props) {
     const fid = `${uid}-${key}`;
     return (
       <FieldBox label={label} htmlFor={fid}>
-        <select id={fid} className={`${control} cursor-pointer`} value={value[key] ?? 'any'} onChange={(e) => set({ [key]: e.target.value } as Partial<Preferences>)}>
+        <select
+          id={fid}
+          className={`${control} cursor-pointer`}
+          value={value[key] ?? 'any'}
+          onChange={(e) => set({ [key]: e.target.value } as Partial<Preferences>)}
+        >
           {options.map((o) => (
             <option key={o} value={o}>
               {t(`${optionKey}.${String(o)}`)}
@@ -49,7 +55,10 @@ export function MorePreferences({ id, value, onChange, errors }: Props) {
   }
 
   return (
-    <div id={id} className="mt-3 grid grid-cols-1 gap-2.5 border-t border-line pt-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div
+      id={id}
+      className="mt-3 grid grid-cols-1 gap-2.5 border-t border-line pt-3 sm:grid-cols-2 lg:grid-cols-4"
+    >
       <div>
         <FieldBox label={t('stayNear')} htmlFor={`${uid}-near`} invalid={!!errors.stayNear}>
           <input
@@ -86,7 +95,11 @@ export function MorePreferences({ id, value, onChange, errors }: Props) {
       <FieldBox label={t('with')} className="sm:col-span-2 lg:col-span-2">
         <div className="mt-1 flex flex-wrap gap-1.5">
           {COMPANIONS.map((c) => (
-            <Chip key={c} on={!!value.companions?.includes(c)} onToggle={() => set({ companions: toggleIn(value.companions, c) })}>
+            <Chip
+              key={c}
+              on={!!value.companions?.includes(c)}
+              onToggle={() => set({ companions: toggleIn(value.companions, c) })}
+            >
               {t(`companions.${c}`)}
             </Chip>
           ))}
@@ -95,7 +108,11 @@ export function MorePreferences({ id, value, onChange, errors }: Props) {
       <FieldBox label={t('interests')} className="sm:col-span-2 lg:col-span-4">
         <div className="mt-1 flex flex-wrap gap-1.5">
           {INTERESTS.map((i) => (
-            <Chip key={i} on={!!value.interests?.includes(i)} onToggle={() => set({ interests: toggleIn(value.interests, i) })}>
+            <Chip
+              key={i}
+              on={!!value.interests?.includes(i)}
+              onToggle={() => set({ interests: toggleIn(value.interests, i) })}
+            >
               {t(`interestOptions.${i}`)}
             </Chip>
           ))}

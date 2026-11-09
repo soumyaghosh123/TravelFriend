@@ -56,7 +56,18 @@ function useNow(): number {
  * The only way prices are rendered: amount, "approx." when estimated, where it comes from,
  * how fresh it is, and a booking link with dates and travellers filled in (CLAUDE.md rule 1).
  */
-export function Price({ amount, amountMax, isEstimate, offer, sources, ownEstimate, note, size = 'md', hideBook, chip }: Props) {
+export function Price({
+  amount,
+  amountMax,
+  isEstimate,
+  offer,
+  sources,
+  ownEstimate,
+  note,
+  size = 'md',
+  hideBook,
+  chip,
+}: Props) {
   const t = useTranslations('price');
   const locale = useLocale();
   const now = useNow();
@@ -80,7 +91,9 @@ export function Price({ amount, amountMax, isEstimate, offer, sources, ownEstima
         aria-label={label}
         title={label}
         className={`block rounded-lg border px-2 py-1 text-[11px] ${
-          chip.highlight ? 'border-good bg-good-l font-semibold text-good' : 'border-line text-ink2 hover:border-brand'
+          chip.highlight
+            ? 'border-good bg-good-l font-semibold text-good'
+            : 'border-line text-ink2 hover:border-brand'
         }`}
       >
         {offer.sourceName} <b className="tabular-nums">{inr(amount)}</b>
@@ -97,14 +110,18 @@ export function Price({ amount, amountMax, isEstimate, offer, sources, ownEstima
           {amountMax !== undefined && amountMax > amount && <>–{inr(amountMax)}</>}
         </span>
         {isEstimate && (
-          <span className="rounded bg-warn-l px-1.5 py-px text-[10px] font-bold uppercase text-warn" title={t('approxHint')}>
+          <span
+            className="rounded bg-warn-l px-1.5 py-px text-[10px] font-bold uppercase text-warn"
+            title={t('approxHint')}
+          >
             {t('approx')}
           </span>
         )}
       </div>
       {note && <div className="text-xs text-muted">{note}</div>}
       <div className="text-[11px] text-muted">
-        {offer && t.rich('cheapestOn', { site: offer.sourceName, b: (c) => <b className="text-ink2">{c}</b> })}
+        {offer &&
+          t.rich('cheapestOn', { site: offer.sourceName, b: (c) => <b className="text-ink2">{c}</b> })}
         {sources && t('builtFrom', { sites: sources.names.join(', ') })}
         {ownEstimate && t('ownEstimate')}
         {fetchedAt && <> · {t('checked', { ago: checkedAgo(fetchedAt, now, locale) })}</>}

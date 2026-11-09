@@ -18,7 +18,11 @@ export function LanguageSwitcher() {
   }
 
   return (
-    <div role="group" aria-label={t('language')} className={`flex rounded-full border border-line bg-white p-0.5 ${pending ? 'opacity-60' : ''}`}>
+    <div
+      role="group"
+      aria-label={t('language')}
+      className={`flex rounded-full border border-line bg-white p-0.5 ${pending ? 'opacity-60' : ''}`}
+    >
       {LOCALES.map((l) => (
         <button
           key={l}

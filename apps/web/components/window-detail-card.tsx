@@ -23,7 +23,17 @@ interface Props {
 
 const MODE_ICON = { train: '🚆', bus: '🚌', flight: '✈️' } as const;
 
-function Row({ icon, title, sub, price }: { icon: string; title: ReactNode; sub: ReactNode; price: ReactNode }) {
+function Row({
+  icon,
+  title,
+  sub,
+  price,
+}: {
+  icon: string;
+  title: ReactNode;
+  sub: ReactNode;
+  price: ReactNode;
+}) {
   return (
     <li className="flex flex-col gap-2 border-b border-dashed border-line py-2.5 last:border-0 sm:flex-row sm:items-start sm:gap-3">
       <span className="hidden text-lg sm:block" aria-hidden>
@@ -39,7 +49,16 @@ function Row({ icon, title, sub, price }: { icon: string; title: ReactNode; sub:
 }
 
 /** The selected dates, priced with the actual offers to book: each line has its own source and link. */
-export function WindowDetailCard({ window: w, fetchedAt, people, rank, saving, mostExpensive, estimate, reasons }: Props) {
+export function WindowDetailCard({
+  window: w,
+  fetchedAt,
+  people,
+  rank,
+  saving,
+  mostExpensive,
+  estimate,
+  reasons,
+}: Props) {
   const t = useTranslations('results');
   const locale = useLocale();
 
@@ -68,14 +87,25 @@ export function WindowDetailCard({ window: w, fetchedAt, people, rank, saving, m
           <h2 className="text-[15px] font-bold">
             {rank ? t('windowRank', { rank }) : t('windowSelected')} · {dateRange(w.start, w.end, locale)}
           </h2>
-          <p className="text-xs text-muted">{t('windowStay', { days: w.daysAtDestination, nights: w.hotelNights })}</p>
+          <p className="text-xs text-muted">
+            {t('windowStay', { days: w.daysAtDestination, nights: w.hotelNights })}
+          </p>
           {saving !== undefined && saving > 0 && mostExpensive && (
             <p className="text-xs font-semibold text-good">
-              {t('saveVs', { amount: inr(saving), dates: dateRange(mostExpensive.start, mostExpensive.end, locale) })}
+              {t('saveVs', {
+                amount: inr(saving),
+                dates: dateRange(mostExpensive.start, mostExpensive.end, locale),
+              })}
             </p>
           )}
         </div>
-        <Price amount={w.total} isEstimate size="lg" sources={tripSources(w, fetchedAt)} note={t('forGroup', { people, perPerson: inr(w.perPerson) })} />
+        <Price
+          amount={w.total}
+          isEstimate
+          size="lg"
+          sources={tripSources(w, fetchedAt)}
+          note={t('forGroup', { people, perPerson: inr(w.perPerson) })}
+        />
       </div>
 
       <ul className="mt-2">
@@ -84,8 +114,19 @@ export function WindowDetailCard({ window: w, fetchedAt, people, rank, saving, m
           <Row
             icon="🏨"
             title={`${w.hotel.name} · ${'★'.repeat(w.hotel.stars)}`}
-            sub={t('hotelLine', { rating: w.hotel.guestRating.toFixed(1), reviews: w.hotel.reviewCount, nights: w.hotel.nights })}
-            price={<Price amount={w.hotel.cheapest.price.amount} isEstimate={w.hotel.cheapest.isEstimate} offer={w.hotel.cheapest} size="md" />}
+            sub={t('hotelLine', {
+              rating: w.hotel.guestRating.toFixed(1),
+              reviews: w.hotel.reviewCount,
+              nights: w.hotel.nights,
+            })}
+            price={
+              <Price
+                amount={w.hotel.cheapest.price.amount}
+                isEstimate={w.hotel.cheapest.isEstimate}
+                offer={w.hotel.cheapest}
+                size="md"
+              />
+            }
           />
         ) : (
           <Row icon="🏨" title={t('noHotel')} sub={t('noHotelSub')} price={null} />
@@ -99,7 +140,9 @@ export function WindowDetailCard({ window: w, fetchedAt, people, rank, saving, m
         {leg(w.return, t('return'))}
       </ul>
 
-      {estimate !== undefined && estimate !== w.total && <p className="mt-2 text-xs text-muted">{t('estimateNote', { estimate: inr(estimate) })}</p>}
+      {estimate !== undefined && estimate !== w.total && (
+        <p className="mt-2 text-xs text-muted">{t('estimateNote', { estimate: inr(estimate) })}</p>
+      )}
 
       {reasons.length > 0 && (
         <div className="mt-3 rounded-[10px] bg-bg px-3 py-2">

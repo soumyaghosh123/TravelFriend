@@ -32,13 +32,18 @@ export function TopWindows({ style, selectedStart, onSelect }: Props) {
                 onClick={() => onSelect(w.start)}
                 className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left ${on ? 'border-brand bg-brand-xl' : 'border-line hover:border-brand/50'}`}
               >
-                <span className="grid size-[26px] shrink-0 place-items-center rounded-full bg-good text-[13px] font-extrabold text-white">{w.rank}</span>
+                <span className="grid size-[26px] shrink-0 place-items-center rounded-full bg-good text-[13px] font-extrabold text-white">
+                  {w.rank}
+                </span>
                 <span className="min-w-0">
                   <span className="block font-bold">{dateRange(w.start, w.end, locale)}</span>
                   {w.saving > 0 && worst && (
                     <span className="block text-xs font-semibold text-good">
                       {w.rank === 1
-                        ? t('saveVs', { amount: inr(w.saving), dates: dateRange(worst.start, worst.end, locale) })
+                        ? t('saveVs', {
+                            amount: inr(w.saving),
+                            dates: dateRange(worst.start, worst.end, locale),
+                          })
                         : t('save', { amount: inr(w.saving) })}
                     </span>
                   )}

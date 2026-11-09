@@ -47,18 +47,33 @@ export function TransportServiceCard({ service: s, chosen, planName }: Props) {
         {s.offers.map((o) => {
           const mine = sameOffer(o, chosen);
           return (
-            <li key={o.travelClass} className={`flex flex-col gap-2 py-2 sm:flex-row sm:items-start sm:gap-4 ${mine ? '-mx-2 rounded-lg bg-brand-xl px-2' : ''}`}>
+            <li
+              key={o.travelClass}
+              className={`flex flex-col gap-2 py-2 sm:flex-row sm:items-start sm:gap-4 ${mine ? '-mx-2 rounded-lg bg-brand-xl px-2' : ''}`}
+            >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <b>{o.travelClass}</b>
-                  {mine && <span className="rounded-full bg-brand px-2 py-px text-[11px] font-bold text-white">{t('inPlan', { plan: planName })}</span>}
+                  {mine && (
+                    <span className="rounded-full bg-brand px-2 py-px text-[11px] font-bold text-white">
+                      {t('inPlan', { plan: planName })}
+                    </span>
+                  )}
                 </div>
                 {o.breakdown && <FareBreakdown lines={o.breakdown} />}
                 {o.availability && o.confirmChancePct !== undefined && (
                   <div className="mt-1 flex items-center gap-2 text-xs">
-                    <span className={`font-bold ${availColors(o.confirmChancePct).text}`}>{o.availability}</span>
-                    <span className="inline-block h-1.5 w-[60px] overflow-hidden rounded-full bg-line" aria-hidden>
-                      <i className={`block h-full ${availColors(o.confirmChancePct).bar}`} style={{ width: `${o.confirmChancePct}%` }} />
+                    <span className={`font-bold ${availColors(o.confirmChancePct).text}`}>
+                      {o.availability}
+                    </span>
+                    <span
+                      className="inline-block h-1.5 w-[60px] overflow-hidden rounded-full bg-line"
+                      aria-hidden
+                    >
+                      <i
+                        className={`block h-full ${availColors(o.confirmChancePct).bar}`}
+                        style={{ width: `${o.confirmChancePct}%` }}
+                      />
                     </span>
                     <span className="text-muted">{t('confirmChance', { pct: o.confirmChancePct })}</span>
                   </div>

@@ -18,7 +18,12 @@ export const SLOW_SHARE = 0.2;
  * about 2 more days" (PLAN A1). Uses the fastest option each way; assumes a fast option home also runs
  * on the trip's last day (daily flights), so you can stay until then.
  */
-export function slowModeTip(w: PricedWindow, days: number, travelDays: number, t: TransportSection | null): SlowModeTip | null {
+export function slowModeTip(
+  w: PricedWindow,
+  days: number,
+  travelDays: number,
+  t: TransportSection | null,
+): SlowModeTip | null {
   if (!t || travelDays / days <= SLOW_SHARE) return null;
   const onward = t.onward.summary.fastest;
   const back = t.return.summary.fastest;

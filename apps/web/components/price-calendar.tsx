@@ -33,7 +33,10 @@ export function PriceCalendar({ year, month, days, style, selectedStart, onSelec
   const lead = (dayOfWeek(first) + 6) % 7; // Monday first
   const selectedEnd = selectedStart ? addDays(selectedStart, days - 1) : null;
   const weekdays = Array.from({ length: 7 }, (_, i) =>
-    new Intl.DateTimeFormat(locale === 'en' ? 'en-IN' : `${locale}-IN`, { weekday: 'short', timeZone: 'UTC' }).format(
+    new Intl.DateTimeFormat(locale === 'en' ? 'en-IN' : `${locale}-IN`, {
+      weekday: 'short',
+      timeZone: 'UTC',
+    }).format(
       new Date(Date.UTC(2026, 10, 2 + i)), // 2 Nov 2026 is a Monday
     ),
   );
@@ -58,7 +61,11 @@ export function PriceCalendar({ year, month, days, style, selectedStart, onSelec
           const outline = inWindow ? 'outline-2 -outline-offset-2 outline-dashed outline-brand' : '';
           if (!cell?.feasible || cell.band === null) {
             return (
-              <div key={date} className={`${base} border-transparent bg-[#f1f5f9] text-[#94a3b8] ${outline}`} title={cell ? t('noTripThatDay') : t('pastMonthEnd')}>
+              <div
+                key={date}
+                className={`${base} border-transparent bg-[#f1f5f9] text-[#94a3b8] ${outline}`}
+                title={cell ? t('noTripThatDay') : t('pastMonthEnd')}
+              >
                 <div className="text-[13px] font-bold">{i + 1}</div>
                 <div className="text-[11px] font-semibold">—</div>
               </div>
@@ -94,7 +101,13 @@ export function PriceCalendar({ year, month, days, style, selectedStart, onSelec
         {t('calendarBasis', { perDay: inr(style.localPerDay) })}{' '}
         {/* Calendar figures are estimates: source and freshness shown once for the grid (golden rule 1). */}
         <span className="inline-block align-middle">
-          <Price amount={style.cells.find((c) => c.start === cheapestStart)?.total ?? 0} isEstimate size="sm" sources={{ names: style.sources, fetchedAt: style.fetchedAt }} note={t('calendarFrom')} />
+          <Price
+            amount={style.cells.find((c) => c.start === cheapestStart)?.total ?? 0}
+            isEstimate
+            size="sm"
+            sources={{ names: style.sources, fetchedAt: style.fetchedAt }}
+            note={t('calendarFrom')}
+          />
         </span>
       </div>
     </>

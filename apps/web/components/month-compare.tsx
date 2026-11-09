@@ -28,7 +28,12 @@ export function MonthCompare({ months, chosen, alternative }: Props) {
           <div
             key={m.month}
             role="listitem"
-            aria-label={t('monthBar', { month: monthShort(m.month, locale), level: t(`level.${m.label}`), max: m.maxC, min: m.minC })}
+            aria-label={t('monthBar', {
+              month: monthShort(m.month, locale),
+              level: t(`level.${m.label}`),
+              max: m.maxC,
+              min: m.minC,
+            })}
             title={`${m.summary} · ${m.maxC}° / ${m.minC}°`}
             className="flex h-full flex-1 flex-col items-center justify-end text-[10px] text-muted"
           >
@@ -36,14 +41,20 @@ export function MonthCompare({ months, chosen, alternative }: Props) {
               className={`block w-full rounded-t-md border border-[#cbd5e1] ${m.month === chosen ? 'outline-2 outline-offset-1 outline-ink' : ''}`}
               style={{ height: `${Math.round((m.priceIndex / max) * 80)}%`, background: COLOR[m.label] }}
             />
-            <span className={`mt-0.5 ${m.month === chosen ? 'font-bold text-ink' : ''}`}>{monthShort(m.month, locale)}</span>
+            <span className={`mt-0.5 ${m.month === chosen ? 'font-bold text-ink' : ''}`}>
+              {monthShort(m.month, locale)}
+            </span>
           </div>
         ))}
       </div>
       <div className="mt-2 flex gap-3 text-[11px] text-muted">
         {(['cheap', 'normal', 'peak'] as const).map((l) => (
           <span key={l} className="flex items-center gap-1">
-            <i className="inline-block size-2.5 rounded-sm border border-[#cbd5e1]" style={{ background: COLOR[l] }} aria-hidden />
+            <i
+              className="inline-block size-2.5 rounded-sm border border-[#cbd5e1]"
+              style={{ background: COLOR[l] }}
+              aria-hidden
+            />
             {t(`level.${l}`)}
           </span>
         ))}

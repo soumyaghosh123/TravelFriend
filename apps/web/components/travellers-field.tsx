@@ -3,7 +3,12 @@
 import { MAX_ADULTS, MAX_CHILD_AGE, MAX_CHILDREN } from '@tripsaver/domain';
 import { useTranslations } from 'next-intl';
 import { useEffect, useId, useRef, useState, type Dispatch } from 'react';
-import { defaultFareType, suggestedRooms, type TravellersAction, type TravellersState } from '../lib/travellers';
+import {
+  defaultFareType,
+  suggestedRooms,
+  type TravellersAction,
+  type TravellersState,
+} from '../lib/travellers';
 import { FieldError } from './field-error';
 import { Stepper } from './stepper';
 
@@ -60,7 +65,9 @@ export function TravellersField({ value, dispatch, error, forceOpen }: Props) {
         onClick={() => setOpen((o) => !o)}
         className={`block w-full rounded-xl border bg-white px-3 py-2 text-left ${ring}`}
       >
-        <span className="block text-[11px] font-semibold uppercase tracking-[.06em] text-muted">{t('travellers')}</span>
+        <span className="block text-[11px] font-semibold uppercase tracking-[.06em] text-muted">
+          {t('travellers')}
+        </span>
         <span className="mt-0.5 block truncate text-[15px] font-semibold">
           {t('travellersSummary', { adults: value.adults, children: value.childAges.length })}
         </span>
@@ -82,7 +89,13 @@ export function TravellersField({ value, dispatch, error, forceOpen }: Props) {
               <b>{t('adults')}</b>
               <small className="block text-muted">{t('adultsHint')}</small>
             </div>
-            <Stepper label={t('adults')} value={value.adults} min={1} max={MAX_ADULTS} onChange={(v) => dispatch({ type: 'adults', value: v })} />
+            <Stepper
+              label={t('adults')}
+              value={value.adults}
+              min={1}
+              max={MAX_ADULTS}
+              onChange={(v) => dispatch({ type: 'adults', value: v })}
+            />
           </div>
 
           <div className="border-b border-dashed border-line py-2">
@@ -122,7 +135,9 @@ export function TravellersField({ value, dispatch, error, forceOpen }: Props) {
                         </option>
                       ))}
                     </select>
-                    {age !== null && <span className="text-muted">· {t(`fare.${defaultFareType(age)}`)}</span>}
+                    {age !== null && (
+                      <span className="text-muted">· {t(`fare.${defaultFareType(age)}`)}</span>
+                    )}
                   </label>
                 ))}
               </div>
@@ -134,11 +149,23 @@ export function TravellersField({ value, dispatch, error, forceOpen }: Props) {
               <b>{t('rooms')}</b>
               <small className="block text-muted">{t('roomsHint')}</small>
             </div>
-            <Stepper label={t('rooms')} value={value.rooms} min={1} max={value.adults} onChange={(v) => dispatch({ type: 'rooms', value: v })} />
+            <Stepper
+              label={t('rooms')}
+              value={value.rooms}
+              min={1}
+              max={value.adults}
+              onChange={(v) => dispatch({ type: 'rooms', value: v })}
+            />
           </div>
 
-          <p className="mt-2 rounded-[10px] bg-brand-xl px-2.5 py-2 text-xs text-brand-d">{t.rich('rule', { b: (c) => <b>{c}</b> })}</p>
-          <button type="button" onClick={() => setOpen(false)} className="mt-2.5 w-full rounded-lg bg-brand py-2 text-sm font-semibold text-white hover:bg-brand-d">
+          <p className="mt-2 rounded-[10px] bg-brand-xl px-2.5 py-2 text-xs text-brand-d">
+            {t.rich('rule', { b: (c) => <b>{c}</b> })}
+          </p>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="mt-2.5 w-full rounded-lg bg-brand py-2 text-sm font-semibold text-white hover:bg-brand-d"
+          >
             {t('done')}
           </button>
         </div>

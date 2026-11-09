@@ -34,7 +34,12 @@ export function HotelFiltersBar({ filters: f, sort, landmark, onFilters, onSort 
       <label htmlFor={sortId} className="sr-only">
         {t('sortLabel')}
       </label>
-      <select id={sortId} className={select} value={sort} onChange={(e) => onSort(e.target.value as HotelSort)}>
+      <select
+        id={sortId}
+        className={select}
+        value={sort}
+        onChange={(e) => onSort(e.target.value as HotelSort)}
+      >
         {SORTS.map((s) => (
           <option key={s} value={s} disabled={s === 'nearest' && !landmark}>
             {t(`sort.${s}`)}
@@ -48,7 +53,9 @@ export function HotelFiltersBar({ filters: f, sort, landmark, onFilters, onSort 
         id={priceId}
         className={select}
         value={f.maxPerNight ?? ''}
-        onChange={(e) => onFilters({ ...f, maxPerNight: e.target.value ? Number(e.target.value) : undefined })}
+        onChange={(e) =>
+          onFilters({ ...f, maxPerNight: e.target.value ? Number(e.target.value) : undefined })
+        }
       >
         <option value="">{t('anyPrice')}</option>
         {MAX_PER_NIGHT.map((p) => (
@@ -57,10 +64,16 @@ export function HotelFiltersBar({ filters: f, sort, landmark, onFilters, onSort 
           </option>
         ))}
       </select>
-      <Chip on={f.minRating === 3.5} onToggle={() => onFilters({ ...f, minRating: f.minRating === 3.5 ? undefined : 3.5 })}>
+      <Chip
+        on={f.minRating === 3.5}
+        onToggle={() => onFilters({ ...f, minRating: f.minRating === 3.5 ? undefined : 3.5 })}
+      >
         {t('rating35')}
       </Chip>
-      <Chip on={!!f.freeCancellation} onToggle={() => onFilters({ ...f, freeCancellation: !f.freeCancellation })}>
+      <Chip
+        on={!!f.freeCancellation}
+        onToggle={() => onFilters({ ...f, freeCancellation: !f.freeCancellation })}
+      >
         {t('freeCancellation')}
       </Chip>
       <Chip on={!!f.breakfast} onToggle={() => onFilters({ ...f, breakfast: !f.breakfast })}>
@@ -72,7 +85,12 @@ export function HotelFiltersBar({ filters: f, sort, landmark, onFilters, onSort 
         </Chip>
       ))}
       {landmark && (
-        <Chip on={f.maxDistanceKm === NEAR_KM} onToggle={() => onFilters({ ...f, maxDistanceKm: f.maxDistanceKm === NEAR_KM ? undefined : NEAR_KM })}>
+        <Chip
+          on={f.maxDistanceKm === NEAR_KM}
+          onToggle={() =>
+            onFilters({ ...f, maxDistanceKm: f.maxDistanceKm === NEAR_KM ? undefined : NEAR_KM })
+          }
+        >
           {t('near', { km: NEAR_KM, landmark })}
         </Chip>
       )}

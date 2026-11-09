@@ -1,4 +1,11 @@
-import { DEFAULT_PRICING_RULES, fareTypeForAge, MAX_ADULTS, MAX_CHILDREN, suggestRooms, type FareType } from '@tripsaver/domain';
+import {
+  DEFAULT_PRICING_RULES,
+  fareTypeForAge,
+  MAX_ADULTS,
+  MAX_CHILDREN,
+  suggestRooms,
+  type FareType,
+} from '@tripsaver/domain';
 
 /** Head-count picker state. A child's age is `null` until the user picks it. */
 export interface TravellersState {
@@ -28,7 +35,11 @@ function withRooms(s: TravellersState): TravellersState {
   return { ...s, rooms };
 }
 
-export function initialTravellers(adults = 2, childAges: (number | null)[] = [], rooms?: number): TravellersState {
+export function initialTravellers(
+  adults = 2,
+  childAges: (number | null)[] = [],
+  rooms?: number,
+): TravellersState {
   return withRooms({ adults, childAges, rooms: rooms ?? 1, roomsEdited: rooms !== undefined });
 }
 
