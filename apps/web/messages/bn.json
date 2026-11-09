@@ -714,6 +714,29 @@
         "officialTickets": "অফিসিয়াল টিকিট",
         "payAtGate": "গেটে টাকা দিন"
       }
+    },
+    "export": {
+      "label": "এই প্ল্যান সেভ ও শেয়ার করুন",
+      "pdf": "PDF ডাউনলোড",
+      "share": "লিঙ্ক শেয়ার করুন",
+      "copied": "লিঙ্ক কপি হয়েছে",
+      "whatsapp": "WhatsApp",
+      "ics": "ক্যালেন্ডার (.ics)",
+      "google": "Google ক্যালেন্ডার",
+      "shareTitle": "{from} → {to}, {dates}",
+      "shareText": "আমার ভ্রমণের প্ল্যান: {title}। {people} জনের জন্য {plan} প্ল্যান · মোট প্রায় {total}। প্রতিদিনের পরিকল্পনা, হোটেল ও বুকিং লিঙ্ক দেখুন: {link}",
+      "subtitle": "{plan} প্ল্যান · {dates} · {days} দিন · {travellers}",
+      "costTitle": "মোট ভ্রমণ খরচ",
+      "transportTitle": "যাওয়া ও ফেরা",
+      "onward": "যাওয়া",
+      "return": "ফেরা",
+      "staysTitle": "কোথায় থাকবেন",
+      "nights": "{n} রাত",
+      "daysTitle": "দিন অনুযায়ী",
+      "checklistTitle": "সব বুক করুন",
+      "savePdf": "PDF সেভ / প্রিন্ট করুন",
+      "back": "প্ল্যানে ফিরুন",
+      "pdfHint": "প্রিন্ট উইন্ডোতে প্রিন্টার হিসেবে “Save as PDF” বাছুন, ফাইলটি ডাউনলোড হবে।"
     }
   },
   "guidePage": {

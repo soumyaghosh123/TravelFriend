@@ -20,3 +20,4 @@ export * from './local/local.js';
 export * from './guide/guide.js';
 export * from './climate/climate.js';
 export * from './cost/cost.js';
+export * from './export/ics.js';

@@ -714,6 +714,29 @@
         "officialTickets": "आधिकारिक टिकट",
         "payAtGate": "गेट पर भुगतान करें"
       }
+    },
+    "export": {
+      "label": "यह प्लान सहेजें और साझा करें",
+      "pdf": "PDF डाउनलोड करें",
+      "share": "लिंक साझा करें",
+      "copied": "लिंक कॉपी हो गया",
+      "whatsapp": "WhatsApp",
+      "ics": "कैलेंडर (.ics)",
+      "google": "Google कैलेंडर",
+      "shareTitle": "{from} → {to}, {dates}",
+      "shareText": "मेरी यात्रा का प्लान: {title}। {people} लोगों के लिए {plan} प्लान · कुल लगभग {total}। हर दिन, होटल और बुकिंग लिंक देखें: {link}",
+      "subtitle": "{plan} प्लान · {dates} · {days} दिन · {travellers}",
+      "costTitle": "यात्रा का कुल ख़र्च",
+      "transportTitle": "आना और जाना",
+      "onward": "जाना",
+      "return": "वापसी",
+      "staysTitle": "कहाँ ठहरेंगे",
+      "nights": "{n} रात",
+      "daysTitle": "दिन-ब-दिन",
+      "checklistTitle": "सब कुछ बुक करें",
+      "savePdf": "PDF सहेजें / प्रिंट करें",
+      "back": "प्लान पर वापस",
+      "pdfHint": "प्रिंट विंडो में प्रिंटर के रूप में “Save as PDF” चुनें, फ़ाइल डाउनलोड हो जाएगी।"
     }
   },
   "guidePage": {

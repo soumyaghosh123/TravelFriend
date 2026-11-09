@@ -4,7 +4,7 @@ import type { ValidSearchInput } from '@tripsaver/domain';
 import type { StyleDates, TripStyle } from '@tripsaver/providers';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { dateRange, monthLabel } from '../lib/format';
 import { tripSources } from '../lib/trip-sources';
 import { useResultsStream } from '../lib/use-results-stream';
@@ -23,6 +23,7 @@ import { Price } from './price';
 import { panelId, ResultTabs, tabId, type TabId } from './result-tabs';
 import { SectionError } from './section-error';
 import { SkeletonBlock } from './skeleton-block';
+import { TripShareBar } from './trip-share-bar';
 
 interface Props {
   searchId: string;
@@ -31,10 +32,12 @@ interface Props {
   toName: string;
   toKind: 'city' | 'region';
   changeHref: string;
+  /** From a shared link: open this plan, start date and tab. */
+  initial?: { style?: TripStyle; start?: string; tab?: TabId };
 }
 
 /** Results page body: sticky summary, destination banner, plan cards and the 10 tabs (PLAN §9). */
-export function ResultsView({ searchId, input, fromName, toName, toKind, changeHref }: Props) {
+export function ResultsView({ searchId, input, fromName, toName, toKind, changeHref, initial }: Props) {
   const t = useTranslations('results');
   const ts = useTranslations('search');
   const locale = useLocale();
@@ -47,16 +50,27 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
     cost: streamedCost,
     retry,
   } = useResultsStream(searchId);
-  const [tab, setTab] = useState<TabId>('dates');
-  const [style, setStyle] = useState<TripStyle>('budget');
-  const [start, setStart] = useState<string | null>(null);
+  const [tab, setTab] = useState<TabId>(initial?.tab ?? 'dates');
+  const [style, setStyle] = useState<TripStyle>(initial?.style ?? 'budget');
+  const [start, setStart] = useState<string | null>(initial?.start ?? null);
+  // A shared link's start date is used once, if that plan can start then; after that, picking a plan picks its cheapest dates.
+  const sharedStart = useRef(initial?.start ?? null);
 
   const styles = dates.status === 'ok' ? dates.data.styles : [];
   const current: StyleDates | undefined = styles.find((s) => s.style === style);
   const best = current?.top[0];
 
   // Pick the plan's cheapest window whenever results arrive or the plan changes.
-  useEffect(() => setStart(best?.start ?? null), [best?.start]);
+  useEffect(() => {
+    const shared = sharedStart.current;
+    if (shared && current?.cells.some((c) => c.start === shared)) {
+      sharedStart.current = null;
+      setStart(shared);
+      return;
+    }
+    if (current) sharedStart.current = null;
+    setStart(best?.start ?? null);
+  }, [best?.start]);
 
   const selection = useSelectedWindow(searchId, current, start);
   const transport = useTransport(searchId, selection.window, streamedTransport);
@@ -141,6 +155,19 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
         {dates.status === 'error' && <SectionError onRetry={retry} />}
         {dates.status === 'ok' && (
           <PlanCards styles={styles} selected={style} onSelect={setStyle} people={people} refined={refined} />
+        )}
+
+        {itinerary.status === 'ok' && itinerary.data.available && selection.window && (
+          <TripShareBar
+            searchId={searchId}
+            style={style}
+            plan={itinerary.data}
+            window={selection.window}
+            total={cost.status === 'ok' && cost.data.available ? cost.data.cost.total : null}
+            fromName={fromName}
+            toName={toName}
+            people={people}
+          />
         )}
 
         <ResultTabs active={tab} onChange={setTab} />

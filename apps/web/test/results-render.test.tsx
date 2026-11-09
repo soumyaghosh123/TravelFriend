@@ -22,6 +22,11 @@ import { renderToString } from 'react-dom/server';
 import { beforeAll, describe, expect, test } from 'vitest';
 import { BestDatesTab } from '../components/best-dates-tab';
 import { CostTab } from '../components/cost-tab';
+import { TripPrintout } from '../components/trip-printout';
+import { TripShareBar } from '../components/trip-share-bar';
+import { planCalendarEvents, shareUrl, whatsappUrl } from '../lib/trip-export';
+import { buildIcs } from '@tripsaver/domain';
+import { createTranslator } from 'next-intl';
 import { DayPlanTab } from '../components/day-plan-tab';
 import { DestinationBanner } from '../components/destination-banner';
 import { GettingThereTab } from '../components/getting-there-tab';
@@ -353,4 +358,107 @@ describe('Total & book tab renders with real mock data', () => {
     expect(html).toContain('Hotel · ');
     expect(html).toContain(`₹${budget.cost.total.toLocaleString('en-IN')}`);
   });
+});
+
+describe('Export: PDF, share link, WhatsApp, calendar (step 10)', () => {
+  const budget = () => {
+    const w = dates.styles.find((s) => s.style === 'budget')!.top[0]!;
+    const cost = costs.find((c) => c.style === 'budget')!;
+    if (!itinerary.available || !cost.available) throw new Error('expected a plan');
+    return { w, cost, plan: itinerary };
+  };
+  const printout = () => {
+    const { w, cost, plan } = budget();
+    return (
+      <TripPrintout
+        plan={plan}
+        window={w}
+        cost={cost}
+        style="budget"
+        fromName="Kolkata"
+        toName="Goa"
+        travellers="2 adults · 2 children"
+      />
+    );
+  };
+
+  test.each(['en', 'hi', 'bn'])('%s: printable plan has no missing translations', (locale) => {
+    const { errors } = render(locale, printout());
+    expect(errors).toEqual([]);
+  });
+
+  test('exported PDF matches the plan: every day, sight, hotel, journey, total and checklist item', () => {
+    const { w, cost, plan } = budget();
+    const html = render('en', printout()).html.replace(/<!-- -->/g, '');
+    for (const d of plan.days) expect(html).toContain(`Day ${d.index} · `);
+    const sights = plan.days.flatMap((d) =>
+      d.stops.flatMap((s) =>
+        s.kind === 'visit' && s.attractionId ? [plan.attractions[s.attractionId]!.name] : [],
+      ),
+    );
+    expect(sights.length).toBeGreaterThan(0);
+    for (const s of sights) expect(html).toContain(s.replace(/&/g, '&amp;'));
+    for (const b of plan.bases) if (b.hotel) expect(html).toContain(b.hotel.name.replace(/&/g, '&amp;'));
+    for (const o of [w.onward, w.return]) expect(html).toContain(o.number ?? o.operator);
+    expect(html).toContain(`₹${cost.cost.total.toLocaleString('en-IN')}`);
+    for (const p of ['transport', 'hotels', 'local', 'sights', 'food', 'buffer'] as const)
+      expect(html).toContain(`₹${cost.cost[p].toLocaleString('en-IN')}`);
+    expect((html.match(/☐/g) ?? []).length).toBe(cost.checklist.length);
+    // Booking links printed in full, so they work on paper too.
+    expect(html).toContain(w.onward.bookingUrl.replace(/&/g, '&amp;'));
+  });
+
+  test('calendar: one entry per day plus the journeys, with the same wording; a valid .ics', () => {
+    const { w, plan } = budget();
+    const messages = JSON.parse(readFileSync(new URL('../messages/en.json', import.meta.url), 'utf8'));
+    const tr = {
+      plan: createTranslator({ locale: 'en', messages, namespace: 'results.plan' }),
+      results: createTranslator({ locale: 'en', messages, namespace: 'results' }),
+    } as unknown as Parameters<typeof planCalendarEvents>[3];
+    const events = planCalendarEvents(plan, w, 's1', tr);
+    expect(events).toHaveLength(plan.days.length + 2);
+    expect(events[0]).toMatchObject({
+      start: w.onward.departAt.slice(0, 16),
+      end: w.onward.arriveAt.slice(0, 16),
+    });
+    expect(events.at(-1)).toMatchObject({ start: w.return.departAt.slice(0, 16) });
+    const day1 = events[1]!;
+    expect(day1).toMatchObject({ date: plan.days[0]!.date, title: expect.stringMatching(/^Day 1 · /) });
+    const ics = buildIcs('Goa', events, '2026-11-09T10:00:00Z');
+    expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(events.length);
+    expect(new Set(events.map((e) => e.uid)).size).toBe(events.length);
+  });
+
+  test('share link reopens the same plan and dates; WhatsApp gets the message', () => {
+    expect(shareUrl('https://tripsaver.test', 'abc', 'comfort', '2026-12-09')).toBe(
+      'https://tripsaver.test/trip/abc?plan=comfort&start=2026-12-09',
+    );
+    const u = new URL(whatsappUrl('Goa trip: https://tripsaver.test/trip/abc'));
+    expect(u.origin).toBe('https://wa.me');
+    expect(u.searchParams.get('text')).toBe('Goa trip: https://tripsaver.test/trip/abc');
+  });
+
+  test.each(['en', 'hi', 'bn'])(
+    '%s: share bar renders with PDF, WhatsApp and Google Calendar links',
+    (locale) => {
+      const { w, cost, plan } = budget();
+      const { html, errors } = render(
+        locale,
+        <TripShareBar
+          searchId="s1"
+          style="budget"
+          plan={plan}
+          window={w}
+          total={cost.cost.total}
+          fromName="Kolkata"
+          toName="Goa"
+          people={4}
+        />,
+      );
+      expect(errors).toEqual([]);
+      expect(html).toContain(`/trip/s1/print?plan=budget&amp;start=${plan.start}&amp;autoprint=1`);
+      expect(html).toContain('https://wa.me/?text=');
+      expect(html).toContain('https://calendar.google.com/calendar/render?action=TEMPLATE');
+    },
+  );
 });

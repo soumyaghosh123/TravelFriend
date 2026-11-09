@@ -1,5 +1,5 @@
 import type { SearchInput, SearchInputIssue, ValidSearchInput } from '@tripsaver/domain';
-import type { GuideSection } from '@tripsaver/providers';
+import type { GuideSection, ItinerarySection, PlanCostView, WindowDetail } from '@tripsaver/providers';
 import type { PlaceOption } from './search-form-state';
 
 /** Server components call the API directly; the browser goes through the /api rewrite. */
@@ -67,4 +67,27 @@ export async function getGuide(code: string): Promise<GuideSection | null> {
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`guide ${res.status}`);
   return (await res.json()) as GuideSection;
+}
+
+async function getJson<T>(path: string): Promise<T | null> {
+  const res = await fetch(`${base()}${path}`, { cache: 'no-store' });
+  if (res.status === 404 || res.status === 400) return null;
+  if (!res.ok) throw new Error(`${path} ${res.status}`);
+  return (await res.json()) as T;
+}
+
+/** Everything the printable plan needs for one plan and start date (server side); null if any part is missing. */
+export async function getPlanForPrint(
+  id: string,
+  style: string,
+  start: string,
+): Promise<{ window: WindowDetail['window']; plan: ItinerarySection; cost: PlanCostView } | null> {
+  const q = `?${new URLSearchParams({ style, start })}`;
+  const sid = encodeURIComponent(id);
+  const [w, plan, cost] = await Promise.all([
+    getJson<WindowDetail>(`/api/search/${sid}/window${q}`),
+    getJson<ItinerarySection>(`/api/search/${sid}/itinerary${q}`),
+    getJson<PlanCostView>(`/api/search/${sid}/cost${q}`),
+  ]);
+  return w && plan && cost ? { window: w.window, plan, cost } : null;
 }

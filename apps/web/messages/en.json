@@ -714,6 +714,29 @@
         "officialTickets": "Official tickets",
         "payAtGate": "Pay at the gate"
       }
+    },
+    "export": {
+      "label": "Save and share this plan",
+      "pdf": "Download PDF",
+      "share": "Share link",
+      "copied": "Link copied",
+      "whatsapp": "WhatsApp",
+      "ics": "Calendar (.ics)",
+      "google": "Google Calendar",
+      "shareTitle": "{from} → {to}, {dates}",
+      "shareText": "My trip plan: {title}. {plan} plan for {people} · about {total} in total. See every day, hotel and booking link: {link}",
+      "subtitle": "{plan} plan · {dates} · {days} days · {travellers}",
+      "costTitle": "Total trip cost",
+      "transportTitle": "Getting there and back",
+      "onward": "Onward",
+      "return": "Return",
+      "staysTitle": "Where you stay",
+      "nights": "{n, plural, one {# night} other {# nights}}",
+      "daysTitle": "Day by day",
+      "checklistTitle": "Book everything",
+      "savePdf": "Save as PDF / Print",
+      "back": "Back to the plan",
+      "pdfHint": "In the print dialog, choose “Save as PDF” as the printer to download the file."
     }
   },
   "guidePage": {
