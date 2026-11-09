@@ -269,6 +269,13 @@ describe('Local transport tab renders with real mock data', () => {
       expect(html).toContain(s);
     expect(html).toMatch(/₹[\d,]+(<!-- -->)?–(<!-- -->)?₹[\d,]+/);
   });
+
+  test('en: each fare says where it comes from (Kadamba: 2019 notification; others: sample)', () => {
+    const { html } = render('en', tab());
+    expect(html).toContain('Fare source: Goa bus fare notification');
+    expect(html).toContain('thegoan.net');
+    expect(html).toContain('Sample fare, not yet checked against an official tariff');
+  });
 });
 
 describe('Guide tabs with the Budget plan (Goa)', () => {

@@ -179,6 +179,11 @@ export interface LocalMode extends LocalModeLike {
     phone?: string;
   };
   note?: string;
+  /**
+   * Where the fare comes from: `official` (operator / government fare table), `reported` (a notified
+   * fare as reported in the news), or `sample` (not verified yet). Shown next to the price.
+   */
+  fareSource: { basis: 'official' | 'reported' | 'sample'; name?: string; url?: string; asOf?: string };
   /** Needed to reach one particular sight (the Divar ferry, the Dudhsagar jeep): added to that day, not an alternative. */
   forAttraction?: string;
 }

@@ -539,7 +539,12 @@
       "totalSub": "The options marked for your plan, for every journey, plus the fixed trips some sights need. This is the \"local\" part of each day's spend.",
       "sample": "Fares and timings are sample data until live providers are connected.",
       "basis": "Fares are our estimates from typical tariffs; confirm with the operator. Children under 4 travel free on buses and ferries, 4–7 half (our default rule).",
-      "noPlan": "This plan is not available here; pick another plan to see its local transport."
+      "noPlan": "This plan is not available here; pick another plan to see its local transport.",
+      "fareSource": {
+        "official": "Fare: {name} · {date}",
+        "reported": "Fare source: {name} · {date}",
+        "sample": "Sample fare, not yet checked against an official tariff"
+      }
     },
     "guideLink": "{name} travel guide",
     "guide": {

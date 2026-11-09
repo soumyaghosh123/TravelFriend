@@ -36,8 +36,28 @@ export function legsOf(
     const base = names.base(d.baseId);
     const visits = d.stops.filter((s) => s.kind === 'visit');
     for (const s of d.stops) {
-      if (s.kind === 'to-hotel') out.push({ key: `${d.index}-arrival`, kind: 'arrival', dayIndex: d.index, from: names.arrival, to: base, stops: [], attractionIds: [], legsKm: [s.distanceKm ?? 0] });
-      if (s.kind === 'move-base') out.push({ key: `${d.index}-move`, kind: 'move', dayIndex: d.index, from: names.base(prevBase), to: base, stops: [], attractionIds: [], legsKm: [s.distanceKm ?? 0] });
+      if (s.kind === 'to-hotel')
+        out.push({
+          key: `${d.index}-arrival`,
+          kind: 'arrival',
+          dayIndex: d.index,
+          from: names.arrival,
+          to: base,
+          stops: [],
+          attractionIds: [],
+          legsKm: [s.distanceKm ?? 0],
+        });
+      if (s.kind === 'move-base')
+        out.push({
+          key: `${d.index}-move`,
+          kind: 'move',
+          dayIndex: d.index,
+          from: names.base(prevBase),
+          to: base,
+          stops: [],
+          attractionIds: [],
+          legsKm: [s.distanceKm ?? 0],
+        });
     }
     if (visits.length) {
       const back = d.stops.find((s) => s.kind === 'back-to-hotel');
@@ -49,11 +69,23 @@ export function legsOf(
         to: base,
         stops: visits.map((v) => attractions[v.attractionId!]?.name ?? v.attractionId!),
         attractionIds: visits.map((v) => v.attractionId!),
-        legsKm: [...visits.map((v) => v.distanceKm ?? 0), ...(back ? [back.distanceKm ?? 0] : [])].filter((k) => k > 0),
+        legsKm: [...visits.map((v) => v.distanceKm ?? 0), ...(back ? [back.distanceKm ?? 0] : [])].filter(
+          (k) => k > 0,
+        ),
       });
     }
     const toStation = d.stops.find((s) => s.kind === 'to-station');
-    if (toStation) out.push({ key: `${d.index}-departure`, kind: 'departure', dayIndex: d.index, from: base, to: names.departure, stops: [], attractionIds: [], legsKm: [toStation.distanceKm ?? 0] });
+    if (toStation)
+      out.push({
+        key: `${d.index}-departure`,
+        kind: 'departure',
+        dayIndex: d.index,
+        from: base,
+        to: names.departure,
+        stops: [],
+        attractionIds: [],
+        legsKm: [toStation.distanceKm ?? 0],
+      });
     if (d.baseId) prevBase = d.baseId;
   }
   return out.filter((l) => l.legsKm.length > 0);
@@ -73,7 +105,9 @@ export async function buildLocalSection(
   opts: { clock: Clock; timeoutMs: number },
 ): Promise<LocalSection> {
   const [modeLists, tipLists] = await Promise.all([
-    Promise.all(set.local.map((p) => withTimeout(p.modes(destination), opts.timeoutMs, `${p.id} local modes`))),
+    Promise.all(
+      set.local.map((p) => withTimeout(p.modes(destination), opts.timeoutMs, `${p.id} local modes`)),
+    ),
     Promise.all(set.local.map((p) => withTimeout(p.tips(destination), opts.timeoutMs, `${p.id} local tips`))),
   ]);
   const modes: LocalMode[] = modeLists.flat();
@@ -88,7 +122,14 @@ export async function buildLocalSection(
       })
       .filter((x): x is NonNullable<typeof x> => x !== null);
     const tags = tagLocalOptions(
-      priced.map((p) => ({ id: p.m.id, public: p.m.public, doorToDoor: p.m.doorToDoor, min: p.min, max: p.max, minutes: p.minutes })),
+      priced.map((p) => ({
+        id: p.m.id,
+        public: p.m.public,
+        doorToDoor: p.m.doorToDoor,
+        min: p.min,
+        max: p.max,
+        minutes: p.minutes,
+      })),
       style,
     );
     const options: LocalOptionView[] = priced
@@ -103,6 +144,7 @@ export async function buildLocalSection(
         doorToDoor: p.m.doorToDoor,
         booking: p.m.booking,
         ...(p.m.note ? { note: p.m.note } : {}),
+        fareSource: p.m.fareSource,
         cheapest: tags.cheapest === p.m.id,
         convenient: tags.convenient === p.m.id,
         inPlan: tags.plan === p.m.id,
@@ -113,7 +155,15 @@ export async function buildLocalSection(
       .map((m) => {
         const fare = localFare({ ...m, legKinds: ['day'] }, [0], travellers, 'day')!;
         // Return trip for fixed services (there and back).
-        return { id: m.id, name: m.name, attraction: m.forAttraction!, min: fare.min * 2, max: fare.max * 2, booking: m.booking };
+        return {
+          id: m.id,
+          name: m.name,
+          attraction: m.forAttraction!,
+          min: fare.min * 2,
+          max: fare.max * 2,
+          booking: m.booking,
+          fareSource: m.fareSource,
+        };
       });
     const chosen = options.find((o) => o.inPlan);
     const extraMin = extras.reduce((s, e) => s + e.min, 0);
@@ -144,6 +194,7 @@ export async function buildLocalSection(
 /** The plan's local-transport spend per day (midpoint of the range), so day spends match this tab. */
 export function localSpendByDay(section: LocalSection): Map<number, number> {
   const out = new Map<number, number>();
-  for (const l of section.legs) out.set(l.dayIndex, (out.get(l.dayIndex) ?? 0) + Math.round((l.plan.min + l.plan.max) / 2));
+  for (const l of section.legs)
+    out.set(l.dayIndex, (out.get(l.dayIndex) ?? 0) + Math.round((l.plan.min + l.plan.max) / 2));
   return out;
 }

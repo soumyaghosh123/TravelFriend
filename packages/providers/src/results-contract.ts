@@ -218,6 +218,7 @@ export interface LocalOptionView {
   doorToDoor: boolean;
   booking: LocalMode['booking'];
   note?: string;
+  fareSource: LocalMode['fareSource'];
   cheapest: boolean;
   convenient: boolean;
   /** The option the plan uses (and counts in the day's spend). */
@@ -242,6 +243,7 @@ export interface LocalLegView {
     min: number;
     max: number;
     booking: LocalMode['booking'];
+    fareSource: LocalMode['fareSource'];
   }[];
   /** The plan's option + extras. */
   plan: { min: number; max: number };

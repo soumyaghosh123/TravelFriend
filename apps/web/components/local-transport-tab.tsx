@@ -3,6 +3,7 @@
 import type { LocalLegView, LocalSection } from '@tripsaver/providers';
 import { useTranslations } from 'next-intl';
 import { hm } from '../lib/transport-match';
+import { FareSource } from './fare-source';
 import { Price } from './price';
 
 interface Props {
@@ -17,7 +18,12 @@ function BookingPlace({ booking }: { booking: LocalLegView['options'][number]['b
   return (
     <div className="text-xs text-ink2">
       {booking.url ? (
-        <a href={booking.url} target="_blank" rel="noopener noreferrer sponsored" className="font-semibold text-brand hover:underline">
+        <a
+          href={booking.url}
+          target="_blank"
+          rel="noopener noreferrer sponsored"
+          className="font-semibold text-brand hover:underline"
+        >
           {t('openApp')} ↗
         </a>
       ) : (
@@ -50,22 +56,45 @@ function LegCard({ leg, plan }: { leg: LocalLegView; plan: string }) {
         {leg.options.map((o) => {
           const d = hm(o.minutes);
           return (
-            <li key={o.id} className={`flex flex-col gap-2 py-2 sm:flex-row sm:items-start sm:gap-4 ${o.inPlan ? '-mx-2 rounded-lg bg-brand-xl px-2' : ''}`}>
+            <li
+              key={o.id}
+              className={`flex flex-col gap-2 py-2 sm:flex-row sm:items-start sm:gap-4 ${o.inPlan ? '-mx-2 rounded-lg bg-brand-xl px-2' : ''}`}
+            >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-1.5">
                   <b>{o.name}</b>
-                  {o.cheapest && <span className="rounded-full bg-good-l px-2 py-px text-[11px] font-bold text-good">{t('cheapest')}</span>}
-                  {o.convenient && <span className="rounded-full bg-brand-l px-2 py-px text-[11px] font-bold text-brand-d">{t('convenient')}</span>}
-                  {o.inPlan && <span className="rounded-full bg-brand px-2 py-px text-[11px] font-bold text-white">{t('inPlan', { plan })}</span>}
+                  {o.cheapest && (
+                    <span className="rounded-full bg-good-l px-2 py-px text-[11px] font-bold text-good">
+                      {t('cheapest')}
+                    </span>
+                  )}
+                  {o.convenient && (
+                    <span className="rounded-full bg-brand-l px-2 py-px text-[11px] font-bold text-brand-d">
+                      {t('convenient')}
+                    </span>
+                  )}
+                  {o.inPlan && (
+                    <span className="rounded-full bg-brand px-2 py-px text-[11px] font-bold text-white">
+                      {t('inPlan', { plan })}
+                    </span>
+                  )}
                 </div>
                 <div className="text-xs text-muted">
                   {t('time', d)}
                   {o.note && <> · {o.note}</>}
                 </div>
                 <BookingPlace booking={o.booking} />
+                <FareSource source={o.fareSource} />
               </div>
               <div className="sm:w-48 sm:shrink-0 sm:text-right">
-                <Price amount={o.min} amountMax={o.max} isEstimate ownEstimate size="md" note={t('forGroup')} />
+                <Price
+                  amount={o.min}
+                  amountMax={o.max}
+                  isEstimate
+                  ownEstimate
+                  size="md"
+                  note={t('forGroup')}
+                />
               </div>
             </li>
           );
@@ -80,8 +109,16 @@ function LegCard({ leg, plan }: { leg: LocalLegView; plan: string }) {
                 <div>
                   <b>{e.name}</b>
                   <BookingPlace booking={e.booking} />
+                  <FareSource source={e.fareSource} />
                 </div>
-                <Price amount={e.min} amountMax={e.max} isEstimate ownEstimate size="sm" note={t('returnTrip')} />
+                <Price
+                  amount={e.min}
+                  amountMax={e.max}
+                  isEstimate
+                  ownEstimate
+                  size="sm"
+                  note={t('returnTrip')}
+                />
               </li>
             ))}
           </ul>
@@ -103,7 +140,9 @@ export function LocalTransportTab({ local, plan, sampleData }: Props) {
           ))}
         </ul>
       )}
-      {local.legs.length === 0 && <p className="rounded-card bg-white p-4 text-muted shadow-card">{t('noLegs')}</p>}
+      {local.legs.length === 0 && (
+        <p className="rounded-card bg-white p-4 text-muted shadow-card">{t('noLegs')}</p>
+      )}
       {local.legs.map((l) => (
         <LegCard key={l.key} leg={l} plan={plan} />
       ))}

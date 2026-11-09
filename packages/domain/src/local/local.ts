@@ -23,7 +23,7 @@ export type LocalPricing =
   /** A whole vehicle (cab, taxi, auto): base + per km, per vehicle. */
   | { type: 'vehicle-km'; base: number; perKm: number; minFare?: number }
   /** A seat (bus, shared jeep, metro): base + per km per adult; children by the default bands. */
-  | { type: 'seat-km'; base: number; perKm: number }
+  | { type: 'seat-km'; base: number; perKm: number; minFare?: number }
   /** A fixed fare per adult (ferry, safari seat); 0 for free services. */
   | { type: 'flat'; perPerson: number }
   /**
@@ -66,7 +66,12 @@ function serves(m: LocalModeLike, kind: LocalLegKind): boolean {
  * Group fare range for a set of legs (one leg for a transfer; all of a day's legs for a sightseeing day),
  * or null when the mode doesn't serve this kind of journey or a leg is too long for it.
  */
-export function localFare(m: LocalModeLike, legsKm: number[], t: Travellers, kind: LocalLegKind): { min: number; max: number } | null {
+export function localFare(
+  m: LocalModeLike,
+  legsKm: number[],
+  t: Travellers,
+  kind: LocalLegKind,
+): { min: number; max: number } | null {
   if (!serves(m, kind) || legsKm.length === 0) return null;
   if (m.maxLegKm !== undefined && legsKm.some((k) => k > m.maxLegKm!)) return null;
   const vehicles = Math.ceil(occupants(t) / Math.max(1, m.capacity));
@@ -77,7 +82,10 @@ export function localFare(m: LocalModeLike, legsKm: number[], t: Travellers, kin
       fare = legsKm.reduce((s, km) => s + Math.max(p.base + p.perKm * km, p.minFare ?? 0), 0) * vehicles;
       break;
     case 'seat-km':
-      fare = legsKm.reduce((s, km) => s + groupEntryFee(Math.round(p.base + p.perKm * km), t), 0);
+      fare = legsKm.reduce(
+        (s, km) => s + groupEntryFee(Math.round(Math.max(p.base + p.perKm * km, p.minFare ?? 0)), t),
+        0,
+      );
       break;
     case 'flat':
       fare = groupEntryFee(p.perPerson, t) * legsKm.length;
@@ -110,14 +118,32 @@ export interface PricedLocal {
  * Cheapest (lowest fare), most convenient (door to door, then fastest) and the plan's choice (PLAN §6.3):
  * Budget and Offbeat take the cheapest public option where one exists; Comfort takes the most convenient.
  */
-export function tagLocalOptions(priced: PricedLocal[], style: PlanStyle): { cheapest?: string; convenient?: string; plan?: string } {
+export function tagLocalOptions(
+  priced: PricedLocal[],
+  style: PlanStyle,
+): { cheapest?: string; convenient?: string; plan?: string } {
   if (priced.length === 0) return {};
   const by = <T>(xs: T[], ...keys: ((x: T) => number)[]) =>
     [...xs].sort((a, b) => keys.reduce((d, k) => d || k(a) - k(b), 0))[0];
-  const cheapest = by(priced, (p) => p.min, (p) => p.minutes)!;
+  const cheapest = by(
+    priced,
+    (p) => p.min,
+    (p) => p.minutes,
+  )!;
   const doorToDoor = priced.filter((p) => p.doorToDoor);
-  const convenient = by(doorToDoor.length ? doorToDoor : priced, (p) => p.minutes, (p) => p.min)!;
+  const convenient = by(
+    doorToDoor.length ? doorToDoor : priced,
+    (p) => p.minutes,
+    (p) => p.min,
+  )!;
   const publicOnes = priced.filter((p) => p.public);
-  const plan = style === 'comfort' ? convenient : (by(publicOnes, (p) => p.min, (p) => p.minutes) ?? cheapest);
+  const plan =
+    style === 'comfort'
+      ? convenient
+      : (by(
+          publicOnes,
+          (p) => p.min,
+          (p) => p.minutes,
+        ) ?? cheapest);
   return { cheapest: cheapest.id, convenient: convenient.id, plan: plan.id };
 }
