@@ -1,12 +1,14 @@
 import { makeSearchInputSchema } from '@tripsaver/domain';
 import {
   buildDatesSection,
+  buildGuideSection,
   buildHotelsSection,
   buildItinerarySection,
   buildTransportSection,
   createRegistry,
   fixedClock,
   type DatesSection,
+  type GuideSection,
   type HotelsSection,
   type ItinerarySection,
   type TransportSection,
@@ -20,6 +22,7 @@ import { BestDatesTab } from '../components/best-dates-tab';
 import { DayPlanTab } from '../components/day-plan-tab';
 import { DestinationBanner } from '../components/destination-banner';
 import { GettingThereTab } from '../components/getting-there-tab';
+import { GuidePanel } from '../components/guide-panel';
 import { HotelsTab } from '../components/hotels-tab';
 import { LocalTransportTab } from '../components/local-transport-tab';
 import { PlanCards } from '../components/plan-cards';
@@ -31,6 +34,7 @@ let dates: DatesSection;
 let transport: TransportSection;
 let hotels: HotelsSection;
 let itinerary: ItinerarySection;
+let guide: GuideSection;
 
 beforeAll(async () => {
   const input = makeSearchInputSchema('2026-11-08').parse({
@@ -46,22 +50,41 @@ beforeAll(async () => {
   const top = dates.styles.find((s) => s.style === 'budget')!.top[0]!;
   transport = await buildTransportSection(
     set,
-    { from: 'KOL', to: 'GOA', onwardDate: top.onward.departDate, returnDate: top.return.departDate, tripEnd: top.end, travellers: input.travellers },
+    {
+      from: 'KOL',
+      to: 'GOA',
+      onwardDate: top.onward.departDate,
+      returnDate: top.return.departDate,
+      tripEnd: top.end,
+      travellers: input.travellers,
+    },
     { clock, timeoutMs: 4000 },
   );
   hotels = await buildHotelsSection(
     set,
-    { to: 'GOA', checkIn: top.onward.arriveDate, checkOut: top.return.departDate, travellers: input.travellers, stayNear: 'Calangute' },
+    {
+      to: 'GOA',
+      checkIn: top.onward.arriveDate,
+      checkOut: top.return.departDate,
+      travellers: input.travellers,
+      stayNear: 'Calangute',
+    },
     { clock, timeoutMs: 4000 },
   );
   itinerary = await buildItinerarySection(set, input, 'budget', top, hotels, { clock, timeoutMs: 4000 });
+  guide = await buildGuideSection(set, 'GOA', { clock, timeoutMs: 4000 });
 });
 
 function render(locale: string, node: ReactNode): { html: string; errors: string[] } {
   const messages = JSON.parse(readFileSync(new URL(`../messages/${locale}.json`, import.meta.url), 'utf8'));
   const errors: string[] = [];
   const html = renderToString(
-    <NextIntlClientProvider locale={locale} messages={messages} timeZone="Asia/Kolkata" onError={(e) => errors.push(e.message)}>
+    <NextIntlClientProvider
+      locale={locale}
+      messages={messages}
+      timeZone="Asia/Kolkata"
+      onError={(e) => errors.push(e.message)}
+    >
       {node}
     </NextIntlClientProvider>,
   );
@@ -71,13 +94,27 @@ function render(locale: string, node: ReactNode): { html: string; errors: string
 function page() {
   const budget = dates.styles.find((s) => s.style === 'budget')!;
   const top = budget.top[0]!;
-  const selection = { status: 'ok' as const, window: top, reasons: top.reasons, rank: top.rank, saving: top.saving, retry: () => {} };
+  const selection = {
+    status: 'ok' as const,
+    window: top,
+    reasons: top.reasons,
+    rank: top.rank,
+    saving: top.saving,
+    retry: () => {},
+  };
   return (
     <>
       <DestinationBanner code="GOA" name="Goa" kind="region" month="2026-12" climate={dates.climate} />
       <PlanCards styles={dates.styles} selected="budget" onSelect={() => {}} people={4} />
       <ResultTabs active="dates" />
-      <BestDatesTab dates={dates} style={budget} people={4} selectedStart={top.start} selection={selection} onSelect={() => {}} />
+      <BestDatesTab
+        dates={dates}
+        style={budget}
+        people={4}
+        selectedStart={top.start}
+        selection={selection}
+        onSelect={() => {}}
+      />
     </>
   );
 }
@@ -96,7 +133,15 @@ describe('Getting there tab renders with real mock data', () => {
 
   test('en: summary cards, the plan’s train marked, fare breakdown, booking links, sample-data note', () => {
     const { html } = render('en', gettingThere());
-    for (const s of ['Cheapest', 'Fastest', 'Best overnight option', 'In your Budget plan', 'chance of confirmation', 'child (3 yrs) free', 'sample data'])
+    for (const s of [
+      'Cheapest',
+      'Fastest',
+      'Best overnight option',
+      'In your Budget plan',
+      'chance of confirmation',
+      'child (3 yrs) free',
+      'sample data',
+    ])
       expect(html).toContain(s);
     expect(html).toMatch(/Book on IRCTC/);
     expect(html).toContain('Transport in your Budget plan, both ways');
@@ -144,7 +189,15 @@ describe('Hotels tab renders with real mock data', () => {
 
   test('en: the plan stay, both lists side by side, the extra list for chosen homestays, per-site prices with the cheapest marked', () => {
     const { html } = render('en', hotelsTab());
-    for (const s of ['Budget plan stay', '3-star and above', '5-star', 'Also matching your hotel types', 'from Calangute Beach', 'Guest rating 3.5+', 'Restaurant · for two'])
+    for (const s of [
+      'Budget plan stay',
+      '3-star and above',
+      '5-star',
+      'Also matching your hotel types',
+      'from Calangute Beach',
+      'Guest rating 3.5+',
+      'Restaurant · for two',
+    ])
       expect(html).toContain(s);
     expect(html).toMatch(/aria-label="Book on [^"]+ · cheapest site"/);
     const top = dates.styles.find((s) => s.style === 'budget')!.top[0]!;
@@ -167,7 +220,16 @@ describe('Day-by-day tab renders with real mock data', () => {
   test('en: 10 days with slots, a free day, the hotel for each night with a booking link, and the rule checks', () => {
     const { html } = render('en', dayPlan());
     for (let n = 1; n <= 10; n++) expect(html).toContain(`Day ${n}<`);
-    for (const s of ['Morning', 'Afternoon', 'Evening', 'Free day', 'Tonight:', 'How this plan was checked', 'No day has more than 9 active hours', 'Hotel nights: '])
+    for (const s of [
+      'Morning',
+      'Afternoon',
+      'Evening',
+      'Free day',
+      'Tonight:',
+      'How this plan was checked',
+      'No day has more than 9 active hours',
+      'Hotel nights: ',
+    ])
       expect(html).toContain(s);
     expect(html).toMatch(/aria-label="Book on [^"]+"/);
   });
@@ -194,8 +256,33 @@ describe('Local transport tab renders with real mock data', () => {
 
   test('en: each journey with options, fare ranges, where to book, and the Goa tip', () => {
     const { html } = render('en', tab());
-    for (const s of ['Cheapest', 'Most convenient', 'In your Budget plan', 'Kadamba bus', 'GoaMiles', 'Prepaid taxi', 'Uber and Ola', 'Local transport in your Budget plan'])
+    for (const s of [
+      'Cheapest',
+      'Most convenient',
+      'In your Budget plan',
+      'Kadamba bus',
+      'GoaMiles',
+      'Prepaid taxi',
+      'Uber and Ola',
+      'Local transport in your Budget plan',
+    ])
       expect(html).toContain(s);
     expect(html).toMatch(/₹[\d,]+(<!-- -->)?–(<!-- -->)?₹[\d,]+/);
+  });
+});
+
+describe('Guide tabs with the Budget plan (Goa)', () => {
+  test('distances from the plan hotel, sights the plan visits marked, food at the hotel', () => {
+    if (!itinerary.available) throw new Error('expected a plan');
+    const hotel = itinerary.bases[0]!.hotel!;
+    const sights = render(
+      'en',
+      <GuidePanel tab="sights" guide={guide} plan={itinerary} style="budget" />,
+    ).html;
+    expect(sights).toContain(`Distances are by road from your hotel, ${hotel.name}`);
+    expect(sights).toContain('In your plan');
+    const food = render('en', <GuidePanel tab="food" guide={guide} plan={itinerary} style="budget" />).html;
+    expect(food).toContain(`Food at your hotel, ${hotel.name}`);
+    expect(food).toMatch(/Breakfast is (not )?included/);
   });
 });

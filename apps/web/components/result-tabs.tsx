@@ -2,11 +2,32 @@
 
 import { useTranslations } from 'next-intl';
 
-export const TABS = ['dates', 'plan', 'getting', 'hotels', 'local', 'sights', 'food', 'shopping', 'dos', 'cost'] as const;
+export const TABS = [
+  'dates',
+  'plan',
+  'getting',
+  'hotels',
+  'local',
+  'sights',
+  'food',
+  'shopping',
+  'dos',
+  'cost',
+] as const;
 export type TabId = (typeof TABS)[number];
 
 /** Tabs whose build step has landed (PLAN §12). The rest are shown disabled. */
-export const READY_TABS: readonly TabId[] = ['dates', 'plan', 'getting', 'hotels', 'local'];
+export const READY_TABS: readonly TabId[] = [
+  'dates',
+  'plan',
+  'getting',
+  'hotels',
+  'local',
+  'sights',
+  'food',
+  'shopping',
+  'dos',
+];
 
 interface Props {
   active: TabId;

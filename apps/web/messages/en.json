@@ -178,7 +178,8 @@
     "kind": {
       "city": "City",
       "region": "Region"
-    }
+    },
+    "guide": "Travel guide →"
   },
   "trust": {
     "title": "Plan smart. Travel more.",
@@ -539,6 +540,128 @@
       "sample": "Fares and timings are sample data until live providers are connected.",
       "basis": "Fares are our estimates from typical tariffs; confirm with the operator. Children under 4 travel free on buses and ferries, 4–7 half (our default rule).",
       "noPlan": "This plan is not available here; pick another plan to see its local transport."
+    },
+    "guideLink": "{name} travel guide",
+    "guide": {
+      "loading": "Loading the destination guide…",
+      "minutes": "~{m} min",
+      "hours": "~{h} h",
+      "hoursMinutes": "~{h} h {m} min",
+      "distance": "{km} km",
+      "sample": "Sample content.",
+      "fromHotel": "Distances are by road from your hotel, {name}.",
+      "fromArea": "Distances are by road from {name}.",
+      "verified": "Food, shopping and safety notes last checked by our team on {date}; prices are typical ranges.",
+      "noContent": "We don’t have food, shopping and safety notes for this destination yet.",
+      "baseLabel": "Measure distances from"
+    },
+    "sights": {
+      "filterLabel": "Filter sights",
+      "filters": {
+        "all": "All",
+        "must-see": "Must-see",
+        "nature": "Nature",
+        "religious": "Religious",
+        "adventure": "Adventure",
+        "museums": "Museums",
+        "heritage": "Heritage",
+        "nightlife": "Nightlife",
+        "kids": "Kid-friendly"
+      },
+      "near": "Within 10 km of {name}",
+      "dayTrips": "Day trips",
+      "none": "No sights here for this filter.",
+      "inPlan": "In your plan",
+      "offbeat": "Offbeat",
+      "kidFriendly": "Kid-friendly",
+      "allDay": "Open all day",
+      "open": "Open {open}–{close}",
+      "closed": "closed {days}",
+      "daily": "open daily",
+      "timeNeeded": "spend",
+      "best": {
+        "morning": "best in the morning",
+        "afternoon": "best in the afternoon",
+        "evening": "best in the evening",
+        "any": "any time"
+      },
+      "free": "Free",
+      "perAdult": "per adult · children by age",
+      "rating": "{rating} ★",
+      "tickets": "Official tickets"
+    },
+    "food": {
+      "dishesTitle": "{name} dishes to try",
+      "veg": {
+        "veg": "Veg",
+        "egg": "Contains egg",
+        "non-veg": "Non-veg"
+      },
+      "placeVeg": {
+        "veg": "Pure veg",
+        "non-veg": "Non-veg",
+        "both": "Veg & non-veg"
+      },
+      "tryAt": "Try it at {place} · {km} km",
+      "perUnit": "per {unit}",
+      "perPlate": "per plate",
+      "whereTitle": "Where to eat near {name}",
+      "planNote": {
+        "offbeat": "Offbeat plan: local, homely places first.",
+        "budget": "Budget plan: street food and budget eateries first, cheapest first.",
+        "comfort": "Comfort plan: well-reviewed restaurants first, best rated first."
+      },
+      "vegNote": "Pure-veg places first, as you asked.",
+      "kind": {
+        "street": "Street food",
+        "homely": "Homely",
+        "budget": "Budget eatery",
+        "restaurant": "Restaurant"
+      },
+      "forTwo": "for two",
+      "rating": "{rating} ★ ({count})",
+      "hotelTitle": "Food at your hotel, {name}",
+      "breakfastIncluded": "Breakfast is included in your room price.",
+      "breakfastNotIncluded": "Breakfast is not included.",
+      "hotelMeal": "meal for two at the hotel restaurant",
+      "hotelBreakfast": "breakfast per person",
+      "hotelNoRestaurant": "We don’t know this hotel’s restaurant prices yet."
+    },
+    "shop": {
+      "marketsTitle": "Markets",
+      "fairTitle": "Fair-price shops",
+      "othersTitle": "Other shops",
+      "everyDay": "Every day",
+      "onTrip": "On your trip: {dates}",
+      "notOnTrip": "Not on during your dates",
+      "perUnit": "per {unit}",
+      "bargain": {
+        "fixed": "Fixed fair price",
+        "some": "Some bargaining is normal",
+        "hard": "Bargain hard: start at {min}–{max}% of the asking price"
+      },
+      "trap": "Tourist trap:",
+      "closedOn": "Closed {days}"
+    },
+    "dos": {
+      "do": "Do",
+      "dont": "Don’t",
+      "emergency": "Emergency",
+      "nearestHospital": "Nearest hospital: {name} ({km} km)",
+      "nearestPolice": "Nearest police station: {name} ({km} km)",
+      "networkTitle": "Network, ATMs & permits",
+      "network": "Mobile network",
+      "atms": "ATMs and cash",
+      "permits": "Permits",
+      "packTitle": "What to pack",
+      "weather": "{month}: about {max}° by day, {min}° at night"
     }
+  },
+  "guidePage": {
+    "metaTitle": "{name} travel guide: sights, local food, shopping, do’s & don’ts · TripSaver",
+    "metaDescription": "What to see in {name}, local dishes and where to eat, markets and fair-price shops, and do’s & don’ts, with typical prices.",
+    "title": "{name} travel guide",
+    "intro": "Sights, local food, shopping and do’s & don’ts for {name}. Distances are from {area}; plan a trip to see them from your own hotel.",
+    "plan": "Plan a trip to {name}"
   }
 }

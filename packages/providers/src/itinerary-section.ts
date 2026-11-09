@@ -17,27 +17,50 @@ import type { Clock } from './clock.js';
 import { withTimeout } from './dates-section.js';
 import { buildLocalSection, legsOf, localSpendByDay } from './local-section.js';
 import type { Attraction, HotelType, ProviderSet } from './interfaces.js';
-import type { HotelListing, HotelsSection, ItineraryChecks, ItinerarySection, PlanBase } from './results-contract.js';
+import type {
+  HotelListing,
+  HotelsSection,
+  ItineraryChecks,
+  ItinerarySection,
+  PlanBase,
+} from './results-contract.js';
 
 /** Hotels within this distance of a base count as "at" the base. */
 const NEAR_BASE_KM = 15;
 
-async function attractionsFor(set: ProviderSet, destination: string, ms: number): Promise<Attraction[]> {
-  const lists = await Promise.all(set.attractions.map((p) => withTimeout(p.attractions(destination), ms, `${p.id} attractions`)));
+export async function attractionsFor(
+  set: ProviderSet,
+  destination: string,
+  ms: number,
+): Promise<Attraction[]> {
+  const lists = await Promise.all(
+    set.attractions.map((p) => withTimeout(p.attractions(destination), ms, `${p.id} attractions`)),
+  );
   const byId = new Map<string, Attraction>();
   for (const a of lists.flat()) if (!byId.has(a.id)) byId.set(a.id, a);
   return [...byId.values()];
 }
 
 /** The style's hotel near a base: cheapest within 15 km, else the nearest of that kind. */
-function hotelNear(hotels: HotelListing[], base: LatLng, pick: (h: HotelListing) => boolean): HotelListing | null {
+function hotelNear(
+  hotels: HotelListing[],
+  base: LatLng,
+  pick: (h: HotelListing) => boolean,
+): HotelListing | null {
   const ok = hotels.filter((h) => pick(h) && h.guestRating >= MIN_HOTEL_RATING);
-  const near = ok.filter((h) => distanceKm(h, base) <= NEAR_BASE_KM).sort((a, b) => a.totalPrice - b.totalPrice);
+  const near = ok
+    .filter((h) => distanceKm(h, base) <= NEAR_BASE_KM)
+    .sort((a, b) => a.totalPrice - b.totalPrice);
   return near[0] ?? ok.sort((a, b) => distanceKm(a, base) - distanceKm(b, base))[0] ?? null;
 }
 
 /** Bookable hotel per base: the plan's own hotel for a single-base stay, otherwise the style's type near each base. */
-function baseHotels(bases: ReturnType<typeof splitBases>, w: PricedWindow, hotels: HotelsSection | null, type: HotelType): PlanBase[] {
+function baseHotels(
+  bases: ReturnType<typeof splitBases>,
+  w: PricedWindow,
+  hotels: HotelsSection | null,
+  type: HotelType,
+): PlanBase[] {
   const list = hotels?.hotels ?? [];
   return bases.map((b) => {
     const single = bases.length === 1;
@@ -80,14 +103,21 @@ export async function buildItinerarySection(
 
   if (!selection.available) {
     const others = set.places.places().filter((p) => p.code !== input.to);
-    const elsewhere = (await Promise.all(others.map((p) => attractionsFor(set, p.code, opts.timeoutMs)))).flat();
+    const elsewhere = (
+      await Promise.all(others.map((p) => attractionsFor(set, p.code, opts.timeoutMs)))
+    ).flat();
     const alt = nearestOffbeat(place, elsewhere);
     return {
       style,
       available: false,
       reason: 'noOffbeat',
       nearestAlternative: alt
-        ? { name: alt.name, destination: alt.destination, destinationName: set.places.get(alt.destination)?.name ?? alt.destination, distanceKm: alt.distanceKm }
+        ? {
+            name: alt.name,
+            destination: alt.destination,
+            destinationName: set.places.get(alt.destination)?.name ?? alt.destination,
+            distanceKm: alt.distanceKm,
+          }
         : null,
     };
   }
@@ -95,13 +125,19 @@ export async function buildItinerarySection(
   const arrival = place.gateways?.[w.onward.mode] ?? { name: place.name, lat: place.lat, lng: place.lng };
   const departure = place.gateways?.[w.return.mode] ?? arrival;
   const marks = set.places.landmarks(input.to);
-  const candidates: BaseCandidate[] = (marks.some((m) => m.isBase) ? marks.filter((m) => m.isBase) : marks.slice(0, 1)).map((m) => ({
-    id: m.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+  const candidates: BaseCandidate[] = (
+    marks.some((m) => m.isBase) ? marks.filter((m) => m.isBase) : marks.slice(0, 1)
+  ).map((m) => ({
+    id: m.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, ''),
     name: m.name,
     lat: m.lat,
     lng: m.lng,
   }));
-  if (candidates.length === 0) candidates.push({ id: place.code.toLowerCase(), name: place.name, lat: place.lat, lng: place.lng });
+  if (candidates.length === 0)
+    candidates.push({ id: place.code.toLowerCase(), name: place.name, lat: place.lat, lng: place.lng });
 
   const arriveAt = w.onward.arriveAt.slice(0, 16);
   const leaveAt = w.return.departAt.slice(0, 16);
@@ -138,7 +174,14 @@ export async function buildItinerarySection(
   const byId = new Map(selection.attractions.map((a) => [a.id, a]));
   const attractions = Object.fromEntries(selection.attractions.map((a) => [a.id, a as Attraction]));
   const baseName = (id: string | null) => bases.find((b) => b.id === id)?.name ?? place.name;
-  const local = await buildLocalSection(set, input.to, legsOf(it.days, { arrival: arrival.name, departure: departure.name, base: baseName }, attractions), input.travellers, style, opts);
+  const local = await buildLocalSection(
+    set,
+    input.to,
+    legsOf(it.days, { arrival: arrival.name, departure: departure.name, base: baseName }, attractions),
+    input.travellers,
+    style,
+    opts,
+  );
   const localByDay = localSpendByDay(local);
   // Local travel in each day's spend comes from the plan's own local-transport choices, so the tabs agree.
   const days = it.days.map((d) => {
@@ -146,12 +189,16 @@ export async function buildItinerarySection(
     const localSpend = localByDay.get(d.index) ?? 0;
     return { ...d, spend: { ...spend, local: localSpend, total: spend.entry + localSpend + spend.meals } };
   });
-  const scheduled = new Set(days.flatMap((d) => d.stops.map((s) => s.attractionId).filter((x): x is string => !!x)));
+  const scheduled = new Set(
+    days.flatMap((d) => d.stops.map((s) => s.attractionId).filter((x): x is string => !!x)),
+  );
   const busiest = days.reduce((a, b) => (b.activeMin > a.activeMin ? b : a));
   const checks: ItineraryChecks = {
     days: days.length,
     busiest: { index: busiest.index, activeMin: busiest.activeMin },
-    closedDays: selection.attractions.filter((a) => scheduled.has(a.id) && a.closedDays.length > 0).map((a) => ({ name: a.name, closedDays: a.closedDays })),
+    closedDays: selection.attractions
+      .filter((a) => scheduled.has(a.id) && a.closedDays.length > 0)
+      .map((a) => ({ name: a.name, closedDays: a.closedDays })),
     freeDay: days.find((d) => d.kind === 'free')?.index ?? null,
     first: { kind: days[0]!.kind, sightMin: sightMinutesOf(days[0]!.stops) },
     last: { kind: days.at(-1)!.kind, sightMin: sightMinutesOf(days.at(-1)!.stops) },

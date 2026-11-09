@@ -13,7 +13,7 @@ import type {
   WindowReason,
 } from '@tripsaver/domain';
 import type { PricedWindow, TripStyle } from './assemble.js';
-import type { Attraction, HotelOffer, LocalMode, TransportOffer } from './interfaces.js';
+import type { Attraction, DestinationGuide, HotelOffer, LocalMode, TransportOffer } from './interfaces.js';
 
 /** API ↔ web contract for the "Best dates & price calendar" section (SSE event `dates`). */
 
@@ -194,7 +194,12 @@ export type ItinerarySection =
       style: TripStyle;
       available: false;
       reason: 'noOffbeat';
-      nearestAlternative: { name: string; destination: string; destinationName: string; distanceKm: number } | null;
+      nearestAlternative: {
+        name: string;
+        destination: string;
+        destinationName: string;
+        distanceKm: number;
+      } | null;
     };
 
 // ── "Local transport" (part of the itinerary section, so day spends and this tab agree) ──
@@ -228,7 +233,14 @@ export interface LocalLegView {
   km: number;
   options: LocalOptionView[];
   /** Fixed trips a sight needs (Divar ferry, Dudhsagar jeep), added to the day. */
-  extras: { id: string; name: string; attraction: string; min: number; max: number; booking: LocalMode['booking'] }[];
+  extras: {
+    id: string;
+    name: string;
+    attraction: string;
+    min: number;
+    max: number;
+    booking: LocalMode['booking'];
+  }[];
   /** The plan's option + extras. */
   plan: { min: number; max: number };
 }
@@ -237,6 +249,26 @@ export interface LocalSection {
   legs: LocalLegView[];
   tips: string[];
   total: { min: number; max: number };
+  source: string;
+  fetchedAt: string;
+}
+
+// ── Destination guide: sights, food, shopping, do's & don'ts (SSE event `guide`, GET /api/destinations/:code/guide) ──
+
+/**
+ * Content for one destination. Distances depend on where you stay, so the web app measures them from
+ * the plan's hotel with the pure `groupSights` / `rankRestaurants` / `splitShops` / `nearestTo` engines.
+ */
+export interface GuideSection {
+  destination: { code: string; name: string; kind: 'city' | 'region' };
+  /** Where distances are measured from when there is no plan hotel (guide pages, Offbeat with no plan). */
+  mainArea: { name: string; lat: number; lng: number };
+  /** Local road speed, for travel times. */
+  speedKmh: number;
+  sights: Attraction[];
+  /** Null when no content provider covers the destination yet. */
+  guide: DestinationGuide | null;
+  sampleData: boolean;
   source: string;
   fetchedAt: string;
 }

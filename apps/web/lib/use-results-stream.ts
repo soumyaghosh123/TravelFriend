@@ -1,6 +1,12 @@
 'use client';
 
-import type { DatesSection, HotelsSection, ItinerarySection, TransportSection } from '@tripsaver/providers';
+import type {
+  DatesSection,
+  GuideSection,
+  HotelsSection,
+  ItinerarySection,
+  TransportSection,
+} from '@tripsaver/providers';
 import { useCallback, useEffect, useState } from 'react';
 
 export type SectionState<T> = { status: 'loading' } | { status: 'ok'; data: T } | { status: 'error' };
@@ -11,10 +17,18 @@ export interface ResultsState {
   transport: SectionState<TransportSection>;
   hotels: SectionState<HotelsSection>;
   itinerary: SectionState<ItinerarySection>;
+  /** Sights, food, shopping, do's & don'ts: the same for every plan and date. */
+  guide: SectionState<GuideSection>;
 }
 
-const SECTIONS = ['dates', 'transport', 'hotels', 'itinerary'] as const;
-const INITIAL: ResultsState = { dates: { status: 'loading' }, transport: { status: 'loading' }, hotels: { status: 'loading' }, itinerary: { status: 'loading' } };
+const SECTIONS = ['dates', 'transport', 'hotels', 'itinerary', 'guide'] as const;
+const INITIAL: ResultsState = {
+  dates: { status: 'loading' },
+  transport: { status: 'loading' },
+  hotels: { status: 'loading' },
+  itinerary: { status: 'loading' },
+  guide: { status: 'loading' },
+};
 
 /**
  * Opens the SSE stream for a search and fills sections as they arrive (PLAN §7).
@@ -31,8 +45,12 @@ export function useResultsStream(searchId: string): ResultsState & { retry: () =
 
     for (const section of SECTIONS) {
       es.addEventListener(section, (e) => {
-        const msg = JSON.parse((e as MessageEvent<string>).data) as { status: 'ok'; data: unknown } | { status: 'error' };
-        setState((s) => ({ ...s, [section]: msg.status === 'ok' ? { status: 'ok', data: msg.data } : { status: 'error' } }));
+        const msg = JSON.parse((e as MessageEvent<string>).data) as
+          { status: 'ok'; data: unknown } | { status: 'error' };
+        setState((s) => ({
+          ...s,
+          [section]: msg.status === 'ok' ? { status: 'ok', data: msg.data } : { status: 'error' },
+        }));
       });
     }
     es.addEventListener('done', () => {

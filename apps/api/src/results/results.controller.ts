@@ -1,15 +1,32 @@
-import { BadRequestException, Controller, Get, Inject, NotFoundException, Param, Query, Res } from '@nestjs/common';
-import type { DatesSection, HotelsSection, ItinerarySection, TransportSection, TripStyle, WindowDetail } from '@tripsaver/providers';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Inject,
+  NotFoundException,
+  Param,
+  Query,
+  Res,
+} from '@nestjs/common';
+import type {
+  DatesSection,
+  HotelsSection,
+  ItinerarySection,
+  TransportSection,
+  TripStyle,
+  WindowDetail,
+} from '@tripsaver/providers';
 import type { Response } from 'express';
 import type { SearchStore } from '../search/search-store.js';
 import { SEARCH_STORE } from '../tokens.js';
 import { DatesService, STYLES } from './dates.service.js';
+import { GuideService } from './guide.service.js';
 import { HotelsService } from './hotels.service.js';
 import { ItineraryService } from './itinerary.service.js';
 import { TransportService } from './transport.service.js';
 
-/** Result sections (PLAN §7): `dates` first, then the others as they complete. Later steps add itinerary, … */
-export const SECTIONS = ['dates', 'transport', 'hotels', 'itinerary'] as const;
+/** Result sections (PLAN §7): `dates` first, then the others as they complete. `guide` needs no dates. */
+export const SECTIONS = ['dates', 'transport', 'hotels', 'itinerary', 'guide'] as const;
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -21,6 +38,7 @@ export class ResultsController {
     private readonly transport: TransportService,
     private readonly hotels: HotelsService,
     private readonly itinerary: ItineraryService,
+    private readonly guide: GuideService,
   ) {}
 
   private async search(id: string) {
@@ -53,7 +71,10 @@ export class ResultsController {
     };
 
     /** Sends one section: its data, or "unavailable" if it failed (or had nothing to build from). */
-    const section = async <T>(name: (typeof SECTIONS)[number], build: (() => Promise<T>) | null): Promise<T | null> => {
+    const section = async <T>(
+      name: (typeof SECTIONS)[number],
+      build: (() => Promise<T>) | null,
+    ): Promise<T | null> => {
       if (!build) {
         send(name, { status: 'error', message: 'unavailable' });
         return null;
@@ -74,10 +95,35 @@ export class ResultsController {
     // The rest are for the default selection, the Budget plan's cheapest dates; they run in parallel.
     const best = dates?.styles.find((s) => s.style === 'budget')?.top[0];
     await Promise.all([
-      section('transport', best ? () => this.transport.compute(stored.input, { onward: best.onward.departDate, return: best.return.departDate }) : null),
+      // Sights, food, shopping, do's & don'ts: same for every plan and date.
+      section('guide', () =>
+        this.guide.compute(stored.input.to).then((g) => g ?? Promise.reject(new Error('no guide'))),
+      ),
+      section(
+        'transport',
+        best
+          ? () =>
+              this.transport.compute(stored.input, {
+                onward: best.onward.departDate,
+                return: best.return.departDate,
+              })
+          : null,
+      ),
       // The day-by-day plan needs the stay's hotels (one per base, plus a 5★ option), so it follows them.
-      section<HotelsSection>('hotels', best ? () => this.hotels.compute(stored.input, { checkIn: best.onward.arriveDate, checkOut: best.return.departDate }) : null).then(
-        (hotels) => section('itinerary', best ? () => this.itinerary.compute(stored.input, 'budget', best, hotels) : null),
+      section<HotelsSection>(
+        'hotels',
+        best
+          ? () =>
+              this.hotels.compute(stored.input, {
+                checkIn: best.onward.arriveDate,
+                checkOut: best.return.departDate,
+              })
+          : null,
+      ).then((hotels) =>
+        section(
+          'itinerary',
+          best ? () => this.itinerary.compute(stored.input, 'budget', best, hotels) : null,
+        ),
       ),
     ]);
     send('done', { sections: SECTIONS });
@@ -86,11 +132,20 @@ export class ResultsController {
 
   /** Re-prices one start date (user clicked a calendar day). */
   @Get('window')
-  async window(@Param('id') id: string, @Query('start') start?: string, @Query('style') style?: string): Promise<WindowDetail> {
+  async window(
+    @Param('id') id: string,
+    @Query('start') start?: string,
+    @Query('style') style?: string,
+  ): Promise<WindowDetail> {
     const stored = await this.search(id);
-    if (!start || !ISO_DATE.test(start)) throw new BadRequestException({ statusCode: 400, message: 'start must be YYYY-MM-DD' });
+    if (!start || !ISO_DATE.test(start))
+      throw new BadRequestException({ statusCode: 400, message: 'start must be YYYY-MM-DD' });
     const s = (style ?? 'budget') as TripStyle;
-    if (!STYLES.includes(s)) throw new BadRequestException({ statusCode: 400, message: `style must be one of ${STYLES.join(', ')}` });
+    if (!STYLES.includes(s))
+      throw new BadRequestException({
+        statusCode: 400,
+        message: `style must be one of ${STYLES.join(', ')}`,
+      });
     const detail = await this.dates.window(id, stored.input, s, start);
     if (!detail) throw new NotFoundException({ statusCode: 404, message: 'No trip can start on that date' });
     return detail;
@@ -98,42 +153,67 @@ export class ResultsController {
 
   /** Day-by-day plan for another plan or start date. */
   @Get('itinerary')
-  async itineraryFor(@Param('id') id: string, @Query('start') start?: string, @Query('style') style?: string): Promise<ItinerarySection> {
+  async itineraryFor(
+    @Param('id') id: string,
+    @Query('start') start?: string,
+    @Query('style') style?: string,
+  ): Promise<ItinerarySection> {
     const stored = await this.search(id);
-    if (!start || !ISO_DATE.test(start)) throw new BadRequestException({ statusCode: 400, message: 'start must be YYYY-MM-DD' });
+    if (!start || !ISO_DATE.test(start))
+      throw new BadRequestException({ statusCode: 400, message: 'start must be YYYY-MM-DD' });
     const s = (style ?? 'budget') as TripStyle;
-    if (!STYLES.includes(s)) throw new BadRequestException({ statusCode: 400, message: `style must be one of ${STYLES.join(', ')}` });
+    if (!STYLES.includes(s))
+      throw new BadRequestException({
+        statusCode: 400,
+        message: `style must be one of ${STYLES.join(', ')}`,
+      });
     const detail = await this.dates.window(id, stored.input, s, start);
     if (!detail) throw new NotFoundException({ statusCode: 404, message: 'No trip can start on that date' });
     const w = detail.window;
-    const hotels = await this.hotels.compute(stored.input, { checkIn: w.onward.arriveDate, checkOut: w.return.departDate }).catch(() => null);
+    const hotels = await this.hotels
+      .compute(stored.input, { checkIn: w.onward.arriveDate, checkOut: w.return.departDate })
+      .catch(() => null);
     return this.itinerary.compute(stored.input, s, w, hotels);
   }
 
   /** Getting there and back for other dates (user picked another window or plan). */
   @Get('transport')
-  async transportFor(@Param('id') id: string, @Query('onward') onward?: string, @Query('return') ret?: string): Promise<TransportSection> {
+  async transportFor(
+    @Param('id') id: string,
+    @Query('onward') onward?: string,
+    @Query('return') ret?: string,
+  ): Promise<TransportSection> {
     const stored = await this.search(id);
     if (!onward || !ret || !ISO_DATE.test(onward) || !ISO_DATE.test(ret)) {
       throw new BadRequestException({ statusCode: 400, message: 'onward and return must be YYYY-MM-DD' });
     }
     const d = { onward, return: ret };
     if (!this.transport.validDates(stored.input, d)) {
-      throw new BadRequestException({ statusCode: 400, message: 'Dates must fit the searched month and trip length' });
+      throw new BadRequestException({
+        statusCode: 400,
+        message: 'Dates must fit the searched month and trip length',
+      });
     }
     return this.transport.compute(stored.input, d);
   }
 
   /** Hotels for another stay (user picked another window or plan). */
   @Get('hotels')
-  async hotelsFor(@Param('id') id: string, @Query('checkIn') checkIn?: string, @Query('checkOut') checkOut?: string): Promise<HotelsSection> {
+  async hotelsFor(
+    @Param('id') id: string,
+    @Query('checkIn') checkIn?: string,
+    @Query('checkOut') checkOut?: string,
+  ): Promise<HotelsSection> {
     const stored = await this.search(id);
     if (!checkIn || !checkOut || !ISO_DATE.test(checkIn) || !ISO_DATE.test(checkOut)) {
       throw new BadRequestException({ statusCode: 400, message: 'checkIn and checkOut must be YYYY-MM-DD' });
     }
     const d = { checkIn, checkOut };
     if (!this.hotels.validDates(stored.input, d)) {
-      throw new BadRequestException({ statusCode: 400, message: 'Stay must fit the searched month and trip length' });
+      throw new BadRequestException({
+        statusCode: 400,
+        message: 'Stay must fit the searched month and trip length',
+      });
     }
     return this.hotels.compute(stored.input, d);
   }

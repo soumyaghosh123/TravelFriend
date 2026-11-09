@@ -1,4 +1,14 @@
-import type { AttractionLike, CalendarEvent, ISODate, LocalModeLike, MonthClimate, PricedOffer, Travellers } from '@tripsaver/domain';
+import type {
+  AttractionLike,
+  CalendarEvent,
+  ISODate,
+  LocalModeLike,
+  MonthClimate,
+  PricedOffer,
+  RestaurantLike,
+  ShopLike,
+  Travellers,
+} from '@tripsaver/domain';
 
 export interface Place {
   code: string;
@@ -143,6 +153,8 @@ export interface Attraction extends AttractionLike {
   destination: string;
   description: string;
   kidFriendly: boolean;
+  /** Official ticket booking page, where one exists (brief §3.4). */
+  ticketUrl?: string;
 }
 
 export interface AttractionsProvider {
@@ -172,8 +184,72 @@ export interface LocalTransportProvider {
   tips(destination: string): Promise<string[]>;
 }
 
+// ── Destination content (brief §3.6–3.8): curated, with a "last verified on" date ──
+
+export interface Dish {
+  id: string;
+  name: string;
+  description: string;
+  /** 'egg' = vegetarian except for egg (eggetarian). */
+  vegType: 'veg' | 'egg' | 'non-veg';
+  /** Typical price per plate (or per `unit`), rupees. */
+  priceMin: number;
+  priceMax: number;
+  unit?: string;
+}
+
+export interface Restaurant extends RestaurantLike {
+  name: string;
+  area: string;
+  hours: string;
+  note?: string;
+}
+
+export interface Shop extends ShopLike {
+  name: string;
+  hours: string;
+  /** What to buy there, with a typical price where it helps. */
+  buy: { item: string; priceMin?: number; priceMax?: number; unit?: string }[];
+  /** fixed = fair fixed price; some = a little; hard = start at `bargainStartPct` of the asking price. */
+  bargain: 'fixed' | 'some' | 'hard';
+  bargainStartPct?: [number, number];
+  /** e.g. "GI-tagged Goa cashew". */
+  tags: string[];
+}
+
+export interface NamedPoint {
+  name: string;
+  lat: number;
+  lng: number;
+  phone?: string;
+}
+
+export interface DestinationGuide {
+  destination: string;
+  /** ISO date the content was last checked by a person. */
+  lastVerifiedOn: string;
+  dishes: Dish[];
+  restaurants: Restaurant[];
+  shops: Shop[];
+  /** Common tourist traps when shopping. */
+  traps: string[];
+  dos: string[];
+  donts: string[];
+  emergency: { numbers: { label: string; number: string }[]; hospitals: NamedPoint[]; police: NamedPoint[] };
+  network: string;
+  atms: string;
+  permits: string;
+  pack: string[];
+}
+
+export interface ContentProvider {
+  id: string;
+  guide(destination: string): Promise<DestinationGuide | null>;
+}
+
 export interface ProviderSet {
   attractions: AttractionsProvider[];
+  content: ContentProvider[];
   local: LocalTransportProvider[];
   train: TrainProvider[];
   bus: BusProvider[];

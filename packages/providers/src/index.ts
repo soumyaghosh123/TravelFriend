@@ -22,3 +22,6 @@ export * from './itinerary-section.js';
 export * from './mock/data/local-transport.js';
 export * from './mock/local-transport.js';
 export * from './local-section.js';
+export * from './mock/data/content.js';
+export * from './mock/content.js';
+export * from './guide-section.js';

@@ -9,17 +9,27 @@ function utcDate(iso: string): Date {
 
 /** "Dec 2026" in the user's language. Months are `YYYY-MM`; formatting is pinned to UTC so no date shifts. */
 export function monthLabel(month: string, locale: string, style: 'short' | 'long' = 'short'): string {
-  return new Intl.DateTimeFormat(intlLocale(locale), { month: style, year: 'numeric', timeZone: 'UTC' }).format(utcDate(month));
+  return new Intl.DateTimeFormat(intlLocale(locale), {
+    month: style,
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(utcDate(month));
 }
 
 /** "Dec" / "दिस॰" — month name only, for chart axes. */
 export function monthShort(month: number, locale: string): string {
-  return new Intl.DateTimeFormat(intlLocale(locale), { month: 'short', timeZone: 'UTC' }).format(new Date(Date.UTC(2026, month - 1, 1)));
+  return new Intl.DateTimeFormat(intlLocale(locale), { month: 'short', timeZone: 'UTC' }).format(
+    new Date(Date.UTC(2026, month - 1, 1)),
+  );
 }
 
 /** "5 Dec" in the user's language. */
 export function dayMonth(iso: string, locale: string): string {
-  return new Intl.DateTimeFormat(intlLocale(locale), { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(utcDate(iso));
+  return new Intl.DateTimeFormat(intlLocale(locale), {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(utcDate(iso));
 }
 
 /** "5–14 Dec", "28 Dec – 2 Jan" in the user's language. */
@@ -46,4 +56,21 @@ export function checkedAgo(fetchedAt: string, now: number, locale: string): stri
   if (mins < 60) return rtf.format(-mins, 'minute');
   const hours = Math.round(mins / 60);
   return hours < 24 ? rtf.format(-hours, 'hour') : rtf.format(-Math.round(hours / 24), 'day');
+}
+
+/** "Fri" / "शुक्र" for a day of the week (0 = Sunday). 8 Nov 2026 is a Sunday. */
+export function weekdayShort(day: number, locale: string): string {
+  return new Intl.DateTimeFormat(intlLocale(locale), { weekday: 'short', timeZone: 'UTC' }).format(
+    new Date(Date.UTC(2026, 10, 8 + day)),
+  );
+}
+
+/** "Fri 4 Dec" in the user's language. */
+export function weekdayDayMonth(iso: string, locale: string): string {
+  return new Intl.DateTimeFormat(intlLocale(locale), {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(utcDate(iso));
 }

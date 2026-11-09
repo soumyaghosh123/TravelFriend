@@ -1,6 +1,7 @@
 import { systemClock, type Clock } from './clock.js';
 import type {
   AttractionsProvider,
+  ContentProvider,
   LocalTransportProvider,
   BusProvider,
   CalendarEventsProvider,
@@ -12,6 +13,7 @@ import type {
   WeatherProvider,
 } from './interfaces.js';
 import { MockAttractionsProvider } from './mock/attractions.js';
+import { MockContentProvider } from './mock/content.js';
 import { MockCalendarEventsProvider, MockWeatherProvider } from './mock/calendar.js';
 import { MockLocalTransportProvider } from './mock/local-transport.js';
 import { mockPlaceDirectory } from './mock/data/places.js';
@@ -23,6 +25,7 @@ type Factory<T> = (clock: Clock) => T;
 export interface Factories {
   attractions: Record<string, Factory<AttractionsProvider>>;
   local: Record<string, Factory<LocalTransportProvider>>;
+  content: Record<string, Factory<ContentProvider>>;
   train: Record<string, Factory<TrainProvider>>;
   bus: Record<string, Factory<BusProvider>>;
   flight: Record<string, Factory<FlightProvider>>;
@@ -36,6 +39,7 @@ export interface Factories {
 export const DEFAULT_FACTORIES: Factories = {
   attractions: { mock: () => new MockAttractionsProvider() },
   local: { mock: () => new MockLocalTransportProvider() },
+  content: { mock: () => new MockContentProvider() },
   train: { mock: (c) => new MockTrainProvider(c) },
   bus: { mock: (c) => new MockBusProvider(c) },
   flight: { mock: (c) => new MockFlightProvider(c) },
@@ -48,6 +52,7 @@ export const DEFAULT_FACTORIES: Factories = {
 const ENV_KEYS = {
   attractions: 'ATTRACTION_PROVIDERS',
   local: 'LOCAL_TRANSPORT_PROVIDERS',
+  content: 'CONTENT_PROVIDERS',
   train: 'TRAIN_PROVIDERS',
   bus: 'BUS_PROVIDERS',
   flight: 'FLIGHT_PROVIDERS',
@@ -82,6 +87,7 @@ export function createRegistry(
   const f: Factories = {
     attractions: { ...DEFAULT_FACTORIES.attractions, ...factories.attractions },
     local: { ...DEFAULT_FACTORIES.local, ...factories.local },
+    content: { ...DEFAULT_FACTORIES.content, ...factories.content },
     train: { ...DEFAULT_FACTORIES.train, ...factories.train },
     bus: { ...DEFAULT_FACTORIES.bus, ...factories.bus },
     flight: { ...DEFAULT_FACTORIES.flight, ...factories.flight },
@@ -93,6 +99,7 @@ export function createRegistry(
   return {
     attractions: pick(env, ENV_KEYS.attractions, f.attractions, clock),
     local: pick(env, ENV_KEYS.local, f.local, clock),
+    content: pick(env, ENV_KEYS.content, f.content, clock),
     train: pick(env, ENV_KEYS.train, f.train, clock),
     bus: pick(env, ENV_KEYS.bus, f.bus, clock),
     flight: pick(env, ENV_KEYS.flight, f.flight, clock),

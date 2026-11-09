@@ -1,7 +1,16 @@
 import 'reflect-metadata';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { createRegistry, fixedClock, type DatesSection, type HotelsSection, type ItinerarySection, type ProviderSet, type TransportSection } from '@tripsaver/providers';
+import {
+  createRegistry,
+  fixedClock,
+  type DatesSection,
+  type GuideSection,
+  type HotelsSection,
+  type ItinerarySection,
+  type ProviderSet,
+  type TransportSection,
+} from '@tripsaver/providers';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { AppModule } from '../src/app.module.js';
@@ -36,7 +45,9 @@ function parseSse(text: string): SseEvent[] {
 }
 
 async function makeApp(providers?: ProviderSet): Promise<INestApplication> {
-  let builder = Test.createTestingModule({ imports: [AppModule] }).overrideProvider(CLOCK).useValue(clock);
+  let builder = Test.createTestingModule({ imports: [AppModule] })
+    .overrideProvider(CLOCK)
+    .useValue(clock);
   if (providers) builder = builder.overrideProvider(PROVIDER_SET).useValue(providers);
   const app = (await builder.compile()).createNestApplication();
   configureApp(app, {});
@@ -65,21 +76,48 @@ describe('results stream — brief §12: Kolkata → Goa, 10 days, Dec 2026, 2 a
   let transport: TransportSection;
   let hotels: HotelsSection;
   let itinerary: ItinerarySection;
+  let guide: GuideSection;
 
   beforeAll(async () => {
     app = await makeApp();
-    id = (await request(app.getHttpServer()).post('/api/search').send(briefExample).expect(201)).body.searchId;
+    id = (await request(app.getHttpServer()).post('/api/search').send(briefExample).expect(201)).body
+      .searchId;
     const events = await stream(app, id);
     // dates first, done last; the others arrive as they complete.
     expect(events[0]!.event).toBe('dates');
     expect(events.at(-1)!.event).toBe('done');
-    expect(events.map((e) => e.event).sort()).toEqual(['dates', 'done', 'hotels', 'itinerary', 'transport']);
+    expect(events.map((e) => e.event).sort()).toEqual([
+      'dates',
+      'done',
+      'guide',
+      'hotels',
+      'itinerary',
+      'transport',
+    ]);
     const get = (name: string) => events.find((e) => e.event === name)!.data;
-    for (const name of ['dates', 'transport', 'hotels', 'itinerary']) expect(get(name).status).toBe('ok');
+    for (const name of ['dates', 'transport', 'hotels', 'itinerary', 'guide'])
+      expect(get(name).status).toBe('ok');
+    guide = get('guide').data as GuideSection;
     itinerary = get('itinerary').data as ItinerarySection;
     dates = get('dates').data as DatesSection;
     transport = get('transport').data as TransportSection;
     hotels = get('hotels').data as HotelsSection;
+  });
+
+  test('guide is streamed: Goa sights, dishes, shops and do’s & don’ts', () => {
+    expect(guide.destination.code).toBe('GOA');
+    expect(guide.sights.length).toBeGreaterThan(0);
+    expect(guide.guide?.dishes.length).toBeGreaterThan(0);
+    expect(guide.guide?.emergency.numbers.map((n) => n.number)).toContain('112');
+  });
+
+  test('destination guide endpoint for guide pages: any case; unknown → 404', async () => {
+    const res = await request(app.getHttpServer()).get('/api/destinations/jaipur/guide').expect(200);
+    expect((res.body as GuideSection).destination.name).toBe('Jaipur');
+    expect((res.body as GuideSection).guide?.shops.length).toBeGreaterThan(0);
+    await request(app.getHttpServer()).get('/api/destinations/NOWHERE/guide').expect(404);
+    // An origin city is a place but not a destination with content.
+    await request(app.getHttpServer()).get('/api/destinations/KOL/guide').expect(404);
   });
 
   test('hotels are streamed for the Budget plan’s stay (arrival → return departure), with per-site prices', () => {
@@ -107,21 +145,37 @@ describe('results stream — brief §12: Kolkata → Goa, 10 days, Dec 2026, 2 a
 
   test('itinerary endpoint: offbeat and comfort plans for other dates; bad input → 400/404', async () => {
     const offbeat = dates.styles.find((s) => s.style === 'offbeat')!.top[0]!;
-    const res = await request(app.getHttpServer()).get(`/api/search/${id}/itinerary?style=offbeat&start=${offbeat.start}`).expect(200);
+    const res = await request(app.getHttpServer())
+      .get(`/api/search/${id}/itinerary?style=offbeat&start=${offbeat.start}`)
+      .expect(200);
     expect(res.body).toMatchObject({ style: 'offbeat', available: true, start: offbeat.start });
     expect(res.body.bases[0].hotel.type).toBe('homestay');
-    await request(app.getHttpServer()).get(`/api/search/${id}/itinerary?style=comfort&start=2026-12-05`).expect(200);
-    await request(app.getHttpServer()).get(`/api/search/${id}/itinerary?style=luxury&start=2026-12-05`).expect(400);
-    await request(app.getHttpServer()).get(`/api/search/${id}/itinerary?style=budget&start=2026-12-28`).expect(404);
+    await request(app.getHttpServer())
+      .get(`/api/search/${id}/itinerary?style=comfort&start=2026-12-05`)
+      .expect(200);
+    await request(app.getHttpServer())
+      .get(`/api/search/${id}/itinerary?style=luxury&start=2026-12-05`)
+      .expect(400);
+    await request(app.getHttpServer())
+      .get(`/api/search/${id}/itinerary?style=budget&start=2026-12-28`)
+      .expect(404);
   });
 
   test('hotels endpoint: another stay; bad or too-long stays → 400', async () => {
-    const res = await request(app.getHttpServer()).get(`/api/search/${id}/hotels?checkIn=2026-12-03&checkOut=2026-12-10`).expect(200);
+    const res = await request(app.getHttpServer())
+      .get(`/api/search/${id}/hotels?checkIn=2026-12-03&checkOut=2026-12-10`)
+      .expect(200);
     expect(res.body.nights).toBe(7);
     await request(app.getHttpServer()).get(`/api/search/${id}/hotels?checkIn=2026-12-03`).expect(400);
-    await request(app.getHttpServer()).get(`/api/search/${id}/hotels?checkIn=2026-12-10&checkOut=2026-12-03`).expect(400);
-    await request(app.getHttpServer()).get(`/api/search/${id}/hotels?checkIn=2026-12-01&checkOut=2026-12-11`).expect(400); // 10 nights > 9
-    await request(app.getHttpServer()).get(`/api/search/${id}/hotels?checkIn=2026-11-28&checkOut=2026-12-02`).expect(400);
+    await request(app.getHttpServer())
+      .get(`/api/search/${id}/hotels?checkIn=2026-12-10&checkOut=2026-12-03`)
+      .expect(400);
+    await request(app.getHttpServer())
+      .get(`/api/search/${id}/hotels?checkIn=2026-12-01&checkOut=2026-12-11`)
+      .expect(400); // 10 nights > 9
+    await request(app.getHttpServer())
+      .get(`/api/search/${id}/hotels?checkIn=2026-11-28&checkOut=2026-12-02`)
+      .expect(400);
   });
 
   test('transport is streamed for the Budget plan’s cheapest dates, both directions, with fares and links', () => {
@@ -136,18 +190,28 @@ describe('results stream — brief §12: Kolkata → Goa, 10 days, Dec 2026, 2 a
       }
     }
     // The plan's chosen legs are among the listed options.
-    const listed = transport.onward.services.flatMap((s) => s.offers).map((o) => `${o.departAt}|${o.travelClass}`);
+    const listed = transport.onward.services
+      .flatMap((s) => s.offers)
+      .map((o) => `${o.departAt}|${o.travelClass}`);
     expect(listed).toContain(`${best.onward.departAt}|${best.onward.travelClass}`);
   });
 
   test('transport endpoint: other dates; bad or out-of-month dates → 400', async () => {
-    const res = await request(app.getHttpServer()).get(`/api/search/${id}/transport?onward=2026-12-03&return=2026-12-11`).expect(200);
+    const res = await request(app.getHttpServer())
+      .get(`/api/search/${id}/transport?onward=2026-12-03&return=2026-12-11`)
+      .expect(200);
     expect(res.body.onward.date).toBe('2026-12-03');
     expect(res.body.return.date).toBe('2026-12-11');
     await request(app.getHttpServer()).get(`/api/search/${id}/transport?onward=2026-12-03`).expect(400);
-    await request(app.getHttpServer()).get(`/api/search/${id}/transport?onward=2026-12-25&return=2026-12-30`).expect(400); // 10 days runs into January
-    await request(app.getHttpServer()).get(`/api/search/${id}/transport?onward=2026-12-05&return=2026-12-04`).expect(400);
-    await request(app.getHttpServer()).get(`/api/search/${id}/transport?onward=2026-12-01&return=2026-12-12`).expect(400); // longer than 10 days
+    await request(app.getHttpServer())
+      .get(`/api/search/${id}/transport?onward=2026-12-25&return=2026-12-30`)
+      .expect(400); // 10 days runs into January
+    await request(app.getHttpServer())
+      .get(`/api/search/${id}/transport?onward=2026-12-05&return=2026-12-04`)
+      .expect(400);
+    await request(app.getHttpServer())
+      .get(`/api/search/${id}/transport?onward=2026-12-01&return=2026-12-12`)
+      .expect(400); // longer than 10 days
   });
 
   afterAll(async () => {
@@ -175,7 +239,12 @@ describe('results stream — brief §12: Kolkata → Goa, 10 days, Dec 2026, 2 a
     for (const w of budget.top) {
       expect(w.start < '2026-12-20').toBe(true);
       expect(w.saving).toBeGreaterThan(0);
-      expect(w.total).toBe(w.onward.price.amount + w.return.price.amount + (w.hotel?.cheapest.price.amount ?? 0) + w.local.amount);
+      expect(w.total).toBe(
+        w.onward.price.amount +
+          w.return.price.amount +
+          (w.hotel?.cheapest.price.amount ?? 0) +
+          w.local.amount,
+      );
       expect(w.onward.bookingUrl).toMatch(/^https:\/\//);
       expect(w.onward.fetchedAt).toBe('2026-11-08T06:00:00.000Z');
     }
@@ -190,14 +259,18 @@ describe('results stream — brief §12: Kolkata → Goa, 10 days, Dec 2026, 2 a
 
   test('window endpoint re-prices a clicked date with the same offers as the top window', async () => {
     const top = dates.styles.find((s) => s.style === 'budget')!.top[0]!;
-    const res = await request(app.getHttpServer()).get(`/api/search/${id}/window?style=budget&start=${top.start}`).expect(200);
+    const res = await request(app.getHttpServer())
+      .get(`/api/search/${id}/window?style=budget&start=${top.start}`)
+      .expect(200);
     expect(res.body.window.total).toBe(top.total);
     expect(res.body.estimate).toBeGreaterThan(0);
   });
 
   test('window endpoint: bad input → 400, a date no trip can start on → 404', async () => {
     await request(app.getHttpServer()).get(`/api/search/${id}/window?start=12-12-2026`).expect(400);
-    await request(app.getHttpServer()).get(`/api/search/${id}/window?start=2026-12-05&style=luxury`).expect(400);
+    await request(app.getHttpServer())
+      .get(`/api/search/${id}/window?start=2026-12-05&style=luxury`)
+      .expect(400);
     await request(app.getHttpServer()).get(`/api/search/${id}/window?start=2026-12-25`).expect(404);
   });
 
@@ -222,12 +295,24 @@ describe('results stream — a failing provider', () => {
     };
     const app = await makeApp(broken);
     try {
-      const id = (await request(app.getHttpServer()).post('/api/search').send(briefExample).expect(201)).body.searchId;
+      const id = (await request(app.getHttpServer()).post('/api/search').send(briefExample).expect(201)).body
+        .searchId;
       const events = await stream(app, id);
       expect(events.at(-1)!.event).toBe('done');
-      // No dates → nothing to build transport or hotels for; every section says so and the stream finishes.
-      for (const e of events.slice(0, -1)) expect(e.data).toEqual({ status: 'error', message: 'unavailable' });
-      expect(events.map((e) => e.event).sort()).toEqual(['dates', 'done', 'hotels', 'itinerary', 'transport']);
+      // No dates → nothing to build transport or hotels for; those sections say so and the stream finishes.
+      // The destination guide needs no dates or hotels, so it still arrives.
+      for (const e of events.slice(0, -1)) {
+        if (e.event === 'guide') expect((e.data as { status: string }).status).toBe('ok');
+        else expect(e.data).toEqual({ status: 'error', message: 'unavailable' });
+      }
+      expect(events.map((e) => e.event).sort()).toEqual([
+        'dates',
+        'done',
+        'guide',
+        'hotels',
+        'itinerary',
+        'transport',
+      ]);
     } finally {
       await app.close();
     }
