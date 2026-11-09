@@ -16,3 +16,4 @@ export * from './itinerary/select.js';
 export * from './itinerary/plan.js';
 export * from './itinerary/validate.js';
 export * from './itinerary/spend.js';
+export * from './local/local.js';

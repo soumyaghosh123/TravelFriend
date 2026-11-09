@@ -19,3 +19,6 @@ export * from './hotels-section.js';
 export * from './mock/data/attractions.js';
 export * from './mock/attractions.js';
 export * from './itinerary-section.js';
+export * from './mock/data/local-transport.js';
+export * from './mock/local-transport.js';
+export * from './local-section.js';

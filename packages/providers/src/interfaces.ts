@@ -1,4 +1,4 @@
-import type { AttractionLike, CalendarEvent, ISODate, MonthClimate, PricedOffer, Travellers } from '@tripsaver/domain';
+import type { AttractionLike, CalendarEvent, ISODate, LocalModeLike, MonthClimate, PricedOffer, Travellers } from '@tripsaver/domain';
 
 export interface Place {
   code: string;
@@ -150,8 +150,31 @@ export interface AttractionsProvider {
   attractions(destination: string): Promise<Attraction[]>;
 }
 
+/** A way of getting around at the destination (brief §3.3), with where to book it. */
+export interface LocalMode extends LocalModeLike {
+  name: string;
+  booking: {
+    type: 'app' | 'counter' | 'pay-on-board' | 'rental-shop' | 'hotel-desk';
+    /** Where to book or board, e.g. "Prepaid counter at the station exit". */
+    where: string;
+    url?: string;
+    phone?: string;
+  };
+  note?: string;
+  /** Needed to reach one particular sight (the Divar ferry, the Dudhsagar jeep): added to that day, not an alternative. */
+  forAttraction?: string;
+}
+
+export interface LocalTransportProvider {
+  id: string;
+  modes(destination: string): Promise<LocalMode[]>;
+  /** Things to know, e.g. "Uber and Ola don't operate in Goa". */
+  tips(destination: string): Promise<string[]>;
+}
+
 export interface ProviderSet {
   attractions: AttractionsProvider[];
+  local: LocalTransportProvider[];
   train: TrainProvider[];
   bus: BusProvider[];
   flight: FlightProvider[];

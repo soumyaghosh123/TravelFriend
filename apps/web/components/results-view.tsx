@@ -15,6 +15,7 @@ import { DayPlanTab } from './day-plan-tab';
 import { DestinationBanner } from './destination-banner';
 import { GettingThereTab } from './getting-there-tab';
 import { HotelsTab } from './hotels-tab';
+import { LocalTransportTab } from './local-transport-tab';
 import { PlanCards } from './plan-cards';
 import { Price } from './price';
 import { panelId, ResultTabs, tabId, type TabId } from './result-tabs';
@@ -133,6 +134,19 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
                   onPickPlan={setStyle}
                 />
               )}
+            </>
+          )}
+
+          {tab === 'local' && dates.status === 'ok' && current && (
+            <>
+              {itinerary.status === 'loading' && <SkeletonBlock label={t('plan.loading')} className="h-[420px]" />}
+              {itinerary.status === 'error' && <SectionError onRetry={itinerary.retry} />}
+              {itinerary.status === 'ok' &&
+                (itinerary.data.available ? (
+                  <LocalTransportTab local={itinerary.data.local} plan={t(`plans.${style}.name`)} sampleData={itinerary.data.sampleData} />
+                ) : (
+                  <p className="rounded-card bg-white p-4 text-muted shadow-card">{t('local.noPlan')}</p>
+                ))}
             </>
           )}
 

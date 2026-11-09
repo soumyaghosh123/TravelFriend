@@ -20,6 +20,8 @@ export interface PriceSources {
 
 interface Props {
   amount: number;
+  /** Upper end of a fare range (local transport): shows "₹1,800–₹2,100". */
+  amountMax?: number;
   /** Shows the amber "approx." badge (golden rule 1). */
   isEstimate: boolean;
   offer?: PriceOffer;
@@ -54,7 +56,7 @@ function useNow(): number {
  * The only way prices are rendered: amount, "approx." when estimated, where it comes from,
  * how fresh it is, and a booking link with dates and travellers filled in (CLAUDE.md rule 1).
  */
-export function Price({ amount, isEstimate, offer, sources, ownEstimate, note, size = 'md', hideBook, chip }: Props) {
+export function Price({ amount, amountMax, isEstimate, offer, sources, ownEstimate, note, size = 'md', hideBook, chip }: Props) {
   const t = useTranslations('price');
   const locale = useLocale();
   const now = useNow();
@@ -90,7 +92,10 @@ export function Price({ amount, isEstimate, offer, sources, ownEstimate, note, s
   return (
     <div className="min-w-0">
       <div className="flex flex-wrap items-center gap-x-1.5">
-        <span className={`font-extrabold tabular-nums ${SIZE[size]}`}>{inr(amount)}</span>
+        <span className={`font-extrabold tabular-nums ${SIZE[size]}`}>
+          {inr(amount)}
+          {amountMax !== undefined && amountMax > amount && <>–{inr(amountMax)}</>}
+        </span>
         {isEstimate && (
           <span className="rounded bg-warn-l px-1.5 py-px text-[10px] font-bold uppercase text-warn" title={t('approxHint')}>
             {t('approx')}

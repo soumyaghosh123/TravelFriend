@@ -108,3 +108,39 @@ describe('offbeat with no offbeat places', () => {
     expect(p.nearestAlternative?.destination).not.toBe('JAIPUR');
   });
 });
+
+describe('local transport (brief §3.3)', () => {
+  test('Goa budget: every journey has priced options, the plan uses a bus where one exists, extras for Divar/Dudhsagar', async () => {
+    const p = await plan('GOA', 10, 'budget');
+    if (!p.available) throw new Error('expected a plan');
+    const { legs, tips, total } = p.local;
+    expect(legs.map((l) => l.kind)).toContain('arrival');
+    expect(legs.map((l) => l.kind)).toContain('departure');
+    for (const l of legs) {
+      expect(l.options.length).toBeGreaterThan(0);
+      for (const o of l.options) {
+        expect(o.max).toBeGreaterThanOrEqual(o.min);
+        expect(o.booking.where).toBeTruthy();
+      }
+      expect(l.options.filter((o) => o.inPlan)).toHaveLength(1);
+      expect(l.options.filter((o) => o.cheapest)).toHaveLength(1);
+      if (l.options.some((o) => o.public)) expect(l.options.find((o) => o.inPlan)!.public).toBe(true);
+    }
+    expect(tips.join(' ')).toMatch(/Uber and Ola/);
+    expect(total.min).toBe(legs.reduce((s, l) => s + l.plan.min, 0));
+    const divarDay = legs.find((l) => l.stops.includes('Divar Island village walk'));
+    if (divarDay) expect(divarDay.extras.map((e) => e.id)).toContain('divar-ferry');
+  });
+
+  test('day spends use the plan local-transport numbers, so the two tabs agree', async () => {
+    const p = await plan('GOA', 10, 'comfort');
+    if (!p.available) throw new Error('expected a plan');
+    for (const d of p.days) {
+      const legs = p.local.legs.filter((l) => l.dayIndex === d.index);
+      expect(d.spend.local).toBe(legs.reduce((s, l) => s + Math.round((l.plan.min + l.plan.max) / 2), 0));
+      expect(d.spend.total).toBe(d.spend.entry + d.spend.local + d.spend.meals);
+    }
+    // Comfort uses door-to-door options.
+    for (const l of p.local.legs) expect(l.options.find((o) => o.inPlan)!.doorToDoor).toBe(true);
+  });
+});

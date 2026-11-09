@@ -509,6 +509,36 @@
         "freeNone": "No free day needed: the trip is 7 days or shorter",
         "nights": "Hotel nights: {n}, only the nights spent at the destination"
       }
+    },
+    "local": {
+      "openApp": "Open the app",
+      "booking": {
+        "app": "App",
+        "counter": "Counter",
+        "pay-on-board": "Pay on board",
+        "rental-shop": "Rental shop",
+        "hotel-desk": "Hotel desk"
+      },
+      "dayTitle": "Day {day} · getting around from {base}",
+      "legTitle": {
+        "arrival": "Day {day} · {from} → {to}",
+        "departure": "Day {day} · {from} → {to}",
+        "move": "Day {day} · move from {from} to {to}"
+      },
+      "km": "about {km} km by road",
+      "cheapest": "Cheapest",
+      "convenient": "Most convenient",
+      "inPlan": "In your {plan} plan",
+      "time": "about {h} h {m} m incl. waiting",
+      "forGroup": "for the group",
+      "extrasTitle": "Also needed this day",
+      "returnTrip": "there and back",
+      "noLegs": "No local journeys in this plan.",
+      "totalTitle": "Local transport in your {plan} plan",
+      "totalSub": "The options marked for your plan, for every journey, plus the fixed trips some sights need. This is the \"local\" part of each day's spend.",
+      "sample": "Fares and timings are sample data until live providers are connected.",
+      "basis": "Fares are our estimates from typical tariffs; confirm with the operator. Children under 4 travel free on buses and ferries, 4–7 half (our default rule).",
+      "noPlan": "This plan is not available here; pick another plan to see its local transport."
     }
   }
 }

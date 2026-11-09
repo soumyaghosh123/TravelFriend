@@ -21,6 +21,7 @@ import { DayPlanTab } from '../components/day-plan-tab';
 import { DestinationBanner } from '../components/destination-banner';
 import { GettingThereTab } from '../components/getting-there-tab';
 import { HotelsTab } from '../components/hotels-tab';
+import { LocalTransportTab } from '../components/local-transport-tab';
 import { PlanCards } from '../components/plan-cards';
 import { ResultTabs } from '../components/result-tabs';
 
@@ -176,5 +177,25 @@ describe('Day-by-day tab renders with real mock data', () => {
     for (const s of ['Offbeat', 'Budget', 'Comfort']) expect(html).toContain(s);
     expect(dates.styles.map((s) => s.style)).toEqual(['offbeat', 'budget', 'comfort']);
     expect(html).not.toContain('0★');
+  });
+});
+
+describe('Local transport tab renders with real mock data', () => {
+  const tab = () => {
+    if (!itinerary.available) throw new Error('expected a plan');
+    return <LocalTransportTab local={itinerary.local} plan="Budget" sampleData={itinerary.sampleData} />;
+  };
+
+  test.each(['en', 'hi', 'bn'])('%s: no missing translations or render errors', (locale) => {
+    const { html, errors } = render(locale, tab());
+    expect(errors).toEqual([]);
+    expect(html.length).toBeGreaterThan(3000);
+  });
+
+  test('en: each journey with options, fare ranges, where to book, and the Goa tip', () => {
+    const { html } = render('en', tab());
+    for (const s of ['Cheapest', 'Most convenient', 'In your Budget plan', 'Kadamba bus', 'GoaMiles', 'Prepaid taxi', 'Uber and Ola', 'Local transport in your Budget plan'])
+      expect(html).toContain(s);
+    expect(html).toMatch(/₹[\d,]+(<!-- -->)?–(<!-- -->)?₹[\d,]+/);
   });
 });

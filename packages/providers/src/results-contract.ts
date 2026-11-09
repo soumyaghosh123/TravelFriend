@@ -9,10 +9,11 @@ import type {
   DaySpend,
   ItineraryDay,
   ItineraryLimits,
+  LocalLegKind,
   WindowReason,
 } from '@tripsaver/domain';
 import type { PricedWindow, TripStyle } from './assemble.js';
-import type { Attraction, HotelOffer, TransportOffer } from './interfaces.js';
+import type { Attraction, HotelOffer, LocalMode, TransportOffer } from './interfaces.js';
 
 /** API ↔ web contract for the "Best dates & price calendar" section (SSE event `dates`). */
 
@@ -185,6 +186,7 @@ export type ItinerarySection =
       departurePoint: string;
       checks: ItineraryChecks;
       limits: ItineraryLimits;
+      local: LocalSection;
       sampleData: boolean;
       fetchedAt: string;
     }
@@ -194,3 +196,47 @@ export type ItinerarySection =
       reason: 'noOffbeat';
       nearestAlternative: { name: string; destination: string; destinationName: string; distanceKm: number } | null;
     };
+
+// ── "Local transport" (part of the itinerary section, so day spends and this tab agree) ──
+
+export interface LocalOptionView {
+  id: string;
+  name: string;
+  kind: LocalMode['kind'];
+  /** Group fare range for this leg (or the whole day), approx. */
+  min: number;
+  max: number;
+  minutes: number;
+  public: boolean;
+  doorToDoor: boolean;
+  booking: LocalMode['booking'];
+  note?: string;
+  cheapest: boolean;
+  convenient: boolean;
+  /** The option the plan uses (and counts in the day's spend). */
+  inPlan: boolean;
+}
+
+export interface LocalLegView {
+  key: string;
+  kind: LocalLegKind;
+  dayIndex: number;
+  from: string;
+  to: string;
+  /** Sights on a sightseeing day, in order. */
+  stops: string[];
+  km: number;
+  options: LocalOptionView[];
+  /** Fixed trips a sight needs (Divar ferry, Dudhsagar jeep), added to the day. */
+  extras: { id: string; name: string; attraction: string; min: number; max: number; booking: LocalMode['booking'] }[];
+  /** The plan's option + extras. */
+  plan: { min: number; max: number };
+}
+
+export interface LocalSection {
+  legs: LocalLegView[];
+  tips: string[];
+  total: { min: number; max: number };
+  source: string;
+  fetchedAt: string;
+}

@@ -6,7 +6,7 @@ export const TABS = ['dates', 'plan', 'getting', 'hotels', 'local', 'sights', 'f
 export type TabId = (typeof TABS)[number];
 
 /** Tabs whose build step has landed (PLAN §12). The rest are shown disabled. */
-export const READY_TABS: readonly TabId[] = ['dates', 'plan', 'getting', 'hotels'];
+export const READY_TABS: readonly TabId[] = ['dates', 'plan', 'getting', 'hotels', 'local'];
 
 interface Props {
   active: TabId;

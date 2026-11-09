@@ -15,6 +15,7 @@ import {
 import { MIN_HOTEL_RATING, STYLE, type PricedWindow, type TripStyle } from './assemble.js';
 import type { Clock } from './clock.js';
 import { withTimeout } from './dates-section.js';
+import { buildLocalSection, legsOf, localSpendByDay } from './local-section.js';
 import type { Attraction, HotelType, ProviderSet } from './interfaces.js';
 import type { HotelListing, HotelsSection, ItineraryChecks, ItinerarySection, PlanBase } from './results-contract.js';
 
@@ -135,7 +136,16 @@ export async function buildItinerarySection(
   });
 
   const byId = new Map(selection.attractions.map((a) => [a.id, a]));
-  const days = it.days.map((d) => ({ ...d, spend: daySpend(d, byId, input.travellers, style) }));
+  const attractions = Object.fromEntries(selection.attractions.map((a) => [a.id, a as Attraction]));
+  const baseName = (id: string | null) => bases.find((b) => b.id === id)?.name ?? place.name;
+  const local = await buildLocalSection(set, input.to, legsOf(it.days, { arrival: arrival.name, departure: departure.name, base: baseName }, attractions), input.travellers, style, opts);
+  const localByDay = localSpendByDay(local);
+  // Local travel in each day's spend comes from the plan's own local-transport choices, so the tabs agree.
+  const days = it.days.map((d) => {
+    const spend = daySpend(d, byId, input.travellers, style);
+    const localSpend = localByDay.get(d.index) ?? 0;
+    return { ...d, spend: { ...spend, local: localSpend, total: spend.entry + localSpend + spend.meals } };
+  });
   const scheduled = new Set(days.flatMap((d) => d.stops.map((s) => s.attractionId).filter((x): x is string => !!x)));
   const busiest = days.reduce((a, b) => (b.activeMin > a.activeMin ? b : a));
   const checks: ItineraryChecks = {
@@ -155,7 +165,8 @@ export async function buildItinerarySection(
     end: w.end,
     days,
     bases: baseHotels(bases, w, hotels, STYLE[style].hotel),
-    attractions: Object.fromEntries(selection.attractions.map((a) => [a.id, a as Attraction])),
+    attractions,
+    local,
     unscheduled: it.unscheduled,
     arrivalPoint: arrival.name,
     departurePoint: departure.name,
