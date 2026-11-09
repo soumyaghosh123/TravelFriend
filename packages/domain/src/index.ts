@@ -18,3 +18,4 @@ export * from './itinerary/validate.js';
 export * from './itinerary/spend.js';
 export * from './local/local.js';
 export * from './guide/guide.js';
+export * from './climate/climate.js';

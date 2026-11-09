@@ -112,6 +112,7 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
         kind={toKind}
         month={input.month}
         climate={dates.status === 'ok' ? dates.data.climate : null}
+        climateSource={dates.status === 'ok' ? dates.data.climateSource : null}
         guideHref={`/destination/${input.to.toLowerCase()}`}
       />
 
@@ -213,6 +214,7 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
                     ? { trip: { start: selection.window.start, end: selection.window.end } }
                     : {})}
                   climate={dates.status === 'ok' ? dates.data.climate : null}
+                  climateSource={dates.status === 'ok' ? dates.data.climateSource : null}
                 />
               )}
             </>

@@ -55,6 +55,8 @@ export interface DatesSection {
   bestAlternative: MonthAlternative | null;
   peakWarning: PeakWarning | null;
   climate: MonthClimate | null;
+  /** Source of `climate` when it is real data; null for sample data. */
+  climateSource: { name: string; url: string; years: { from: number; to: number } } | null;
   bookingAdvice: { advanceDays: number; tatkalAcOpens: string; tatkalNonAcOpens: string } | null;
 }
 

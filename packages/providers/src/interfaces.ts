@@ -146,6 +146,12 @@ export interface CalendarEventsProvider {
 export interface WeatherProvider {
   id: string;
   climate(destination: string): Promise<MonthClimate[]>;
+  /** Who the weather comes from, shown next to it (required by e.g. Open-Meteo's CC BY 4.0 licence). Absent for sample data. */
+  attribution?: {
+    name: string;
+    url: string;
+    /** Years averaged, e.g. 2021–2025. */ years: { from: number; to: number };
+  };
 }
 
 /** A sight or experience at a destination (brief §2.3, §3.5). */

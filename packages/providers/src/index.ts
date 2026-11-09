@@ -25,3 +25,4 @@ export * from './local-section.js';
 export * from './mock/data/content.js';
 export * from './mock/content.js';
 export * from './guide-section.js';
+export * from './real/open-meteo-weather.js';

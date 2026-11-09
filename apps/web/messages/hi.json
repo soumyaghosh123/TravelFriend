@@ -655,7 +655,9 @@
       "permits": "परमिट",
       "packTitle": "क्या पैक करें",
       "weather": "{month}: दिन में लगभग {max}°, रात में {min}°"
-    }
+    },
+    "weatherSource": "मौसम: {name}, {from}–{to} का औसत",
+    "weatherSample": "नमूना मौसम"
   },
   "guidePage": {
     "metaTitle": "{name} यात्रा गाइड: घूमने की जगहें, स्थानीय खाना, ख़रीदारी, क्या करें और क्या न करें · TripSaver",

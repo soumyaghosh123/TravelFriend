@@ -1,7 +1,7 @@
 'use client';
 
 import type { FoodPref, MonthClimate, PlanStyle } from '@tripsaver/domain';
-import type { GuideSection, ItinerarySection } from '@tripsaver/providers';
+import type { DatesSection, GuideSection, ItinerarySection } from '@tripsaver/providers';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { guideAnchors } from '../lib/guide-anchor';
@@ -22,13 +22,23 @@ interface Props {
   food?: FoodPref;
   trip?: { start: string; end: string };
   climate?: MonthClimate | null;
+  climateSource?: DatesSection['climateSource'];
 }
 
 /**
  * Tabs 6–9 (sightseeing, food, shopping, do's & don'ts) for one destination. For a split stay you
  * pick the base, and distances are measured from that base's hotel.
  */
-export function GuidePanel({ tab, guide, plan = null, style, food = 'any', trip, climate }: Props) {
+export function GuidePanel({
+  tab,
+  guide,
+  plan = null,
+  style,
+  food = 'any',
+  trip,
+  climate,
+  climateSource = null,
+}: Props) {
   const t = useTranslations('results.guide');
   const anchors = useMemo(() => guideAnchors(guide, plan), [guide, plan]);
   const [anchorId, setAnchorId] = useState(anchors[0]!.id);
@@ -74,7 +84,13 @@ export function GuidePanel({ tab, guide, plan = null, style, food = 'any', trip,
     ) : tab === 'shopping' ? (
       <ShoppingTab guide={guide} content={content} anchor={anchor} {...(trip ? { trip } : {})} />
     ) : (
-      <DosDontsTab guide={guide} content={content} anchor={anchor} climate={climate ?? null} />
+      <DosDontsTab
+        guide={guide}
+        content={content}
+        anchor={anchor}
+        climate={climate ?? null}
+        climateSource={climateSource}
+      />
     );
 
   return (

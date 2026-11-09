@@ -1,7 +1,7 @@
 'use client';
 
 import { nearestTo, type MonthClimate } from '@tripsaver/domain';
-import type { DestinationGuide, GuideSection } from '@tripsaver/providers';
+import type { DatesSection, DestinationGuide, GuideSection } from '@tripsaver/providers';
 import { useLocale, useTranslations } from 'next-intl';
 import type { GuideAnchor } from '../lib/guide-anchor';
 import { monthShort } from '../lib/format';
@@ -13,11 +13,13 @@ interface Props {
   anchor: GuideAnchor;
   /** The trip month's typical weather, for "What to pack". */
   climate?: MonthClimate | null;
+  climateSource?: DatesSection['climateSource'];
 }
 
 /** Tab 9 "Do's & don'ts" (brief §3.8): customs, safety, scams, permits, network, emergency contacts, packing. */
-export function DosDontsTab({ guide, content, anchor, climate }: Props) {
+export function DosDontsTab({ guide, content, anchor, climate, climateSource = null }: Props) {
   const t = useTranslations('results.dos');
+  const tr = useTranslations('results');
   const locale = useLocale();
   const hospital = nearestTo(content.emergency.hospitals, anchor);
   const police = nearestTo(content.emergency.police, anchor);
@@ -92,6 +94,18 @@ export function DosDontsTab({ guide, content, anchor, climate }: Props) {
                 min: climate.minC,
               })}{' '}
               · {climate.summary}
+              {climateSource && (
+                <span className="text-xs text-muted">
+                  {' · '}
+                  <a href={climateSource.url} target="_blank" rel="noopener noreferrer" className="underline">
+                    {tr('weatherSource', {
+                      name: climateSource.name,
+                      from: climateSource.years.from,
+                      to: climateSource.years.to,
+                    })}
+                  </a>
+                </span>
+              )}
             </p>
           )}
           <ul className="mt-1.5 flex flex-wrap gap-1.5 text-sm">

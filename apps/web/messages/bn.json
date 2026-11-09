@@ -655,7 +655,9 @@
       "permits": "পারমিট",
       "packTitle": "কী নেবেন",
       "weather": "{month}: দিনে প্রায় {max}°, রাতে {min}°"
-    }
+    },
+    "weatherSource": "আবহাওয়া: {name}, {from}–{to}-এর গড়",
+    "weatherSample": "নমুনা আবহাওয়া"
   },
   "guidePage": {
     "metaTitle": "{name} ভ্রমণ গাইড: দর্শনীয় স্থান, স্থানীয় খাবার, কেনাকাটা, যা করবেন ও যা করবেন না · TripSaver",

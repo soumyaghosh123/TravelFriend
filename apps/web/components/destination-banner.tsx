@@ -13,12 +13,23 @@ interface Props {
   climate?: MonthClimate | null;
   /** Heading; defaults to "Your {name} trip". */
   title?: string;
+  /** Where real weather comes from (attribution); absent for sample weather. */
+  climateSource?: { name: string; url: string; years: { from: number; to: number } } | null;
   /** Link to the destination guide page (results page only). */
   guideHref?: string;
 }
 
 /** Destination photo strip with the month's typical weather (mockup `.rbanner`). */
-export function DestinationBanner({ code, name, kind, month, climate, title, guideHref }: Props) {
+export function DestinationBanner({
+  code,
+  name,
+  kind,
+  month,
+  climate,
+  climateSource,
+  title,
+  guideHref,
+}: Props) {
   const t = useTranslations('results');
   const locale = useLocale();
   const look = destinationLook(code);
@@ -58,6 +69,19 @@ export function DestinationBanner({ code, name, kind, month, climate, title, gui
             })}
             <br />
             <span className="opacity-80">{climate.summary}</span>
+            {climateSource ? (
+              <span className="block text-[11px] opacity-80">
+                <a href={climateSource.url} target="_blank" rel="noopener noreferrer" className="underline">
+                  {t('weatherSource', {
+                    name: climateSource.name,
+                    from: climateSource.years.from,
+                    to: climateSource.years.to,
+                  })}
+                </a>
+              </span>
+            ) : (
+              <span className="block text-[11px] opacity-80">{t('weatherSample')}</span>
+            )}
           </div>
         )}
       </div>

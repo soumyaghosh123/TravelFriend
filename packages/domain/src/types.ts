@@ -74,4 +74,7 @@ export interface MonthClimate {
   maxC: number;
   minC: number;
   summary: string;
+  /** Mean monthly rain and rainy days (≥ 1 mm), when the source has them. */
+  rainMm?: number;
+  rainyDays?: number;
 }

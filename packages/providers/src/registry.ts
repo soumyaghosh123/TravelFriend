@@ -14,6 +14,7 @@ import type {
 } from './interfaces.js';
 import { MockAttractionsProvider } from './mock/attractions.js';
 import { MockContentProvider } from './mock/content.js';
+import { OpenMeteoWeatherProvider } from './real/open-meteo-weather.js';
 import { MockCalendarEventsProvider, MockWeatherProvider } from './mock/calendar.js';
 import { MockLocalTransportProvider } from './mock/local-transport.js';
 import { mockPlaceDirectory } from './mock/data/places.js';
@@ -45,7 +46,16 @@ export const DEFAULT_FACTORIES: Factories = {
   flight: { mock: (c) => new MockFlightProvider(c) },
   hotel: { mock: (c) => new MockHotelProvider(c) },
   calendar: { mock: () => new MockCalendarEventsProvider() },
-  weather: { mock: () => new MockWeatherProvider() },
+  weather: {
+    mock: () => new MockWeatherProvider(),
+    // Real weather; the seasonal price index stays on sample data until a real price history exists.
+    openmeteo: (c) =>
+      new OpenMeteoWeatherProvider({
+        clock: c,
+        places: mockPlaceDirectory,
+        seasonal: new MockWeatherProvider(),
+      }),
+  },
   places: mockPlaceDirectory,
 };
 

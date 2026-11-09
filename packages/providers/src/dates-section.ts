@@ -75,7 +75,11 @@ async function optional<T>(p: Promise<T> | undefined, fallback: T, ms: number, w
   }
 }
 
-export async function monthEvents(set: ProviderSet, input: ValidSearchInput, ms: number): Promise<CalendarEvent[]> {
+export async function monthEvents(
+  set: ProviderSet,
+  input: ValidSearchInput,
+  ms: number,
+): Promise<CalendarEvent[]> {
   const [year, month] = input.month.split('-').map(Number) as [number, number];
   return optional(set.calendar[0]?.events(input.to, year, month), [], ms, 'calendar');
 }
@@ -97,10 +101,16 @@ async function styleDates(set: ProviderSet, c: ComputedWindows, opts: DatesOptio
   const { args, windows, events } = c;
   const fetchedAt = opts.clock().toISOString();
   const feasible = windows.filter((w) => w.feasible);
-  const worst = feasible.reduce<DateWindow | undefined>((a, b) => (!a || b.total > a.total ? b : a), undefined);
+  const worst = feasible.reduce<DateWindow | undefined>(
+    (a, b) => (!a || b.total > a.total ? b : a),
+    undefined,
+  );
   const ranked = topWindows(windows);
   const price = (w: DateWindow) => withTimeout(priceWindow(set, args, w), opts.timeoutMs, 'window pricing');
-  const [pricedTop, pricedWorst] = await Promise.all([Promise.all(ranked.map(price)), worst ? price(worst) : Promise.resolve(null)]);
+  const [pricedTop, pricedWorst] = await Promise.all([
+    Promise.all(ranked.map(price)),
+    worst ? price(worst) : Promise.resolve(null),
+  ]);
 
   const sources = new Set<string>();
   for (const w of feasible) {
@@ -113,7 +123,13 @@ async function styleDates(set: ProviderSet, c: ComputedWindows, opts: DatesOptio
 
   return {
     style: args.style,
-    cells: windows.map((w) => ({ start: w.start, end: w.end, feasible: w.feasible, total: w.total, band: w.band })),
+    cells: windows.map((w) => ({
+      start: w.start,
+      end: w.end,
+      feasible: w.feasible,
+      total: w.total,
+      band: w.band,
+    })),
     top: pricedTop.map((p, i) => ({
       ...p,
       rank: i + 1,
@@ -162,12 +178,18 @@ export async function buildDatesSection(
     bestAlternative,
     peakWarning: monthPeakWarning(months, month, events, bestAlternative),
     climate: climate.find((c) => c.month === month) ?? null,
+    climateSource: climate.length > 0 ? (set.weather[0]?.attribution ?? null) : null,
     bookingAdvice: set.train[0]?.bookingWindow() ?? null,
   };
 }
 
 /** Re-prices one start date from already computed windows. `null` when no trip can start that day. */
-export async function windowDetail(set: ProviderSet, c: ComputedWindows, start: ISODate, ms: number): Promise<WindowDetail | null> {
+export async function windowDetail(
+  set: ProviderSet,
+  c: ComputedWindows,
+  start: ISODate,
+  ms: number,
+): Promise<WindowDetail | null> {
   const w = c.windows.find((x) => x.start === start);
   if (!w?.feasible) return null;
   const priced = await withTimeout(priceWindow(set, c.args, w), ms, 'window pricing');

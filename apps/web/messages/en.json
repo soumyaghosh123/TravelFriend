@@ -655,7 +655,9 @@
       "permits": "Permits",
       "packTitle": "What to pack",
       "weather": "{month}: about {max}° by day, {min}° at night"
-    }
+    },
+    "weatherSource": "Weather: {name}, {from}–{to} average",
+    "weatherSample": "Sample weather"
   },
   "guidePage": {
     "metaTitle": "{name} travel guide: sights, local food, shopping, do’s & don’ts · TripSaver",
