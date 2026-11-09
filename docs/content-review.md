@@ -35,3 +35,12 @@ in the data when you do.
   - Hospitals and police stations: check names and coordinates.
   - Do's & don'ts, permits, plastic bans, network and ATM notes: check each line.
 - **Sights** (`attractions.ts`): hours, closed days and entry fees are approximate. Official ticket links exist only for Amer Fort (Rajasthan OBMS) and the Darjeeling toy train (IRCTC).
+
+## Added 2026-11-09: 20 more destinations (sample data)
+
+Delhi, Mumbai, Kolkata, Bengaluru, Chennai, Hyderabad, Agra, Varanasi, Udaipur, Rishikesh, Shimla, Ooty, Mysuru, Hampi, Leh–Ladakh, Andaman Islands, Amritsar, Puducherry, Gangtok, Coorg (`packages/providers/src/mock/data/destinations-more.ts`).
+
+- **Real, check the details:** stations, airports, arrival points, base areas and sights. Opening hours, closed days and fees are approximate; check each sight (ASI / state tourism sites).
+- **Generic samples, to replace per destination:** local transport (a city, hills or island set), price seasons (by profile), holidays (national plus a generic peak season).
+- **Not written yet:** food, shopping and do's & don'ts guides. Those tabs say so for these destinations.
+- **Hotels, trains, buses, flights:** generated sample data, like the first five.

@@ -1,4 +1,5 @@
 import type { SiteId } from '../../deeplinks/index.js';
+import { EXTRA_DESTINATIONS } from './destinations-more.js';
 import type { HotelType } from '../../interfaces.js';
 import { draw } from '../rng.js';
 import { MOCK_DESTINATIONS, MOCK_LANDMARKS } from './places.js';
@@ -50,28 +51,74 @@ const SPECS: Spec[] = [
 /** Fictional property names, one per spec row. */
 const NAMES: Record<string, string[]> = {
   GOA: [
-    'Baga Budget Stay', 'Calangute Rest House', 'Sunset Backpackers', 'Palm Shack Hostel', 'Casa Calangute Inn',
-    'Sea Breeze Residency', 'Harbour View Lodge', 'Palm Grove Retreat', 'Fontainhas Heritage Hotel',
-    'Azure Bay Resort & Spa', 'The Fort Cliff Palace', 'Mandovi Grand', 'Divar Island Homestay',
-    'Netravali Eco Stay', 'Cabo de Rama Beach Resort', 'Candolim Luxury Resort',
+    'Baga Budget Stay',
+    'Calangute Rest House',
+    'Sunset Backpackers',
+    'Palm Shack Hostel',
+    'Casa Calangute Inn',
+    'Sea Breeze Residency',
+    'Harbour View Lodge',
+    'Palm Grove Retreat',
+    'Fontainhas Heritage Hotel',
+    'Azure Bay Resort & Spa',
+    'The Fort Cliff Palace',
+    'Mandovi Grand',
+    'Divar Island Homestay',
+    'Netravali Eco Stay',
+    'Cabo de Rama Beach Resort',
+    'Candolim Luxury Resort',
   ],
 };
 
 /** Where each named property is (by landmark), so a name like "Casa Calangute Inn" really is in Calangute. */
 const NEAR: Record<string, string[]> = {
   GOA: [
-    'Baga Beach', 'Calangute Beach', 'Baga Beach', 'Calangute Beach', 'Calangute Beach', 'Colva Beach', 'Panjim (Panaji)', 'Calangute Beach',
-    'Panjim (Panaji)', 'Baga Beach', 'Calangute Beach', 'Panjim (Panaji)', 'Old Goa', 'Colva Beach', 'Colva Beach', 'Calangute Beach',
+    'Baga Beach',
+    'Calangute Beach',
+    'Baga Beach',
+    'Calangute Beach',
+    'Calangute Beach',
+    'Colva Beach',
+    'Panjim (Panaji)',
+    'Calangute Beach',
+    'Panjim (Panaji)',
+    'Baga Beach',
+    'Calangute Beach',
+    'Panjim (Panaji)',
+    'Old Goa',
+    'Colva Beach',
+    'Colva Beach',
+    'Calangute Beach',
   ],
 };
 
 const SUFFIXES = [
-  'Budget Inn', 'Rest House', 'Backpackers', 'Hostel', 'Residency', 'Comfort Hotel', 'Lodge', 'Grand',
-  'Heritage Hotel', 'Palace Hotel', 'Royal Retreat', 'Luxury Suites', 'Family Homestay', 'Village Stay',
-  'Valley Resort', 'Spa Resort',
+  'Budget Inn',
+  'Rest House',
+  'Backpackers',
+  'Hostel',
+  'Residency',
+  'Comfort Hotel',
+  'Lodge',
+  'Grand',
+  'Heritage Hotel',
+  'Palace Hotel',
+  'Royal Retreat',
+  'Luxury Suites',
+  'Family Homestay',
+  'Village Stay',
+  'Valley Resort',
+  'Spa Resort',
 ];
 
-const PRICE_LEVEL: Record<string, number> = { GOA: 1, MANALI: 0.85, JAIPUR: 0.9, KERALA: 1.05, DARJEELING: 0.8 };
+const PRICE_LEVEL: Record<string, number> = {
+  ...Object.fromEntries(EXTRA_DESTINATIONS.map((e) => [e.place.code, e.priceLevel])),
+  GOA: 1,
+  MANALI: 0.85,
+  JAIPUR: 0.9,
+  KERALA: 1.05,
+  DARJEELING: 0.8,
+};
 
 function sitesFor(hotelId: string): SiteId[] {
   const ranked = [...HOTEL_SITES].sort((a, b) => draw(`${hotelId}|${a}`) - draw(`${hotelId}|${b}`));
@@ -90,7 +137,10 @@ export const MOCK_HOTELS: Record<string, MockHotel[]> = Object.fromEntries(
       const near = named ?? marks[Math.floor(draw(`${hotelId}|near`) * marks.length)] ?? d;
       const roomRate = Math.round(baseRate * (PRICE_LEVEL[d.code] ?? 1));
       const breakfastIncluded = draw(`${hotelId}|bf`) < 0.6;
-      const amenities = type !== 'hostel' && draw(`${hotelId}|cf`) < 0.5 ? [...specAmenities, 'Couple-friendly'] : specAmenities;
+      const amenities =
+        type !== 'hostel' && draw(`${hotelId}|cf`) < 0.5
+          ? [...specAmenities, 'Couple-friendly']
+          : specAmenities;
       return {
         hotelId,
         name: NAMES[d.code]?.[i] ?? `${d.name} ${SUFFIXES[i]}`,

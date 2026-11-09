@@ -1,4 +1,5 @@
 import type { Landmark, Place, PlaceDirectory } from '../../interfaces.js';
+import { EXTRA_DESTINATIONS } from './destinations-more.js';
 
 /** Origin cities. Station and airport codes are real Indian Railways / IATA codes. */
 export const MOCK_ORIGINS: Place[] = [
@@ -64,7 +65,7 @@ export const MOCK_ORIGINS: Place[] = [
   },
 ];
 
-export const MOCK_DESTINATIONS: Place[] = [
+const CORE_DESTINATIONS: Place[] = [
   {
     code: 'GOA',
     name: 'Goa',
@@ -147,7 +148,14 @@ export const MOCK_DESTINATIONS: Place[] = [
   },
 ];
 
-const ALL = [...MOCK_ORIGINS, ...MOCK_DESTINATIONS];
+/** Destinations with full sample data, then the extra ones (destinations-more.ts). */
+export const MOCK_DESTINATIONS: Place[] = [...CORE_DESTINATIONS, ...EXTRA_DESTINATIONS.map((e) => e.place)];
+
+/** Every place once: a city that is both a starting point and a destination uses its destination entry. */
+const ALL: Place[] = [
+  ...MOCK_DESTINATIONS,
+  ...MOCK_ORIGINS.filter((o) => !MOCK_DESTINATIONS.some((d) => d.code === o.code)),
+];
 
 /** Real landmarks with approximate coordinates. The first per destination is its main area. */
 export const MOCK_LANDMARKS: Record<string, Landmark[]> = {
@@ -178,6 +186,7 @@ export const MOCK_LANDMARKS: Record<string, Landmark[]> = {
     { name: 'Darjeeling Railway Station', lat: 27.0389, lng: 88.2627 },
     { name: 'Tiger Hill', lat: 26.9946, lng: 88.2869 },
   ],
+  ...Object.fromEntries(EXTRA_DESTINATIONS.map((e) => [e.place.code, e.landmarks])),
 };
 
 export const mockPlaceDirectory: PlaceDirectory = {

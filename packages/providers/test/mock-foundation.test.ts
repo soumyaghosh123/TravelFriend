@@ -1,8 +1,11 @@
 import { describe, expect, test } from 'vitest';
+import { MOCK_ATTRACTIONS } from '../src/mock/data/attractions.js';
+import { MOCK_LOCAL_MODES } from '../src/mock/data/local-transport.js';
+import { ROUTES } from '../src/mock/data/routes.js';
 import { eachDay } from '@tripsaver/domain';
 import { hashSeed, mulberry32 } from '../src/mock/rng.js';
 import { mockDailyPrice } from '../src/mock/pricing-model.js';
-import { MOCK_DESTINATIONS, mockPlaceDirectory } from '../src/mock/data/places.js';
+import { MOCK_DESTINATIONS, MOCK_ORIGINS, mockPlaceDirectory } from '../src/mock/data/places.js';
 import { MOCK_CLIMATE, MOCK_EVENTS } from '../src/mock/data/calendar.js';
 import { MockCalendarEventsProvider, MockWeatherProvider } from '../src/mock/calendar.js';
 
@@ -49,8 +52,55 @@ describe('mock places, calendar and climate', () => {
     for (const d of MOCK_DESTINATIONS) {
       expect(d.airports.length + d.stations.length).toBeGreaterThan(0);
     }
-    expect(MOCK_DESTINATIONS.map((d) => d.code).sort()).toEqual(['DARJEELING', 'GOA', 'JAIPUR', 'KERALA', 'MANALI']);
+    expect(MOCK_DESTINATIONS.map((d) => d.code)).toEqual(
+      expect.arrayContaining([
+        'DARJEELING',
+        'GOA',
+        'JAIPUR',
+        'KERALA',
+        'MANALI',
+        'BOM',
+        'DEL',
+        'AGRA',
+        'LEH',
+        'ANDAMAN',
+      ]),
+    );
+    expect(MOCK_DESTINATIONS).toHaveLength(25);
+    expect(new Set(MOCK_DESTINATIONS.map((d) => d.code)).size).toBe(25);
   });
+
+  test.each(MOCK_DESTINATIONS.map((d) => d.code))(
+    '%s: base areas, sights (incl. offbeat and must-see), arrival points, routes and local transport',
+    async (code) => {
+      const d = mockPlaceDirectory.get(code)!;
+      expect(mockPlaceDirectory.isDestination(code)).toBe(true);
+      const marks = mockPlaceDirectory.landmarks(code);
+      expect(marks.length).toBeGreaterThan(0);
+      // Gateways for every way in.
+      if (d.stations.length) expect(d.gateways?.train).toBeDefined();
+      if (d.airports.length) expect(d.gateways?.flight).toBeDefined();
+      const sights = MOCK_ATTRACTIONS[code] ?? [];
+      expect(sights.length).toBeGreaterThanOrEqual(6);
+      expect(new Set(sights.map((s) => s.id)).size).toBe(sights.length);
+      expect(sights.some((s) => s.isHighlight)).toBe(true);
+      // The Offbeat plan needs low-footfall spots rated 4+.
+      expect(sights.some((s) => s.isOffbeat && s.rating >= 4 && s.footfall === 'low')).toBe(true);
+      for (const s of sights) {
+        expect(s.open < s.close).toBe(true);
+        expect(Math.abs(s.lat - d.lat)).toBeLessThan(3);
+        expect(Math.abs(s.lng - d.lng)).toBeLessThan(3);
+      }
+      // Every starting city can get there and back.
+      for (const o of MOCK_ORIGINS.filter((o) => o.code !== code)) {
+        expect(ROUTES.some((r) => r.from === o.code && r.to === code)).toBe(true);
+        expect(ROUTES.some((r) => r.from === code && r.to === o.code)).toBe(true);
+      }
+      expect((MOCK_LOCAL_MODES[code] ?? []).length).toBeGreaterThan(2);
+      expect((MOCK_EVENTS[code] ?? []).length).toBeGreaterThan(0);
+      expect(MOCK_CLIMATE[code]).toHaveLength(12);
+    },
+  );
 
   test('every destination has 12 months of climate and ≥ 2 events from Dec 2026 to Mar 2027', () => {
     for (const d of MOCK_DESTINATIONS) {

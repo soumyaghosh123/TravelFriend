@@ -35,12 +35,23 @@ describe('MockTrainProvider', () => {
   });
 
   test('class filter limits the grid to the requested classes', async () => {
-    const grid = await train.cheapestByDate({ from: 'KOL', to: 'GOA', year: 2026, month: 12, travellers, classes: ['2A'] });
+    const grid = await train.cheapestByDate({
+      from: 'KOL',
+      to: 'GOA',
+      year: 2026,
+      month: 12,
+      travellers,
+      classes: ['2A'],
+    });
     for (const o of Object.values(grid)) if (o) expect(o.travelClass).toBe('2A');
   });
 
   test('booking window: 60 days ahead, Tatkal 10:00 AC / 11:00 non-AC', () => {
-    expect(train.bookingWindow()).toEqual({ advanceDays: 60, tatkalAcOpens: '10:00', tatkalNonAcOpens: '11:00' });
+    expect(train.bookingWindow()).toEqual({
+      advanceDays: 60,
+      tatkalAcOpens: '10:00',
+      tatkalNonAcOpens: '11:00',
+    });
   });
 });
 
@@ -66,7 +77,10 @@ describe('MockFlightProvider', () => {
     const [o] = await flight.search({ from: 'KOL', to: 'GOA', date: '2026-12-01', travellers });
     const adult = o!.breakdown![0]!.unitAmount;
     expect(o!.isEstimate).toBe(false);
-    expect(o!.breakdown!.slice(1).map((l) => l.amount)).toEqual([Math.round(adult * 0.75), Math.round(adult * 0.75)]);
+    expect(o!.breakdown!.slice(1).map((l) => l.amount)).toEqual([
+      Math.round(adult * 0.75),
+      Math.round(adult * 0.75),
+    ]);
   });
 });
 
@@ -74,9 +88,13 @@ describe('contract: every route in both directions', () => {
   test('all offers carry source, price, freshness and a booking link', async () => {
     for (const origin of MOCK_ORIGINS)
       for (const dest of MOCK_DESTINATIONS)
-        for (const [from, to] of [[origin.code, dest.code], [dest.code, origin.code]] as const)
+        for (const [from, to] of [
+          [origin.code, dest.code],
+          [dest.code, origin.code],
+        ] as const)
           for (const p of [train, bus, flight])
-            for (const o of await p.search({ from, to, date: '2026-12-01', travellers })) expectPricedOffer(o);
+            for (const o of await p.search({ from, to, date: '2026-12-01', travellers }))
+              expectPricedOffer(o);
   });
 
   test('deterministic: the same query twice gives identical results', async () => {

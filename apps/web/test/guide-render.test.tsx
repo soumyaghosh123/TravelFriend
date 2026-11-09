@@ -44,9 +44,12 @@ describe('guide tabs render for every destination, in every language', () => {
     tabs.flatMap((tab) => ['en', 'hi', 'bn'].map((locale) => [c, tab, locale] as const)),
   );
   test.each(cases)('%s · %s · %s', (code, tab, locale) => {
-    const { html, errors } = render(locale, <GuidePanel tab={tab} guide={guides[code]!} style="budget" />);
+    const g = guides[code]!;
+    const { html, errors } = render(locale, <GuidePanel tab={tab} guide={g} style="budget" />);
     expect(errors).toEqual([]);
-    expect(html.length).toBeGreaterThan(1500);
+    if (tab === 'sights' || g.guide) expect(html.length).toBeGreaterThan(1500);
+    // No guide written yet: the tab says so instead of showing nothing.
+    else expect(html).toContain('rounded-card bg-white p-4 text-muted');
   });
 });
 

@@ -2,20 +2,36 @@ import { minutesBetween } from '@tripsaver/domain';
 import { describe, expect, test } from 'vitest';
 import { fixedClock } from '../src/clock.js';
 import { createRegistry } from '../src/registry.js';
-import { buildTransportSection, MAX_DURATION_FACTOR, MAX_WAIT_MIN, MIN_CONNECTION_MIN } from '../src/transport-section.js';
+import {
+  buildTransportSection,
+  MAX_DURATION_FACTOR,
+  MAX_WAIT_MIN,
+  MIN_CONNECTION_MIN,
+} from '../src/transport-section.js';
 
 describe('buildTransportSection — Kolkata ⇄ Goa, out Tue 8 Dec, back Wed 16 Dec 2026, 2 adults + kids 3 and 6', () => {
   const clock = fixedClock('2026-11-08T06:00:00Z');
   const set = createRegistry({}, clock);
   const section = buildTransportSection(
     set,
-    { from: 'KOL', to: 'GOA', onwardDate: '2026-12-08', returnDate: '2026-12-16', tripEnd: '2026-12-17', travellers: { adults: 2, childAges: [3, 6], rooms: 1 } },
+    {
+      from: 'KOL',
+      to: 'GOA',
+      onwardDate: '2026-12-08',
+      returnDate: '2026-12-16',
+      tripEnd: '2026-12-17',
+      travellers: { adults: 2, childAges: [3, 6], rooms: 1 },
+    },
     { clock, timeoutMs: 4000 },
   );
 
   test('both directions are listed, with names and dates', async () => {
     const s = await section;
-    expect(s.onward).toMatchObject({ from: { code: 'KOL', name: 'Kolkata' }, to: { code: 'GOA', name: 'Goa' }, date: '2026-12-08' });
+    expect(s.onward).toMatchObject({
+      from: { code: 'KOL', name: 'Kolkata' },
+      to: { code: 'GOA', name: 'Goa' },
+      date: '2026-12-08',
+    });
     expect(s.return).toMatchObject({ from: { code: 'GOA' }, to: { code: 'KOL' }, date: '2026-12-16' });
     expect(s.sampleData).toBe(true); // mock providers only
     for (const d of [s.onward, s.return]) {
@@ -72,12 +88,20 @@ describe('combined routes home respect the trip end and stay close to direct jou
     const clock = fixedClock('2026-11-08T06:00:00Z');
     const s = await buildTransportSection(
       createRegistry({}, clock),
-      { from: 'KOL', to: 'GOA', onwardDate: '2026-12-08', returnDate: '2026-12-16', tripEnd: '2026-12-17', travellers: { adults: 2, childAges: [3, 6], rooms: 1 } },
+      {
+        from: 'KOL',
+        to: 'GOA',
+        onwardDate: '2026-12-08',
+        returnDate: '2026-12-16',
+        tripEnd: '2026-12-17',
+        travellers: { adults: 2, childAges: [3, 6], rooms: 1 },
+      },
       { clock, timeoutMs: 4000 },
     );
     for (const d of [s.onward, s.return]) {
       const slowest = Math.max(...d.services.map((x) => x.durationMin));
-      for (const c of d.combined) expect(c.durationMin).toBeLessThanOrEqual(Math.round(slowest * MAX_DURATION_FACTOR));
+      for (const c of d.combined)
+        expect(c.durationMin).toBeLessThanOrEqual(Math.round(slowest * MAX_DURATION_FACTOR));
     }
     for (const c of s.return.combined) expect(c.second.arriveAt.slice(0, 10) <= '2026-12-17').toBe(true);
   });

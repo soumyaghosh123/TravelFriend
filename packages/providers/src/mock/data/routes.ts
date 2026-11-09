@@ -36,25 +36,66 @@ function time(key: string, fromHour: number, toHour: number): string {
 /** Hand-written featured route used by the brief's example (sample fares). */
 const KOL_GOA: RouteTemplate[] = [
   {
-    id: 'KOL-GOA-T18047', mode: 'train', operator: 'Indian Railways', number: '18047 Amaravati Express',
-    from: 'KOL', to: 'GOA', fromPoint: 'HWH', toPoint: 'MAO', daysOfWeek: [0, 2, 4, 5],
-    departAt: '11:55', durationMin: 2055,
-    classes: [{ code: 'SL', baseAdultFare: 1005 }, { code: '3A', baseAdultFare: 2650 }, { code: '2A', baseAdultFare: 3890 }],
+    id: 'KOL-GOA-T18047',
+    mode: 'train',
+    operator: 'Indian Railways',
+    number: '18047 Amaravati Express',
+    from: 'KOL',
+    to: 'GOA',
+    fromPoint: 'HWH',
+    toPoint: 'MAO',
+    daysOfWeek: [0, 2, 4, 5],
+    departAt: '11:55',
+    durationMin: 2055,
+    classes: [
+      { code: 'SL', baseAdultFare: 1005 },
+      { code: '3A', baseAdultFare: 2650 },
+      { code: '2A', baseAdultFare: 3890 },
+    ],
   },
   {
-    id: 'KOL-GOA-T22897', mode: 'train', operator: 'Indian Railways', number: '22897 Superfast',
-    from: 'KOL', to: 'GOA', fromPoint: 'HWH', toPoint: 'VSG', daysOfWeek: [3],
-    departAt: '21:30', durationMin: 2060,
-    classes: [{ code: '3A', baseAdultFare: 2780 }, { code: '2A', baseAdultFare: 4050 }],
+    id: 'KOL-GOA-T22897',
+    mode: 'train',
+    operator: 'Indian Railways',
+    number: '22897 Superfast',
+    from: 'KOL',
+    to: 'GOA',
+    fromPoint: 'HWH',
+    toPoint: 'VSG',
+    daysOfWeek: [3],
+    departAt: '21:30',
+    durationMin: 2060,
+    classes: [
+      { code: '3A', baseAdultFare: 2780 },
+      { code: '2A', baseAdultFare: 4050 },
+    ],
   },
   {
-    id: 'KOL-GOA-F1', mode: 'flight', operator: 'IndiGo', number: '6E sample', from: 'KOL', to: 'GOA',
-    fromPoint: 'CCU', toPoint: 'GOX', daysOfWeek: DAILY, departAt: '06:10', durationMin: 165,
+    id: 'KOL-GOA-F1',
+    mode: 'flight',
+    operator: 'IndiGo',
+    number: '6E sample',
+    from: 'KOL',
+    to: 'GOA',
+    fromPoint: 'CCU',
+    toPoint: 'GOX',
+    daysOfWeek: DAILY,
+    departAt: '06:10',
+    durationMin: 165,
     classes: [{ code: 'Economy', baseAdultFare: 5200 }],
   },
   {
-    id: 'KOL-GOA-F2', mode: 'flight', operator: 'Air India Express', number: 'IX sample · 1 stop', from: 'KOL', to: 'GOA',
-    fromPoint: 'CCU', toPoint: 'GOI', daysOfWeek: DAILY, departAt: '13:40', durationMin: 300,
+    id: 'KOL-GOA-F2',
+    mode: 'flight',
+    operator: 'Air India Express',
+    number: 'IX sample · 1 stop',
+    from: 'KOL',
+    to: 'GOA',
+    fromPoint: 'CCU',
+    toPoint: 'GOI',
+    daysOfWeek: DAILY,
+    departAt: '13:40',
+    durationMin: 300,
     classes: [{ code: 'Economy', baseAdultFare: 4600 }],
   },
 ];
@@ -68,9 +109,17 @@ function generated(o: Place, d: Place): RouteTemplate[] {
   if (d.stations.length > 0 && o.stations.length > 0 && dist < 2600) {
     const trainHours = (dist * 1.35) / 55;
     out.push({
-      id: `${key}-T1`, mode: 'train', operator: 'Indian Railways', number: `${12000 + (Math.floor(draw(key) * 900) + 100)} Express`,
-      from: o.code, to: d.code, fromPoint: o.stations[0]!, toPoint: d.stations[0]!,
-      daysOfWeek: DAILY, departAt: time(`${key}-T1`, 6, 23), durationMin: Math.round(trainHours * 60),
+      id: `${key}-T1`,
+      mode: 'train',
+      operator: 'Indian Railways',
+      number: `${12000 + (Math.floor(draw(key) * 900) + 100)} Express`,
+      from: o.code,
+      to: d.code,
+      fromPoint: o.stations[0]!,
+      toPoint: d.stations[0]!,
+      daysOfWeek: DAILY,
+      departAt: time(`${key}-T1`, 6, 23),
+      durationMin: Math.round(trainHours * 60),
       classes: [
         { code: 'SL', baseAdultFare: Math.round(dist * 0.45) },
         { code: '3A', baseAdultFare: Math.round(dist * 1.2) },
@@ -79,37 +128,82 @@ function generated(o: Place, d: Place): RouteTemplate[] {
       ],
     });
     out.push({
-      id: `${key}-T2`, mode: 'train', operator: 'Indian Railways', number: `${22000 + (Math.floor(draw(`${key}2`) * 900) + 100)} Superfast`,
-      from: o.code, to: d.code, fromPoint: o.stations.at(-1)!, toPoint: d.stations.at(-1)!,
-      daysOfWeek: [1, 4, 6], departAt: time(`${key}-T2`, 6, 23), durationMin: Math.round(trainHours * 0.85 * 60),
-      classes: [{ code: '3A', baseAdultFare: Math.round(dist * 1.35) }, { code: '2A', baseAdultFare: Math.round(dist * 1.95) }],
+      id: `${key}-T2`,
+      mode: 'train',
+      operator: 'Indian Railways',
+      number: `${22000 + (Math.floor(draw(`${key}2`) * 900) + 100)} Superfast`,
+      from: o.code,
+      to: d.code,
+      fromPoint: o.stations.at(-1)!,
+      toPoint: d.stations.at(-1)!,
+      daysOfWeek: [1, 4, 6],
+      departAt: time(`${key}-T2`, 6, 23),
+      durationMin: Math.round(trainHours * 0.85 * 60),
+      classes: [
+        { code: '3A', baseAdultFare: Math.round(dist * 1.35) },
+        { code: '2A', baseAdultFare: Math.round(dist * 1.95) },
+      ],
     });
   }
 
   if (dist <= 1100) {
     const busMin = Math.round(((dist * 1.3) / 45) * 60);
     out.push({
-      id: `${key}-B1`, mode: 'bus', operator: 'Volvo AC Sleeper (sample)', from: o.code, to: d.code,
-      fromPoint: o.busPoints[0]!, toPoint: d.busPoints[0]!, daysOfWeek: DAILY, departAt: time(`${key}-B1`, 17, 22),
-      durationMin: busMin, classes: [{ code: 'AC Sleeper', baseAdultFare: Math.round(dist * 1.6) }],
+      id: `${key}-B1`,
+      mode: 'bus',
+      operator: 'Volvo AC Sleeper (sample)',
+      from: o.code,
+      to: d.code,
+      fromPoint: o.busPoints[0]!,
+      toPoint: d.busPoints[0]!,
+      daysOfWeek: DAILY,
+      departAt: time(`${key}-B1`, 17, 22),
+      durationMin: busMin,
+      classes: [{ code: 'AC Sleeper', baseAdultFare: Math.round(dist * 1.6) }],
     });
     out.push({
-      id: `${key}-B2`, mode: 'bus', operator: 'State transport (sample)', from: o.code, to: d.code,
-      fromPoint: o.busPoints[0]!, toPoint: d.busPoints[0]!, daysOfWeek: DAILY, departAt: time(`${key}-B2`, 5, 12),
-      durationMin: Math.round(busMin * 1.1), classes: [{ code: 'Non-AC Seater', baseAdultFare: Math.round(dist * 0.9) }],
+      id: `${key}-B2`,
+      mode: 'bus',
+      operator: 'State transport (sample)',
+      from: o.code,
+      to: d.code,
+      fromPoint: o.busPoints[0]!,
+      toPoint: d.busPoints[0]!,
+      daysOfWeek: DAILY,
+      departAt: time(`${key}-B2`, 5, 12),
+      durationMin: Math.round(busMin * 1.1),
+      classes: [{ code: 'Non-AC Seater', baseAdultFare: Math.round(dist * 0.9) }],
     });
   }
 
   const flightMin = Math.round(60 + dist / 12);
   out.push({
-    id: `${key}-F1`, mode: 'flight', operator: 'IndiGo', number: '6E sample', from: o.code, to: d.code,
-    fromPoint: o.airports[0]!, toPoint: d.airports[0]!, daysOfWeek: DAILY, departAt: time(`${key}-F1`, 6, 21),
-    durationMin: flightMin, classes: [{ code: 'Economy', baseAdultFare: Math.round(2500 + dist * 1.8) }],
+    id: `${key}-F1`,
+    mode: 'flight',
+    operator: 'IndiGo',
+    number: '6E sample',
+    from: o.code,
+    to: d.code,
+    fromPoint: o.airports[0]!,
+    toPoint: d.airports[0]!,
+    daysOfWeek: DAILY,
+    departAt: time(`${key}-F1`, 6, 21),
+    durationMin: flightMin,
+    classes: [{ code: 'Economy', baseAdultFare: Math.round(2500 + dist * 1.8) }],
   });
   out.push({
-    id: `${key}-F2`, mode: 'flight', operator: 'Air India Express', number: 'IX sample · 1 stop', from: o.code, to: d.code,
-    fromPoint: o.airports[0]!, toPoint: d.airports.at(-1)!, daysOfWeek: DAILY, departAt: time(`${key}-F2`, 6, 21),
-    durationMin: flightMin + 90, classes: [{ code: 'Economy', baseAdultFare: Math.round((2500 + dist * 1.8) * 0.88) }],
+    id: `${key}-F2`,
+    mode: 'flight',
+    operator: 'Air India Express',
+    number: 'IX sample · 1 stop',
+    from: o.code,
+    to: d.code,
+    fromPoint: o.airports[0]!,
+    toPoint: d.airports.at(-1)!,
+    daysOfWeek: DAILY,
+    departAt: time(`${key}-F2`, 6, 21),
+    durationMin: flightMin + 90,
+    classes: [{ code: 'Economy', baseAdultFare: Math.round((2500 + dist * 1.8) * 0.88) }],
   });
   return out;
 }
@@ -119,11 +213,15 @@ function reverse(t: RouteTemplate): RouteTemplate {
 }
 
 const OUTBOUND: RouteTemplate[] = MOCK_ORIGINS.flatMap((o) =>
-  MOCK_DESTINATIONS.flatMap((d) => (o.code === 'KOL' && d.code === 'GOA' ? KOL_GOA : generated(o, d))),
+  MOCK_DESTINATIONS.filter((d) => d.code !== o.code).flatMap((d) =>
+    o.code === 'KOL' && d.code === 'GOA' ? KOL_GOA : generated(o, d),
+  ),
 );
 
 /** Routes between origin cities, so combined journeys can change at a hub (e.g. Kolkata → Hyderabad → Goa). */
-const BETWEEN_ORIGINS: RouteTemplate[] = MOCK_ORIGINS.flatMap((o, i) => MOCK_ORIGINS.slice(i + 1).flatMap((h) => generated(o, h)));
+const BETWEEN_ORIGINS: RouteTemplate[] = MOCK_ORIGINS.flatMap((o, i) =>
+  MOCK_ORIGINS.slice(i + 1).flatMap((h) => generated(o, h)),
+);
 
 /** All templates, both directions. */
 export const ROUTES: RouteTemplate[] = [...OUTBOUND, ...BETWEEN_ORIGINS].flatMap((t) => [t, reverse(t)]);

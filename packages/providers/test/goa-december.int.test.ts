@@ -50,7 +50,9 @@ describe('Brief §12: Kolkata → Goa, 10 days, December 2026, 2 adults + childr
 
   test('comfort style costs more than budget for the same dates', async () => {
     const budget = topWindows(computeWindows(await buildCheapestDatesInput(set, args)))[0]!;
-    const comfort = topWindows(computeWindows(await buildCheapestDatesInput(set, { ...args, style: 'comfort' })))[0]!;
+    const comfort = topWindows(
+      computeWindows(await buildCheapestDatesInput(set, { ...args, style: 'comfort' })),
+    )[0]!;
     expect(comfort.total).toBeGreaterThan(budget.total);
   });
 });

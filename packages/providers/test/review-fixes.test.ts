@@ -48,7 +48,9 @@ describe('review #6: hotel path validates travellers', () => {
   });
 
   test('rooms: 0 cannot make hotels free', async () => {
-    await expect(hotels.nightlyGroupPrice('GOA', 2026, 12, { ...t, rooms: 0 }, '3star')).rejects.toThrow(RangeError);
+    await expect(hotels.nightlyGroupPrice('GOA', 2026, 12, { ...t, rooms: 0 }, '3star')).rejects.toThrow(
+      RangeError,
+    );
   });
 });
 

@@ -6,6 +6,7 @@ import { buildDatesSection } from '../src/dates-section.js';
 import { buildHotelsSection } from '../src/hotels-section.js';
 import { buildItinerarySection } from '../src/itinerary-section.js';
 import { MockAttractionsProvider } from '../src/mock/attractions.js';
+import { MOCK_DESTINATIONS } from '../src/mock/data/places.js';
 import { createRegistry } from '../src/registry.js';
 import type { ItinerarySection } from '../src/results-contract.js';
 
@@ -16,7 +17,7 @@ const STYLES: TripStyle[] = ['offbeat', 'budget', 'comfort'];
 
 function search(to: string, days: number): ValidSearchInput {
   return makeSearchInputSchema('2026-11-08').parse({
-    from: 'KOL',
+    from: to === 'KOL' ? 'DEL' : 'KOL',
     to,
     days,
     month: '2026-12',
@@ -29,12 +30,16 @@ async function plan(to: string, days: number, style: TripStyle): Promise<Itinera
   const input = search(to, days);
   const dates = await buildDatesSection(set, input, { today: '2026-11-08', ...opts });
   const w = dates.styles.find((s) => s.style === style)!.top[0]!;
-  const hotels = await buildHotelsSection(set, { to, checkIn: w.onward.arriveDate, checkOut: w.return.departDate, travellers: input.travellers }, opts);
+  const hotels = await buildHotelsSection(
+    set,
+    { to, checkIn: w.onward.arriveDate, checkOut: w.return.departDate, travellers: input.travellers },
+    opts,
+  );
   return buildItinerarySection(set, input, style, w, hotels, opts);
 }
 
 describe('every destination × plan × trip length builds a valid day-by-day plan', () => {
-  for (const to of ['GOA', 'MANALI', 'JAIPUR', 'KERALA', 'DARJEELING']) {
+  for (const to of MOCK_DESTINATIONS.map((d) => d.code)) {
     for (const days of [4, 10]) {
       test.each(STYLES)(`${to}, ${days} days, %s`, async (style) => {
         const p = await plan(to, days, style);
@@ -58,7 +63,8 @@ describe('Goa, 10 days (brief §12)', () => {
     const p = await plan('GOA', 10, 'offbeat');
     if (!p.available) throw new Error('expected a plan');
     const visited = p.days.flatMap((d) => d.stops.map((s) => s.attractionId)).filter(Boolean);
-    for (const id of ['goa-divar', 'goa-netravali', 'goa-cabo']) expect(visited.concat(p.unscheduled)).toContain(id);
+    for (const id of ['goa-divar', 'goa-netravali', 'goa-cabo'])
+      expect(visited.concat(p.unscheduled)).toContain(id);
     expect(visited.filter((id) => p.attractions[id!]!.isOffbeat).length).toBeGreaterThanOrEqual(2);
     expect(p.bases).toHaveLength(1); // Goa: one base, day trips
     expect(p.bases[0]!.hotel?.type).toBe('homestay');

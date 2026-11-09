@@ -1,4 +1,5 @@
 import type { LocalMode } from '../../interfaces.js';
+import { EXTRA_DESTINATIONS } from './destinations-more.js';
 
 /**
  * Local transport per destination. Operators and booking places are real. Fares carry their source
@@ -344,6 +345,129 @@ const MODES: Record<string, Spec[]> = {
   ],
 };
 
+/** Generic sample sets for destinations without their own list yet (destinations-more.ts). */
+const GENERIC: Record<'city' | 'hills' | 'island', (name: string) => Spec[]> = {
+  city: (name) => [
+    cab('app-cab', 'Uber / Ola', 60, 16, 'https://m.uber.com/', 'Uber or Ola app'),
+    prepaid('Prepaid taxi counter at the station or airport exit', 20, 300),
+    {
+      id: 'auto',
+      name: 'Auto-rickshaw',
+      kind: 'auto',
+      capacity: 3,
+      pricing: { type: 'vehicle-km', base: 30, perKm: 15, minFare: 30 },
+      speedKmh: 20,
+      waitMin: 5,
+      public: false,
+      doorToDoor: true,
+      spread: 0.2,
+      maxLegKm: 15,
+      booking: { type: 'pay-on-board', where: 'Auto stands · agree the fare or use the app' },
+    },
+    {
+      id: 'city-bus',
+      name: `${name} city bus`,
+      kind: 'bus',
+      capacity: 1,
+      pricing: { type: 'seat-km', base: 10, perKm: 1.1, minFare: 10 },
+      speedKmh: 18,
+      waitMin: 15,
+      public: true,
+      doorToDoor: false,
+      spread: 0,
+      booking: { type: 'pay-on-board', where: 'City bus stops · pay the conductor' },
+    },
+    taxiDay(
+      2500,
+      18,
+      'Hotel desk or a local taxi stand',
+      'Extra km charged beyond 80 km (included in the fare shown)',
+    ),
+  ],
+  hills: (name) => [
+    prepaid('Taxi union counter at the bus stand, station or airport', 28, 500),
+    {
+      id: 'union-taxi',
+      name: `${name} taxi union cab`,
+      kind: 'taxi',
+      capacity: 4,
+      pricing: { type: 'vehicle-km', base: 0, perKm: 30, minFare: 300 },
+      speedKmh: 22,
+      waitMin: 10,
+      public: false,
+      doorToDoor: true,
+      spread: 0.15,
+      booking: { type: 'counter', where: 'Taxi union stand · fixed rate card' },
+    },
+    {
+      id: 'shared-jeep',
+      name: 'Shared jeep / local bus (per seat)',
+      kind: 'shared-jeep',
+      capacity: 1,
+      pricing: { type: 'seat-km', base: 15, perKm: 3, minFare: 20 },
+      speedKmh: 18,
+      waitMin: 30,
+      public: true,
+      doorToDoor: false,
+      spread: 0.1,
+      booking: { type: 'pay-on-board', where: 'Jeep and bus stands · leaves when full' },
+    },
+    taxiDay(
+      3200,
+      28,
+      'Hotel desk or taxi union stand',
+      'Hill roads are slow; plan 6–7 hours of driving at most',
+    ),
+  ],
+  island: () => [
+    {
+      id: 'island-taxi',
+      name: 'Local taxi',
+      kind: 'taxi',
+      capacity: 4,
+      pricing: { type: 'vehicle-km', base: 0, perKm: 25, minFare: 250 },
+      speedKmh: 25,
+      waitMin: 10,
+      public: false,
+      doorToDoor: true,
+      spread: 0.2,
+      booking: {
+        type: 'counter',
+        where: 'Taxi stands at the airport, jetty and markets · agree the fare first',
+      },
+    },
+    {
+      id: 'scooter',
+      name: 'Scooter rental',
+      kind: 'scooter',
+      capacity: 2,
+      pricing: { type: 'day', perVehicleDay: 500 },
+      speedKmh: 25,
+      waitMin: 0,
+      public: false,
+      doorToDoor: true,
+      spread: 0.15,
+      booking: { type: 'rental-shop', where: 'Licensed rental shops near the jetty' },
+      note: 'Driving licence and helmets needed',
+    },
+    {
+      id: 'island-bus',
+      name: 'Government bus',
+      kind: 'bus',
+      capacity: 1,
+      pricing: { type: 'seat-km', base: 10, perKm: 1, minFare: 10 },
+      speedKmh: 20,
+      waitMin: 30,
+      public: true,
+      doorToDoor: false,
+      spread: 0,
+      booking: { type: 'pay-on-board', where: 'Bus stands · infrequent; check times locally' },
+    },
+    taxiDay(2800, 25, 'Hotel desk', 'Inter-island ferries are booked separately'),
+  ],
+};
+for (const e of EXTRA_DESTINATIONS) MODES[e.place.code] ??= GENERIC[e.localSet](e.place.name.split(' ')[0]!);
+
 export const MOCK_LOCAL_MODES: Record<string, LocalMode[]> = Object.fromEntries(
   Object.entries(MODES).map(([d, list]) => [
     d,
@@ -354,7 +478,14 @@ export const MOCK_LOCAL_MODES: Record<string, LocalMode[]> = Object.fromEntries(
   ]),
 );
 
+const GENERIC_TIPS: Record<'city' | 'hills' | 'island', string[]> = {
+  city: ['Agree auto fares before the ride, or book an auto in the Uber/Ola app.'],
+  hills: ['App cabs rarely work in the hills; taxi union rate cards are fixed and shown at the stand.'],
+  island: ['Book inter-island ferries in advance; government ferries sell out in season.'],
+};
+
 export const MOCK_LOCAL_TIPS: Record<string, string[]> = {
+  ...Object.fromEntries(EXTRA_DESTINATIONS.map((e) => [e.place.code, GENERIC_TIPS[e.localSet]])),
   GOA: [
     "Uber and Ola don't operate in Goa: use GoaMiles, a prepaid taxi or a local taxi, and agree the fare before you get in.",
     'Kadamba buses connect Panjim, Mapusa and Margao every few minutes; smaller routes are less frequent after 7 pm.',

@@ -145,8 +145,11 @@ describe('results stream — brief §12: Kolkata → Goa, 10 days, Dec 2026, 2 a
     expect((res.body as GuideSection).destination.name).toBe('Jaipur');
     expect((res.body as GuideSection).guide?.shops.length).toBeGreaterThan(0);
     await request(app.getHttpServer()).get('/api/destinations/NOWHERE/guide').expect(404);
-    // An origin city is a place but not a destination with content.
-    await request(app.getHttpServer()).get('/api/destinations/KOL/guide').expect(404);
+    // Kolkata is a destination with sights; its food and shopping guide isn't written yet.
+    const kol = (await request(app.getHttpServer()).get('/api/destinations/KOL/guide').expect(200))
+      .body as GuideSection;
+    expect(kol.sights.length).toBeGreaterThan(0);
+    expect(kol.guide).toBeNull();
   });
 
   test('hotels are streamed for the Budget plan’s stay (arrival → return departure), with per-site prices', () => {

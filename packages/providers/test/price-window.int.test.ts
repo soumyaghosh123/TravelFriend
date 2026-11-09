@@ -31,8 +31,14 @@ describe('priceWindow: a date window priced with real, bookable offers', () => {
     expect(p.hotel!.nights).toBe(best.hotelNights);
     expect(p.hotel!.guestRating).toBeGreaterThanOrEqual(3.5);
 
-    expect(p.local).toEqual({ perDay: 1750, days: best.daysAtDestination, amount: 1750 * best.daysAtDestination });
-    expect(p.total).toBe(p.onward.price.amount + p.return.price.amount + p.hotel!.cheapest.price.amount + p.local.amount);
+    expect(p.local).toEqual({
+      perDay: 1750,
+      days: best.daysAtDestination,
+      amount: 1750 * best.daysAtDestination,
+    });
+    expect(p.total).toBe(
+      p.onward.price.amount + p.return.price.amount + p.hotel!.cheapest.price.amount + p.local.amount,
+    );
     expect(p.perPerson).toBe(Math.round(p.total / 4));
   });
 
@@ -56,14 +62,27 @@ describe('priceWindow: a date window priced with real, bookable offers', () => {
   });
 
   test('an infeasible window is rejected', async () => {
-    const w = { ...topWindows(computeWindows(await buildCheapestDatesInput(set, args)))[0]!, feasible: false, legs: undefined };
+    const w = {
+      ...topWindows(computeWindows(await buildCheapestDatesInput(set, args)))[0]!,
+      feasible: false,
+      legs: undefined,
+    };
     await expect(priceWindow(set, args, w)).rejects.toThrow(/not feasible/);
   });
 });
 
 describe('priceWindow honours "Stay near"', () => {
   const set = createRegistry({}, fixedClock('2026-11-08T10:00:00Z'));
-  const base = { from: 'KOL', to: 'GOA', year: 2026, month: 12, days: 10, travellers: { adults: 2, childAges: [3, 6], rooms: 1 }, style: 'budget' as const, localPerDay: 1750 };
+  const base = {
+    from: 'KOL',
+    to: 'GOA',
+    year: 2026,
+    month: 12,
+    days: 10,
+    travellers: { adults: 2, childAges: [3, 6], rooms: 1 },
+    style: 'budget' as const,
+    localPerDay: 1750,
+  };
 
   test('picks a hotel within 5 km of the landmark when there is one', async () => {
     const args = { ...base, stayNear: 'Calangute Beach' };

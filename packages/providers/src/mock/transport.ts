@@ -9,9 +9,15 @@ import {
 } from '@tripsaver/domain';
 import type { Clock } from '../clock.js';
 import { buildDeepLink, SITE_NAMES, type SiteId } from '../deeplinks/index.js';
-import type { FareGridQuery, RouteQuery, TrainProvider, TransportOffer, TransportProvider } from '../interfaces.js';
+import type {
+  FareGridQuery,
+  RouteQuery,
+  TrainProvider,
+  TransportOffer,
+  TransportProvider,
+} from '../interfaces.js';
 import { MOCK_CLIMATE, MOCK_EVENTS } from './data/calendar.js';
-import { mockPlaceDirectory } from './data/places.js';
+import { MOCK_ORIGINS, mockPlaceDirectory } from './data/places.js';
 import { ROUTES, type RouteTemplate } from './data/routes.js';
 import { mockDailyPrice } from './pricing-model.js';
 import { draw } from './rng.js';
@@ -52,7 +58,10 @@ abstract class MockTransport implements TransportProvider {
 
   /** Fare for one adult on this date. Trains: fixed fares; buses and flights: seasonal. */
   protected adultFare(t: RouteTemplate, classCode: string, base: number, date: ISODate): number {
-    const destination = MOCK_EVENTS[t.to] ? t.to : t.from;
+    // The holiday end of the route sets the season; big cities are both starting points and destinations,
+    // so prefer the end that isn't a starting city (Goa → Delhi is priced by Goa's season).
+    const isTrip = (c: string) => !!MOCK_EVENTS[c] && !MOCK_ORIGINS.some((o) => o.code === c);
+    const destination = isTrip(t.to) ? t.to : isTrip(t.from) ? t.from : MOCK_EVENTS[t.to] ? t.to : t.from;
     return mockDailyPrice({
       base,
       date,
@@ -86,7 +95,8 @@ abstract class MockTransport implements TransportProvider {
 
     const offers: TransportOffer[] = [];
     for (const t of ROUTES) {
-      if (t.mode !== this.mode || t.from !== q.from || t.to !== q.to || !t.daysOfWeek.includes(weekday)) continue;
+      if (t.mode !== this.mode || t.from !== q.from || t.to !== q.to || !t.daysOfWeek.includes(weekday))
+        continue;
       const depart = minutes(t.departAt);
       const arriveDate = addDays(q.date, Math.floor((depart + t.durationMin) / 1440));
       for (const c of t.classes) {

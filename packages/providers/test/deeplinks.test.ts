@@ -2,13 +2,28 @@ import { describe, expect, test } from 'vitest';
 import { buildDeepLink } from '../src/deeplinks/index.js';
 
 const travellers = { adults: 2, childAges: [3, 6] };
-const goaStay = { kind: 'hotel' as const, destinationName: 'Goa', checkIn: '2026-12-02', checkOut: '2026-12-09', travellers };
+const goaStay = {
+  kind: 'hotel' as const,
+  destinationName: 'Goa',
+  checkIn: '2026-12-02',
+  checkOut: '2026-12-09',
+  travellers,
+};
 
 describe('buildDeepLink', () => {
   test('Booking.com pre-fills dates, adults, each child age and rooms', () => {
     const { url, prefilled } = buildDeepLink('booking', goaStay);
     expect(url.startsWith('https://www.booking.com/searchresults.html?')).toBe(true);
-    for (const part of ['ss=Goa', 'checkin=2026-12-02', 'checkout=2026-12-09', 'group_adults=2', 'group_children=2', 'age=3', 'age=6', 'no_rooms=1'])
+    for (const part of [
+      'ss=Goa',
+      'checkin=2026-12-02',
+      'checkout=2026-12-09',
+      'group_adults=2',
+      'group_children=2',
+      'age=3',
+      'age=6',
+      'no_rooms=1',
+    ])
       expect(url).toContain(part);
     expect(prefilled).toBe(true);
   });
@@ -43,7 +58,13 @@ describe('buildDeepLink', () => {
   });
 
   test('IRCTC cannot be pre-filled and says so', () => {
-    const r = buildDeepLink('irctc', { kind: 'train', fromName: 'Kolkata', toName: 'Goa', date: '2026-12-01', travellers });
+    const r = buildDeepLink('irctc', {
+      kind: 'train',
+      fromName: 'Kolkata',
+      toName: 'Goa',
+      date: '2026-12-01',
+      travellers,
+    });
     expect(r.url).toBe('https://www.irctc.co.in/nget/train-search');
     expect(r.prefilled).toBe(false);
   });
@@ -51,8 +72,13 @@ describe('buildDeepLink', () => {
   test('MakeMyTrip links are not claimed as pre-filled until the format is verified', () => {
     expect(buildDeepLink('makemytrip', goaStay).prefilled).toBe(false);
     expect(
-      buildDeepLink('makemytrip', { kind: 'flight', fromName: 'Kolkata', toName: 'Goa', date: '2026-12-01', travellers })
-        .prefilled,
+      buildDeepLink('makemytrip', {
+        kind: 'flight',
+        fromName: 'Kolkata',
+        toName: 'Goa',
+        date: '2026-12-01',
+        travellers,
+      }).prefilled,
     ).toBe(false);
   });
 

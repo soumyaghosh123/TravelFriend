@@ -3,11 +3,13 @@ import { fixedClock } from '../src/clock.js';
 import { buildGuideSection } from '../src/guide-section.js';
 import type { ContentProvider } from '../src/interfaces.js';
 import { MockContentProvider } from '../src/mock/content.js';
+import { MOCK_GUIDES } from '../src/mock/data/content.js';
 import { MOCK_DESTINATIONS } from '../src/mock/data/places.js';
 import { createRegistry } from '../src/registry.js';
 
 const content = new MockContentProvider();
-const destinations = MOCK_DESTINATIONS.map((d) => d.code);
+/** Destinations with a written guide; the newer ones show "no notes yet" until theirs are written. */
+const destinations = Object.keys(MOCK_GUIDES);
 const clock = fixedClock('2026-11-08T10:00:00Z');
 
 describe('MockContentProvider contract (brief §3.6–3.8)', () => {
@@ -52,6 +54,12 @@ describe('MockContentProvider contract (brief §3.6–3.8)', () => {
     expect(g.emergency.police.length).toBeGreaterThan(0);
     for (const s of [g.network, g.atms, g.permits]) expect(s).toBeTruthy();
     expect(g.pack.length).toBeGreaterThan(0);
+  });
+
+  test('every guide is for a real destination; the rest have none yet (the tabs say so)', async () => {
+    expect(destinations.sort()).toEqual(['DARJEELING', 'GOA', 'JAIPUR', 'KERALA', 'MANALI']);
+    for (const d of MOCK_DESTINATIONS)
+      if (!destinations.includes(d.code)) expect(await content.guide(d.code)).toBeNull();
   });
 
   test('unknown destination → null', async () => {

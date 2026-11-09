@@ -1,5 +1,6 @@
 import type { BestTime, Footfall } from '@tripsaver/domain';
 import type { Attraction } from '../../interfaces.js';
+import { EXTRA_DESTINATIONS } from './destinations-more.js';
 
 /**
  * Sample sights for the 5 mock destinations. Real places; coordinates, hours, closed days and fees are
@@ -924,7 +925,10 @@ const TICKETS: Record<string, string> = {
 };
 
 export const MOCK_ATTRACTIONS: Record<string, Attraction[]> = Object.fromEntries(
-  Object.entries(ROWS).map(([dest, rows]) => [
+  [
+    ...Object.entries(ROWS),
+    ...EXTRA_DESTINATIONS.map((e) => [e.place.code, e.sights] as [string, Row[]]),
+  ].map(([dest, rows]) => [
     dest,
     rows.map(
       ([
