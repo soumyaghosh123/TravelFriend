@@ -36,6 +36,8 @@ export interface Landmark {
 
 export interface PlaceDirectory {
   places(): Place[];
+  /** A place we have trips for (hotels, sights, local data), not only a starting point. */
+  isDestination(code: string): boolean;
   get(code: string): Place | undefined;
   landmarks(code: string): Landmark[];
 }

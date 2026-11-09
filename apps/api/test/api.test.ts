@@ -61,7 +61,11 @@ describe('POST /api/search', () => {
   });
 
   test('rejects a non-object body', async () => {
-    await request(app.getHttpServer()).post('/api/search').send('"hello"').set('content-type', 'application/json').expect(400);
+    await request(app.getHttpServer())
+      .post('/api/search')
+      .send('"hello"')
+      .set('content-type', 'application/json')
+      .expect(400);
   });
 
   test('rejects place codes the directory does not know', async () => {
@@ -70,6 +74,19 @@ describe('POST /api/search', () => {
       .send({ ...briefExample, from: 'NOWHERE' })
       .expect(400);
     expect(res.body.issues).toEqual([{ path: 'from', message: 'from.unknown' }]);
+  });
+
+  test('a starting city we have no trip data for (Delhi) is not a destination', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/api/search')
+      .send({ ...briefExample, to: 'DEL' })
+      .expect(400);
+    expect(res.body.issues).toEqual([{ path: 'to', message: 'to.unknown' }]);
+    // ...but it is a fine starting point.
+    await request(app.getHttpServer())
+      .post('/api/search')
+      .send({ ...briefExample, from: 'DEL' })
+      .expect(201);
   });
 });
 
@@ -80,9 +97,36 @@ describe('GET /api/search/:id', () => {
 });
 
 describe('GET /api/places', () => {
+  test('"To" only offers destinations we cover; every place says whether it is one', async () => {
+    const all = (await request(app.getHttpServer()).get('/api/places?q=del').expect(200)).body as {
+      code: string;
+      destination: boolean;
+    }[];
+    expect(all.find((p) => p.code === 'DEL')).toMatchObject({ destination: false });
+    const to = (await request(app.getHttpServer()).get('/api/places?q=del&for=to').expect(200)).body as {
+      code: string;
+    }[];
+    expect(to.map((p) => p.code)).not.toContain('DEL');
+    const goa = (await request(app.getHttpServer()).get('/api/places?q=goa&for=to').expect(200)).body as {
+      code: string;
+      destination: boolean;
+    }[];
+    expect(goa[0]).toMatchObject({ code: 'GOA', destination: true });
+    const everyTo = (await request(app.getHttpServer()).get('/api/places?for=to').expect(200)).body as {
+      destination: boolean;
+    }[];
+    expect(everyTo.length).toBe(5);
+    expect(everyTo.every((p) => p.destination)).toBe(true);
+  });
+
   test('matches by city name prefix', async () => {
     const res = await request(app.getHttpServer()).get('/api/places?q=kol').expect(200);
-    expect(res.body[0]).toMatchObject({ code: 'KOL', name: 'Kolkata', stations: ['HWH', 'SDAH'], airports: ['CCU'] });
+    expect(res.body[0]).toMatchObject({
+      code: 'KOL',
+      name: 'Kolkata',
+      stations: ['HWH', 'SDAH'],
+      airports: ['CCU'],
+    });
   });
 
   test('matches by station or airport code', async () => {

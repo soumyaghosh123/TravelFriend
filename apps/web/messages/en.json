@@ -210,7 +210,12 @@
   "trip": {
     "notFound": "We couldn't find that search",
     "notFoundBody": "It may have expired. Start a new one.",
-    "newSearch": "New search"
+    "newSearch": "New search",
+    "notCovered": {
+      "title": "We don’t have trips to {name} yet",
+      "body": "{name} is in TripSaver as a starting city, but we don’t have hotels, sights and prices for it yet, so we can’t build this plan. Pick one of the destinations we cover, or change your search.",
+      "change": "✎ Change search"
+    }
   },
   "price": {
     "approx": "approx.",

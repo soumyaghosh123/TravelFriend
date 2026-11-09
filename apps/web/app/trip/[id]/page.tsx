@@ -1,6 +1,7 @@
 import type { TripStyle } from '@tripsaver/providers';
 import { notFound } from 'next/navigation';
 import type { TabId } from '../../../components/result-tabs';
+import { NotCoveredNotice } from '../../../components/not-covered-notice';
 import { ResultsView } from '../../../components/results-view';
 import { SiteFooter } from '../../../components/site-footer';
 import { SiteHeader } from '../../../components/site-header';
@@ -36,6 +37,16 @@ export default async function TripPage({
   if (!search) notFound();
   const { input } = search;
   const [from, to] = await Promise.all([placeByCode(input.from), placeByCode(input.to)]);
+
+  if (to && to.destination === false) {
+    return (
+      <>
+        <SiteHeader />
+        <NotCoveredNotice toName={to.name} changeHref={`/?${prefillQuery(input)}#search`} />
+        <SiteFooter />
+      </>
+    );
+  }
 
   return (
     <>

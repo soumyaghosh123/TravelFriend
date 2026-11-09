@@ -7,8 +7,10 @@ function base(): string {
   return typeof window === 'undefined' ? (process.env.API_URL ?? 'http://localhost:4000') : '';
 }
 
-export async function suggestPlaces(q: string, signal?: AbortSignal): Promise<PlaceOption[]> {
-  const res = await fetch(`${base()}/api/places?q=${encodeURIComponent(q)}`, { signal, cache: 'no-store' });
+/** `forTo`: only destinations we cover (the "To" field). */
+export async function suggestPlaces(q: string, signal?: AbortSignal, forTo = false): Promise<PlaceOption[]> {
+  const qs = new URLSearchParams({ q, ...(forTo ? { for: 'to' } : {}) });
+  const res = await fetch(`${base()}/api/places?${qs}`, { signal, cache: 'no-store' });
   if (!res.ok) throw new Error(`places ${res.status}`);
   return (await res.json()) as PlaceOption[];
 }

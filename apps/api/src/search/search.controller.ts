@@ -1,4 +1,14 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, Inject, NotFoundException, Param, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Inject,
+  NotFoundException,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { makeSearchInputSchema, toIssues, type SearchInputIssue } from '@tripsaver/domain';
 import type { Clock, ProviderSet } from '@tripsaver/providers';
@@ -33,7 +43,9 @@ export class SearchController {
     const input = parsed.data;
     const issues: SearchInputIssue[] = [];
     if (!this.providers.places.get(input.from)) issues.push({ path: 'from', message: 'from.unknown' });
-    if (!this.providers.places.get(input.to)) issues.push({ path: 'to', message: 'to.unknown' });
+    // Starting cities (e.g. Delhi) are places too, but only destinations have hotels, sights and prices.
+    if (!this.providers.places.get(input.to) || !this.providers.places.isDestination(input.to))
+      issues.push({ path: 'to', message: 'to.unknown' });
     if (issues.length) throw invalid(issues);
 
     const stored = await this.store.save(input, now);

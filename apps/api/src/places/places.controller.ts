@@ -10,6 +10,8 @@ export interface PlaceSuggestion {
   stations: string[];
   airports: string[];
   busPoints: string[];
+  /** Can be chosen as "To" (we have trips for it). */
+  destination: boolean;
 }
 
 const MAX_RESULTS = 8;
@@ -30,9 +32,11 @@ export class PlacesController {
   constructor(@Inject(PROVIDER_SET) private readonly providers: ProviderSet) {}
 
   @Get()
-  suggest(@Query('q') q?: string): PlaceSuggestion[] {
+  suggest(@Query('q') q?: string, @Query('for') field?: string): PlaceSuggestion[] {
     const query = (q ?? '').trim().toLowerCase().slice(0, 60);
-    const all = this.providers.places.places();
+    const places = this.providers.places;
+    // The "To" field only offers destinations we cover.
+    const all = places.places().filter((p) => field !== 'to' || places.isDestination(p.code));
     const matches = query
       ? all
           .map((p) => ({ p, r: rank(p, query) }))
@@ -47,6 +51,7 @@ export class PlacesController {
       stations,
       airports,
       busPoints,
+      destination: places.isDestination(code),
     }));
   }
 }

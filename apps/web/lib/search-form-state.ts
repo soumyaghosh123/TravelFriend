@@ -21,6 +21,8 @@ export interface PlaceOption {
   stations: string[];
   airports: string[];
   busPoints: string[];
+  /** Can be chosen as "To" (we have trips for it). */
+  destination?: boolean;
 }
 
 export interface SearchFormState {

@@ -13,6 +13,8 @@ interface Props {
   value: PlaceOption | null;
   onChange: (place: PlaceOption | null) => void;
   error?: string;
+  /** The "To" field: only suggest destinations we cover. */
+  destinationsOnly?: boolean;
 }
 
 /** "Howrah / Sealdah (HWH, SDAH) · CCU airport · Esplanade bus" style hint under a place. */
@@ -30,7 +32,7 @@ export function usePlaceHint() {
 }
 
 /** Accessible autocomplete (ARIA combobox) over cities, regions, stations, airports and bus points. */
-export function PlaceField({ label, placeholder, value, onChange, error }: Props) {
+export function PlaceField({ label, placeholder, value, onChange, error, destinationsOnly }: Props) {
   const t = useTranslations('search');
   const hint = usePlaceHint();
   const id = useId();
@@ -51,7 +53,7 @@ export function PlaceField({ label, placeholder, value, onChange, error }: Props
     const q = value && text === value.name ? '' : text;
     setLoading(true);
     const timer = setTimeout(() => {
-      suggestPlaces(q, ctrl.signal)
+      suggestPlaces(q, ctrl.signal, destinationsOnly)
         .then((list) => {
           setItems(list);
           setActive(0);
@@ -67,7 +69,7 @@ export function PlaceField({ label, placeholder, value, onChange, error }: Props
       clearTimeout(timer);
       ctrl.abort();
     };
-  }, [text, open, value]);
+  }, [text, open, value, destinationsOnly]);
 
   useEffect(() => {
     if (!open) return;

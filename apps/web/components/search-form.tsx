@@ -90,6 +90,7 @@ export function SearchForm({ initial, today, initialMoreOpen = false }: Props) {
         <PlaceField
           label={t('to')}
           placeholder={t('toPlaceholder')}
+          destinationsOnly
           value={form.to}
           onChange={(to) => set({ to })}
           error={err('to')}
