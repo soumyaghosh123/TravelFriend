@@ -1,0 +1,16 @@
+{
+  "version": 0.6,
+  "generator": "hand-made fixture shaped like an Overpass API response (tests never call the network)",
+  "elements": [
+    { "type": "node", "id": 101, "lat": 15.5530, "lon": 73.7520, "tags": { "amenity": "restaurant", "name": "Veg Thali House", "diet:vegetarian": "only", "cuisine": "indian" } },
+    { "type": "node", "id": 102, "lat": 15.5540, "lon": 73.7530, "tags": { "amenity": "fast_food", "name": "Ross Omelette Stall", "diet:vegetarian": "yes" } },
+    { "type": "node", "id": 103, "lat": 15.5550, "lon": 73.7540, "tags": { "amenity": "cafe", "name": "Beach Cafe", "cuisine": "coffee_shop;indian" } },
+    { "type": "way", "id": 201, "center": { "lat": 15.5560, "lon": 73.7550 }, "tags": { "amenity": "food_court", "name": "Market Food Court" } },
+    { "type": "way", "id": 202, "tags": { "amenity": "restaurant", "name": "No Centre Way" } },
+    { "type": "node", "id": 104, "lat": 15.5570, "lon": 73.7560, "tags": { "amenity": "restaurant" } },
+    { "type": "node", "id": 105, "lat": 15.5580, "lon": 73.7570, "tags": { "amenity": "restaurant", "name": "शुद्ध भोजनालय", "cuisine": "vegetarian" } },
+    { "type": "node", "id": 106, "lat": 15.5590, "lon": 73.7580, "tags": { "amenity": "restaurant", "name": "Fish Curry Point", "diet:vegetarian": "no" } },
+    { "type": "node", "id": 107, "lat": 15.5600, "lon": 73.7590, "tags": { "amenity": "restaurant", "name": "Souza Lobo", "addr:street": "Calangute Beach Road", "addr:city": "Calangute", "opening_hours": "Mo-Su 11:00-23:00", "contact:phone": "+91 832 227 6463" } },
+    { "type": "node", "id": 101, "lat": 15.5530, "lon": 73.7520, "tags": { "amenity": "restaurant", "name": "Veg Thali House", "diet:vegetarian": "only", "cuisine": "indian" } }
+  ]
+}

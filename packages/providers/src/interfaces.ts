@@ -213,9 +213,14 @@ export interface Dish {
 
 export interface Restaurant extends RestaurantLike {
   name: string;
-  area: string;
-  hours: string;
+  area?: string;
+  /** As the source writes it (OpenStreetMap `opening_hours` syntax for real places). */
+  hours?: string;
   note?: string;
+  cuisine?: string[];
+  phone?: string;
+  /** A real place from a live source (OpenStreetMap): shows a map link, never a rating or price. */
+  live?: boolean;
 }
 
 export interface Shop extends ShopLike {
