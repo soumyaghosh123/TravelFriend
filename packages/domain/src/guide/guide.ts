@@ -83,13 +83,46 @@ export type FoodPref = (typeof FOOD_PREFS)[number];
 export interface RestaurantLike extends LatLng {
   id: string;
   kind: 'street' | 'homely' | 'budget' | 'restaurant';
-  costForTwo: number;
-  rating: number;
-  reviewCount: number;
-  vegType: 'veg' | 'non-veg' | 'both';
+  /** 'unknown': the source doesn't say (OpenStreetMap often doesn't). */
+  vegType: 'veg' | 'non-veg' | 'both' | 'unknown';
+  /** Curated places only; real (OpenStreetMap) places have no rating, price or dishes. */
+  costForTwo?: number;
+  rating?: number;
+  reviewCount?: number;
   /** Dish ids it is known for. */
-  dishes: string[];
+  dishes?: string[];
 }
+
+/** Typical cost for two by kind of place, when a destination has no sample places to go by. */
+export const DEFAULT_COST_FOR_TWO: Record<RestaurantLike['kind'], number> = {
+  street: 300,
+  homely: 400,
+  budget: 500,
+  restaurant: 1200,
+};
+
+const median = (xs: number[]): number => {
+  const s = [...xs].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid]! : Math.round((s[mid - 1]! + s[mid]!) / 2);
+};
+
+/**
+ * "Typical for two" for a kind of place: the median of the destination's sample places of that kind,
+ * else of all its sample places, else `DEFAULT_COST_FOR_TWO`. An estimate, never a real place's price.
+ */
+export function typicalCostForTwo(kind: RestaurantLike['kind'], samples: RestaurantLike[]): number {
+  const priced = samples.filter((r) => r.costForTwo !== undefined);
+  const same = priced.filter((r) => r.kind === kind);
+  const pool = same.length ? same : priced;
+  return pool.length ? median(pool.map((r) => r.costForTwo!)) : DEFAULT_COST_FOR_TWO[kind];
+}
+
+const VEG_ORDER: Record<RestaurantLike['vegType'], number> = { veg: 0, both: 1, unknown: 2, 'non-veg': 3 };
+
+/** b − a when both have the value, else 0 (places without it fall through to the next rule). */
+const byBoth = (a: number | undefined, b: number | undefined): number =>
+  a === undefined || b === undefined ? 0 : a - b;
 
 /** Offbeat: local, homely · Budget: street food, budget eateries · Comfort: well-reviewed restaurants. */
 const KIND_ORDER: Record<PlanStyle, RestaurantLike['kind'][]> = {
@@ -116,9 +149,9 @@ export function rankRestaurants<T extends RestaurantLike>(
   const order = KIND_ORDER[style];
   return [...pool].sort(
     (a, b) =>
-      (veg ? Number(b.vegType === 'veg') - Number(a.vegType === 'veg') : 0) ||
+      (veg ? VEG_ORDER[a.vegType] - VEG_ORDER[b.vegType] : 0) ||
       order.indexOf(a.kind) - order.indexOf(b.kind) ||
-      (style === 'comfort' ? b.rating - a.rating : a.costForTwo - b.costForTwo) ||
+      (style === 'comfort' ? byBoth(b.rating, a.rating) : byBoth(a.costForTwo, b.costForTwo)) ||
       a.distanceKm - b.distanceKm,
   );
 }
@@ -130,7 +163,7 @@ export function restaurantsForDish<T extends RestaurantLike>(
   from: LatLng,
 ): Located<T>[] {
   return withDistance(
-    list.filter((r) => r.dishes.includes(dishId)),
+    list.filter((r) => r.dishes?.includes(dishId)),
     from,
   );
 }
