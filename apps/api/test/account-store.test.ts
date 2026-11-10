@@ -115,3 +115,99 @@ describe.each(stores)('AccountStore contract: %s', (_name, make) => {
     expect(await s.getTrip(me.id, a.id)).toBeNull();
   });
 });
+
+describe.each(stores)('AccountStore contract, price alerts: %s', (_name, make) => {
+  const setup = async (s: AccountStore) => {
+    const user = await s.createUser({ email: email(), emailVerified: true });
+    const other = await s.createUser({ email: email(), emailVerified: true });
+    const trip = await s.saveTrip(
+      user.id,
+      { searchId: randomUUID(), style: 'budget', start: '2026-12-06', title: 'Goa', inputs },
+      now,
+    );
+    return { user, other, trip };
+  };
+
+  test('upsert creates one alert per trip; updating resets the notification fields', async (ctx) => {
+    const s = make();
+    if (!s) return ctx.skip();
+    const { user, trip } = await setup(s);
+    const a = await s.upsertAlert(user.id, trip.id, 40000, now);
+    expect(a).toMatchObject({
+      userId: user.id,
+      tripId: trip.id,
+      threshold: 40000,
+      active: true,
+      lastNotifiedAmount: null,
+    });
+    await s.recordAlertCheck(a.id, { checkedAt: later(1), notifiedAmount: 38400 });
+    await s.setAlertActive(user.id, a.id, false);
+    const b = await s.upsertAlert(user.id, trip.id, 39000, later(2));
+    expect(b.id).toBe(a.id);
+    expect(b).toMatchObject({
+      threshold: 39000,
+      active: true,
+      lastNotifiedAmount: null,
+      lastNotifiedAt: null,
+    });
+    expect(await s.listAlerts(user.id)).toHaveLength(1);
+  });
+
+  test("another user's alert can't be read, paused or deleted", async (ctx) => {
+    const s = make();
+    if (!s) return ctx.skip();
+    const { user, other, trip } = await setup(s);
+    const a = await s.upsertAlert(user.id, trip.id, 40000, now);
+    expect(await s.listAlerts(other.id)).toEqual([]);
+    expect(await s.getAlert(other.id, a.id)).toBeNull();
+    expect(await s.setAlertActive(other.id, a.id, false)).toBe(false);
+    expect(await s.deleteAlert(other.id, a.id)).toBe(false);
+    expect((await s.getAlert(user.id, a.id))!.active).toBe(true);
+  });
+
+  test('active alerts come with their trip and the user (with locale); paused ones are left out', async (ctx) => {
+    const s = make();
+    if (!s) return ctx.skip();
+    const { user, trip } = await setup(s);
+    const a = await s.upsertAlert(user.id, trip.id, 40000, now);
+    const mine = () => s.activeAlerts().then((all) => all.filter((x) => x.alert.id === a.id));
+    const [row] = await mine();
+    expect(row!.trip).toMatchObject({ id: trip.id, style: 'budget', start: '2026-12-06' });
+    expect(row!.user).toMatchObject({ id: user.id, email: user.email, locale: 'en' });
+    await s.setUserLocale(user.id, 'hi');
+    expect((await mine())[0]!.user.locale).toBe('hi');
+    await s.setAlertActive(user.id, a.id, false);
+    expect(await mine()).toEqual([]);
+  });
+
+  test('recording a check: checked time always; notified amount; switch off', async (ctx) => {
+    const s = make();
+    if (!s) return ctx.skip();
+    const { user, trip } = await setup(s);
+    const a = await s.upsertAlert(user.id, trip.id, 40000, now);
+    await s.recordAlertCheck(a.id, { checkedAt: later(5) });
+    expect(await s.getAlert(user.id, a.id)).toMatchObject({
+      lastCheckedAt: later(5).toISOString(),
+      lastNotifiedAmount: null,
+    });
+    await s.recordAlertCheck(a.id, { checkedAt: later(6), notifiedAmount: 38400 });
+    expect(await s.getAlert(user.id, a.id)).toMatchObject({
+      lastNotifiedAmount: 38400,
+      lastNotifiedAt: later(6).toISOString(),
+    });
+    await s.recordAlertCheck(a.id, { checkedAt: later(7), deactivate: true });
+    expect((await s.getAlert(user.id, a.id))!.active).toBe(false);
+  });
+
+  test('deleting the trip deletes its alert; deleting the alert', async (ctx) => {
+    const s = make();
+    if (!s) return ctx.skip();
+    const { user, trip } = await setup(s);
+    const a = await s.upsertAlert(user.id, trip.id, 40000, now);
+    expect(await s.deleteAlert(user.id, a.id)).toBe(true);
+    expect(await s.getAlert(user.id, a.id)).toBeNull();
+    const b = await s.upsertAlert(user.id, trip.id, 40000, now);
+    await s.deleteTrip(user.id, trip.id);
+    expect(await s.getAlert(user.id, b.id)).toBeNull();
+  });
+});

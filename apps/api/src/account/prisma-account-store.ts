@@ -1,6 +1,15 @@
 import type { ValidSearchInput } from '@tripsaver/domain';
-import type { Prisma, PrismaClient, Trip, User } from '@tripsaver/db';
-import type { AccountStore, AccountUser, NewTrip, SavedTrip } from './account-store.js';
+import type { Prisma, PriceAlert, PrismaClient, Trip, User } from '@tripsaver/db';
+import type {
+  AccountStore,
+  AccountUser,
+  ActiveAlert,
+  AlertCheck,
+  Locale,
+  NewTrip,
+  PriceAlertRow,
+  SavedTrip,
+} from './account-store.js';
 
 const pub = (u: User): AccountUser => ({ id: u.id, email: u.email, name: u.name, googleSub: u.googleSub });
 const toDate = (iso: string) => new Date(`${iso}T00:00:00Z`);
@@ -19,6 +28,18 @@ function trip(t: Trip): SavedTrip {
     updatedAt: t.updatedAt.toISOString(),
   };
 }
+
+const alert = (a: PriceAlert): PriceAlertRow => ({
+  id: a.id,
+  userId: a.userId,
+  tripId: a.tripId,
+  threshold: a.thresholdAmount,
+  active: a.active,
+  lastNotifiedAt: a.lastNotifiedAt?.toISOString() ?? null,
+  lastNotifiedAmount: a.lastNotifiedAmount,
+  lastCheckedAt: a.lastCheckedAt?.toISOString() ?? null,
+  createdAt: a.createdAt.toISOString(),
+});
 
 /** Accounts in PostgreSQL (packages/db). */
 export class PrismaAccountStore implements AccountStore {
@@ -132,5 +153,64 @@ export class PrismaAccountStore implements AccountStore {
       create: { tripId, itemKey, booked },
       update: { booked },
     });
+  }
+
+  async upsertAlert(userId: string, tripId: string, threshold: number, now: Date): Promise<PriceAlertRow> {
+    const reset = {
+      thresholdAmount: threshold,
+      active: true,
+      lastNotifiedAt: null,
+      lastNotifiedAmount: null,
+    };
+    return alert(
+      await this.db.priceAlert.upsert({
+        where: { tripId },
+        create: { userId, tripId, createdAt: now, ...reset },
+        update: reset,
+      }),
+    );
+  }
+  async listAlerts(userId: string): Promise<PriceAlertRow[]> {
+    return (await this.db.priceAlert.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } })).map(
+      alert,
+    );
+  }
+  async getAlert(userId: string, id: string): Promise<PriceAlertRow | null> {
+    const a = await this.db.priceAlert.findFirst({ where: { id, userId } });
+    return a ? alert(a) : null;
+  }
+  async setAlertActive(userId: string, id: string, active: boolean): Promise<boolean> {
+    const { count } = await this.db.priceAlert.updateMany({ where: { id, userId }, data: { active } });
+    return count === 1;
+  }
+  async deleteAlert(userId: string, id: string): Promise<boolean> {
+    const { count } = await this.db.priceAlert.deleteMany({ where: { id, userId } });
+    return count === 1;
+  }
+  async activeAlerts(): Promise<ActiveAlert[]> {
+    const rows = await this.db.priceAlert.findMany({
+      where: { active: true },
+      include: { trip: true, user: true },
+    });
+    return rows.map((r) => ({
+      alert: alert(r),
+      trip: trip(r.trip),
+      user: { ...pub(r.user), locale: r.user.locale },
+    }));
+  }
+  async recordAlertCheck(id: string, r: AlertCheck): Promise<void> {
+    await this.db.priceAlert.updateMany({
+      where: { id },
+      data: {
+        lastCheckedAt: r.checkedAt,
+        ...(r.notifiedAmount !== undefined
+          ? { lastNotifiedAmount: r.notifiedAmount, lastNotifiedAt: r.checkedAt }
+          : {}),
+        ...(r.deactivate ? { active: false } : {}),
+      },
+    });
+  }
+  async setUserLocale(userId: string, locale: Locale): Promise<void> {
+    await this.db.user.update({ where: { id: userId }, data: { locale } });
   }
 }

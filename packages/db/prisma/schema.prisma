@@ -374,15 +374,23 @@ model PricingRule {
   @@index([mode, providerId])
 }
 
+/// "Tell me when this trip drops below ₹X": one per saved trip, checked daily (spec 2026-11-10-price-alerts).
 model PriceAlert {
-  id              String    @id @default(cuid())
-  userId          String
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tripId          String
-  trip            Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  thresholdAmount Int
-  active          Boolean   @default(true)
-  lastNotifiedAt  DateTime?
+  id                 String    @id @default(cuid())
+  userId             String
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tripId             String    @unique
+  trip               Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  /// Integer rupees, the group total.
+  thresholdAmount    Int
+  active             Boolean   @default(true)
+  lastNotifiedAt     DateTime?
+  lastNotifiedAmount Int?
+  lastCheckedAt      DateTime?
+  createdAt          DateTime  @default(now())
+
+  @@index([userId])
+  @@index([active])
 }
 
 model Provider {
