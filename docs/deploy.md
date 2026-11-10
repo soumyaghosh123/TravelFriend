@@ -38,6 +38,10 @@ Sign up for Neon, Render and Vercel with **Continue with GitHub**. Do them in th
 4. Click **Deploy**. When it finishes, Vercel shows the public link, e.g. `https://tripsaver.vercel.app`.
 5. If that link differs from the `WEB_ORIGIN` you gave Render, update `WEB_ORIGIN` on Render (**Environment** tab), then save and redeploy. Sign-in and saving trips fail until the two match.
 
+## Real flight fares (optional)
+
+On Render (**Environment** tab) add `TRAVELPAYOUTS_TOKEN`, `TRAVELPAYOUTS_MARKER` and `FLIGHT_PROVIDERS=travelpayouts`, then save and redeploy. Add the token and marker before switching `FLIGHT_PROVIDERS`: the API refuses to start without them.
+
 ## After that
 
 Every push to `main` redeploys both the website and the API.

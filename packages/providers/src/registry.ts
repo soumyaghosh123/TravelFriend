@@ -18,6 +18,7 @@ import { MockContentProvider } from './mock/content.js';
 import { MockRestaurantsProvider } from './mock/restaurants.js';
 import { OsmRestaurantsProvider } from './real/osm-restaurants.js';
 import { OpenMeteoWeatherProvider } from './real/open-meteo-weather.js';
+import { TravelpayoutsFlightProvider } from './real/travelpayouts-flights.js';
 import { MockCalendarEventsProvider, MockWeatherProvider } from './mock/calendar.js';
 import { MockLocalTransportProvider } from './mock/local-transport.js';
 import { mockPlaceDirectory } from './mock/data/places.js';
@@ -54,7 +55,21 @@ export const DEFAULT_FACTORIES: Factories = {
   },
   train: { mock: (c) => new MockTrainProvider(c) },
   bus: { mock: (c) => new MockBusProvider(c) },
-  flight: { mock: (c) => new MockFlightProvider(c) },
+  flight: {
+    mock: (c) => new MockFlightProvider(c),
+    // Cached Aviasales fares via Travelpayouts (free, token + Partner ID). Decision 2026-11-10.
+    travelpayouts: (c, env) => {
+      if (!env.TRAVELPAYOUTS_TOKEN || !env.TRAVELPAYOUTS_MARKER)
+        throw new Error('FLIGHT_PROVIDERS=travelpayouts needs TRAVELPAYOUTS_TOKEN and TRAVELPAYOUTS_MARKER in .env');
+      return new TravelpayoutsFlightProvider({
+        clock: c,
+        token: env.TRAVELPAYOUTS_TOKEN,
+        marker: env.TRAVELPAYOUTS_MARKER,
+        fallback: new MockFlightProvider(c),
+        places: mockPlaceDirectory,
+      });
+    },
+  },
   hotel: { mock: (c) => new MockHotelProvider(c) },
   calendar: { mock: () => new MockCalendarEventsProvider() },
   weather: {

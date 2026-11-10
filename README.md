@@ -9,7 +9,7 @@ A budget travel planner for Indian travellers. You enter six things (from, to, n
 - **Accounts, saved trips, a booking checklist, share links, PDF and calendar export, and price alerts.** Price alerts say "tell me when this trip drops below ₹X" and are checked daily at 07:00 India time.
 - **English, Hindi and Bengali.**
 
-> **Status:** in development. Weather (Open-Meteo) and restaurants (OpenStreetMap) are real data. Transport, hotel, sight and local-transport prices come from **mock providers**: sample data for 25 destinations, labelled as samples in the UI. Real price providers will plug in behind the existing interfaces later.
+> **Status:** in development. Weather (Open-Meteo), restaurants (OpenStreetMap) and flight fares (Aviasales via Travelpayouts, cached prices) are real data. Transport, hotel, sight and local-transport prices come from **mock providers**: sample data for 25 destinations, labelled as samples in the UI. Real price providers will plug in behind the existing interfaces later.
 
 ## Tech stack
 
@@ -85,5 +85,6 @@ More detail is in [CLAUDE.md](CLAUDE.md), the product brief in [BRIEF.md](BRIEF.
 ## Data sources and attribution
 
 - Restaurant data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, via the Overpass API.
+- Flight fares from [Aviasales](https://www.aviasales.com/) via the Travelpayouts Flight Data API (prices found by travellers in the last few days).
 - Weather from [Open-Meteo](https://open-meteo.com/). The free tier is for non-commercial use only.
 - All other prices are sample data until real providers are connected.

@@ -135,3 +135,26 @@ export function buildDeepLink(site: SiteId, p: DeepLinkParams): { url: string; p
 export function googleMapsUrl(lat: number, lng: number): string {
   return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 }
+
+/**
+ * Aviasales search link (Travelpayouts affiliate). Path: FROM + DDMM + TO + adults + children + infants;
+ * Aviasales counts 12+ as adults, 2–11 as children, under 2 as infants. `marker` is the Partner ID,
+ * so bookings are credited. Each count is capped at 9 (one digit in the path).
+ */
+export function aviasalesLink(p: {
+  from: string;
+  to: string;
+  date: ISODate;
+  travellers: Travellers;
+  marker: string;
+}): string {
+  validateTravellers(p.travellers);
+  const ages = p.travellers.childAges;
+  const adults = p.travellers.adults + ages.filter((a) => a >= 12).length;
+  const children = ages.filter((a) => a >= 2 && a < 12).length;
+  const infants = ages.filter((a) => a < 2).length;
+  const [, mm, dd] = p.date.split('-');
+  const n = (k: number) => String(Math.min(k, 9));
+  const pax = `${n(adults)}${children || infants ? n(children) : ''}${infants ? n(infants) : ''}`;
+  return `https://www.aviasales.com/search/${p.from}${dd}${mm}${p.to}${pax}?marker=${encodeURIComponent(p.marker)}`;
+}

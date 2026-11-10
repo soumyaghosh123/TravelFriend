@@ -65,7 +65,7 @@ The browser calls `/api/*` on the web origin; `next.config.ts` proxies it to `AP
 
 Coming in later milestones: `pnpm test:e2e` (Playwright).
 
-Mock providers are selected by `*_PROVIDERS` env vars (see `.env.example`); `createRegistry(process.env)` builds them. Real sources so far: `WEATHER_PROVIDERS=openmeteo` and `RESTAURANT_PROVIDERS=osm` (OpenStreetMap via Overpass; keep the attribution). Tests that need fixed timestamps use `fixedClock(...)`.
+Mock providers are selected by `*_PROVIDERS` env vars (see `.env.example`); `createRegistry(process.env)` builds them. Real sources so far: `WEATHER_PROVIDERS=openmeteo`, `RESTAURANT_PROVIDERS=osm` (OpenStreetMap via Overpass; keep the attribution) and `FLIGHT_PROVIDERS=travelpayouts` (cached Aviasales fares; needs `TRAVELPAYOUTS_TOKEN` and `TRAVELPAYOUTS_MARKER`; one request per airport pair per month, cached 6 h; route-months without data and API failures fall back to the sample flights). Tests that need fixed timestamps use `fixedClock(...)`.
 
 ## Conventions
 
