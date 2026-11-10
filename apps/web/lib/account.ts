@@ -116,3 +116,58 @@ export async function setBookedOnServer(tripId: string, itemKey: string, booked:
 export function signInHref(next: string): string {
   return `/account?${new URLSearchParams({ next })}`;
 }
+
+// ── Price alerts (spec 2026-11-10-price-alerts) ──
+
+export interface AlertView {
+  id: string;
+  tripId: string;
+  tripTitle: string | null;
+  threshold: number;
+  active: boolean;
+  lastCheckedAt: string | null;
+  lastNotifiedAmount: number | null;
+  /** Only in the reply to setting an alert. */
+  currentTotal?: number;
+}
+
+/** Sets the trip's alert. `error` is a key under `alerts.errors` (threshold, unavailable, failed). */
+export async function setAlert(
+  tripId: string,
+  threshold: number,
+  locale: string,
+): Promise<AlertView | { error: 'threshold' | 'unavailable' | 'failed' } | 'signin'> {
+  const res = await fetch('/api/me/alerts', {
+    method: 'POST',
+    headers: json,
+    body: JSON.stringify({ tripId, threshold, locale }),
+  });
+  if (res.status === 401) return 'signin';
+  if (res.ok) return (await res.json()) as AlertView;
+  const message = ((await res.json().catch(() => ({}))) as { message?: string }).message;
+  if (message === 'alert.threshold') return { error: 'threshold' };
+  if (message === 'alert.unavailable') return { error: 'unavailable' };
+  return { error: 'failed' };
+}
+
+/** Null when not signed in. */
+export async function listAlerts(): Promise<AlertView[] | null> {
+  const res = await fetch('/api/me/alerts', { cache: 'no-store' });
+  if (res.status === 401) return null;
+  if (!res.ok) throw new Error(`alerts ${res.status}`);
+  return (await res.json()) as AlertView[];
+}
+
+export async function setAlertActive(id: string, active: boolean): Promise<void> {
+  const res = await fetch(`/api/me/alerts/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: json,
+    body: JSON.stringify({ active }),
+  });
+  if (!res.ok) throw new Error(`alert ${res.status}`);
+}
+
+export async function deleteAlert(id: string): Promise<void> {
+  const res = await fetch(`/api/me/alerts/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`alert ${res.status}`);
+}

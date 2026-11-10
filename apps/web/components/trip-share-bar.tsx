@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { dateRange, inr } from '../lib/format';
 import { googleCalendarUrl, planIcs, shareUrl, whatsappUrl } from '../lib/trip-export';
 import type { SavedTripState } from '../lib/use-saved-trip';
+import { PriceAlertButton } from './price-alert-button';
 import { SaveTripButton } from './save-trip-button';
 
 interface Props {
@@ -20,6 +21,8 @@ interface Props {
   people: number;
   saved: SavedTripState;
   onSave: (title?: string) => Promise<'signin' | 'ok' | 'error'>;
+  /** The saved trip's id, saving it first if needed (for price alerts). */
+  ensureSaved: (title?: string) => Promise<string | 'signin' | 'error'>;
 }
 
 const btn =
@@ -37,6 +40,7 @@ export function TripShareBar({
   people,
   saved,
   onSave,
+  ensureSaved,
 }: Props) {
   const t = useTranslations('results.export');
   const tp = useTranslations('results.plan');
@@ -53,6 +57,7 @@ export function TripShareBar({
     total !== null
       ? t('shareText', { title, plan: tr(`plans.${style}.name`), people, total: inr(total), link })
       : `${title} · ${link}`;
+  const returnTo = `/trip/${encodeURIComponent(searchId)}?${new URLSearchParams({ plan: style, start: plan.start })}`;
   const printHref = `/trip/${encodeURIComponent(searchId)}/print?${new URLSearchParams({ plan: style, start: plan.start, autoprint: '1' })}`;
 
   const share = async () => {
@@ -80,11 +85,13 @@ export function TripShareBar({
 
   return (
     <div role="group" aria-label={t('label')} className="flex flex-wrap items-center gap-2">
-      <SaveTripButton
-        state={saved}
-        save={onSave}
+      <SaveTripButton state={saved} save={onSave} title={title} returnTo={returnTo} className={btn} />
+      <PriceAlertButton
+        saved={saved}
+        ensureSaved={ensureSaved}
+        total={total}
         title={title}
-        returnTo={`/trip/${encodeURIComponent(searchId)}?${new URLSearchParams({ plan: style, start: plan.start })}`}
+        returnTo={returnTo}
         className={btn}
       />
       <a href={printHref} target="_blank" rel="noopener" className={btn}>

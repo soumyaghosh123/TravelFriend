@@ -16,7 +16,11 @@ export function useSavedTrip(
   searchId: string,
   style: string,
   start: string | null,
-): { state: SavedTripState; save: (title?: string) => Promise<'signin' | 'ok' | 'error'> } {
+): {
+  state: SavedTripState;
+  save: (title?: string) => Promise<'signin' | 'ok' | 'error'>;
+  ensureSaved: (title?: string) => Promise<string | 'signin' | 'error'>;
+} {
   const [state, setState] = useState<SavedTripState>({ status: 'loading' });
 
   useEffect(() => {
@@ -55,5 +59,25 @@ export function useSavedTrip(
     [searchId, style, start],
   );
 
-  return { state, save };
+  /** The saved trip's id, saving the trip first if needed ('signin' when not signed in). */
+  const ensureSaved = useCallback(
+    async (title?: string): Promise<string | 'signin' | 'error'> => {
+      if (state.status === 'saved') return state.tripId;
+      if (!start) return 'error';
+      try {
+        const r = await saveTrip({ searchId, style, start, ...(title ? { title } : {}) });
+        if (r === 'signin') {
+          setState({ status: 'anonymous' });
+          return 'signin';
+        }
+        setState({ status: 'saved', tripId: r.id });
+        return r.id;
+      } catch {
+        return 'error';
+      }
+    },
+    [state, searchId, style, start],
+  );
+
+  return { state, save, ensureSaved };
 }

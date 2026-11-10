@@ -4,13 +4,29 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
-import { deleteTrip, fetchMe, listTrips, openTrip, signOut, type Me, type SavedTrip } from '../lib/account';
+import {
+  deleteAlert,
+  deleteTrip,
+  fetchMe,
+  listAlerts,
+  listTrips,
+  openTrip,
+  setAlertActive,
+  signOut,
+  type AlertView,
+  type Me,
+  type SavedTrip,
+} from '../lib/account';
 import { dateRange, monthLabel } from '../lib/format';
 import { addDays } from '@tripsaver/domain';
+import { AlertRow } from './alert-row';
 import { SignInForm } from './sign-in-form';
 
-/** `/account`: sign in, or your saved trips (open, delete) and sign out. */
-export function AccountView({ next, failed }: { next: string; failed: boolean }) {
+/**
+ * `/account`: sign in, or your saved trips (open, delete), their price alerts (pause, delete) and sign
+ * out. `open` (from a price-alert email) opens that saved trip straight away.
+ */
+export function AccountView({ next, failed, open }: { next: string; failed: boolean; open?: string }) {
   const t = useTranslations('account');
   const tp = useTranslations('results.plans');
   const locale = useLocale();
@@ -18,6 +34,7 @@ export function AccountView({ next, failed }: { next: string; failed: boolean })
   const [me, setMe] = useState<Me | null | undefined>(undefined);
   const [trips, setTrips] = useState<SavedTrip[] | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [alerts, setAlerts] = useState<AlertView[]>([]);
 
   useEffect(() => {
     fetchMe()
@@ -26,10 +43,23 @@ export function AccountView({ next, failed }: { next: string; failed: boolean })
         if (!u) return;
         // Came here to sign in on the way to somewhere else: go back there.
         if (next !== '/account') return router.replace(next);
-        setTrips((await listTrips()) ?? []);
+        const [ts, as] = await Promise.all([listTrips(), listAlerts().catch(() => [])]);
+        setTrips(ts ?? []);
+        setAlerts(as ?? []);
+        if (open && (ts ?? []).some((x) => x.id === open)) void openSaved(open);
       })
       .catch(() => setMe(null));
-  }, [next, router]);
+  }, [next, router, open]);
+
+  async function openSaved(id: string) {
+    setNotice(null);
+    const r = await openTrip(id).catch(() => null);
+    if (r === 'past') return setNotice(t('past'));
+    if (!r) return setNotice(t('openFailed'));
+    router.push(
+      `/trip/${encodeURIComponent(r.searchId)}?${new URLSearchParams({ plan: r.style, start: r.start })}`,
+    );
+  }
 
   if (me === undefined) return <p className="text-muted">{t('loading')}</p>;
   if (!me) return <SignInForm next={next} failed={failed} />;
@@ -82,15 +112,7 @@ export function AccountView({ next, failed }: { next: string; failed: boolean })
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={async () => {
-                      setNotice(null);
-                      const r = await openTrip(trip.id).catch(() => null);
-                      if (r === 'past') return setNotice(t('past'));
-                      if (!r) return setNotice(t('openFailed'));
-                      router.push(
-                        `/trip/${encodeURIComponent(r.searchId)}?${new URLSearchParams({ plan: r.style, start: r.start })}`,
-                      );
-                    }}
+                    onClick={() => void openSaved(trip.id)}
                     className="rounded-full bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-d"
                   >
                     {t('open')}
@@ -100,12 +122,30 @@ export function AccountView({ next, failed }: { next: string; failed: boolean })
                     onClick={async () => {
                       await deleteTrip(trip.id).catch(() => {});
                       setTrips((ts) => (ts ?? []).filter((x) => x.id !== trip.id));
+                      setAlerts((as) => as.filter((a) => a.tripId !== trip.id));
                     }}
                     className="rounded-full border border-line px-3 py-1.5 text-sm font-semibold text-ink2 hover:border-bad hover:text-bad"
                   >
                     {t('delete')}
                   </button>
                 </div>
+                {alerts
+                  .filter((a) => a.tripId === trip.id)
+                  .map((a) => (
+                    <div key={a.id} className="w-full">
+                      <AlertRow
+                        alert={a}
+                        onToggle={async (active) => {
+                          await setAlertActive(a.id, active).catch(() => {});
+                          setAlerts((as) => as.map((x) => (x.id === a.id ? { ...x, active } : x)));
+                        }}
+                        onDelete={async () => {
+                          await deleteAlert(a.id).catch(() => {});
+                          setAlerts((as) => as.filter((x) => x.id !== a.id));
+                        }}
+                      />
+                    </div>
+                  ))}
               </li>
             ))}
           </ul>

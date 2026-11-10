@@ -551,6 +551,7 @@ describe('Export: PDF, share link, WhatsApp, calendar (step 10)', () => {
           total={cost.cost.total}
           saved={{ status: 'unsaved' }}
           onSave={async () => 'ok'}
+          ensureSaved={async () => 't1'}
           fromName="Kolkata"
           toName="Goa"
           people={4}
@@ -560,6 +561,10 @@ describe('Export: PDF, share link, WhatsApp, calendar (step 10)', () => {
       expect(html).toContain(`/trip/s1/print?plan=budget&amp;start=${plan.start}&amp;autoprint=1`);
       expect(html).toContain('https://wa.me/?text=');
       expect(html).toContain('https://calendar.google.com/calendar/render?action=TEMPLATE');
+      const alertsMsgs = JSON.parse(
+        readFileSync(new URL(`../messages/${locale}.json`, import.meta.url), 'utf8'),
+      ).alerts;
+      expect(html).toContain(alertsMsgs.button);
     },
   );
 });

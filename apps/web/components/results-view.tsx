@@ -171,6 +171,7 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
             people={people}
             saved={saved.state}
             onSave={saved.save}
+            ensureSaved={saved.ensureSaved}
           />
         )}
 

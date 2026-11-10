@@ -796,5 +796,26 @@
     "signingIn": "Signing in…",
     "linkExpired": "This link has expired or was already used.",
     "newLink": "Get a new link"
+  },
+  "alerts": {
+    "button": "Price alert",
+    "title": "Tell me when this trip drops below",
+    "today": "Today's total: {total}",
+    "set": "Set alert",
+    "saved": "We'll email you if it drops below {threshold}. Prices are checked every morning.",
+    "signIn": "Sign in to get price alerts",
+    "close": "Close",
+    "errors": {
+      "threshold": "Enter an amount below today's total.",
+      "unavailable": "This trip can't be priced right now. Try again later.",
+      "failed": "Couldn't set the alert. Try again."
+    },
+    "row": "Alert below {threshold}",
+    "paused": "Paused",
+    "lastChecked": "checked {ago}",
+    "lastEmailed": "last emailed at {amount}",
+    "pause": "Pause",
+    "resume": "Resume",
+    "delete": "Delete alert"
   }
 }
