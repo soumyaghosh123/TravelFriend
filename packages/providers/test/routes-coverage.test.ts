@@ -16,15 +16,19 @@ describe('sample routes cover every From → To pair', () => {
     for (const from of places)
       for (const to of destinations) {
         if (from.code === to.code) continue;
-        if (!ROUTES.some((r) => r.from === from.code && r.to === to.code)) missing.push(`${from.code}→${to.code}`);
-        if (!ROUTES.some((r) => r.from === to.code && r.to === from.code)) missing.push(`${to.code}→${from.code}`);
+        if (!ROUTES.some((r) => r.from === from.code && r.to === to.code))
+          missing.push(`${from.code}→${to.code}`);
+        if (!ROUTES.some((r) => r.from === to.code && r.to === from.code))
+          missing.push(`${to.code}→${from.code}`);
       }
     expect(missing).toEqual([]);
   });
 
   test('no trains where there is no station; no buses across the sea to the Andamans', () => {
     expect(ROUTES.filter((r) => r.mode === 'train' && (r.from === 'LEH' || r.to === 'LEH'))).toEqual([]);
-    expect(ROUTES.filter((r) => r.mode !== 'flight' && (r.from === 'ANDAMAN' || r.to === 'ANDAMAN'))).toEqual([]);
+    expect(ROUTES.filter((r) => r.mode !== 'flight' && (r.from === 'ANDAMAN' || r.to === 'ANDAMAN'))).toEqual(
+      [],
+    );
   });
 
   test('route ids are unique', () => {
