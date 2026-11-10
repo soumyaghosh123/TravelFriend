@@ -9,11 +9,14 @@ import type {
   HotelProvider,
   PlaceDirectory,
   ProviderSet,
+  RestaurantsProvider,
   TrainProvider,
   WeatherProvider,
 } from './interfaces.js';
 import { MockAttractionsProvider } from './mock/attractions.js';
 import { MockContentProvider } from './mock/content.js';
+import { MockRestaurantsProvider } from './mock/restaurants.js';
+import { OsmRestaurantsProvider } from './real/osm-restaurants.js';
 import { OpenMeteoWeatherProvider } from './real/open-meteo-weather.js';
 import { MockCalendarEventsProvider, MockWeatherProvider } from './mock/calendar.js';
 import { MockLocalTransportProvider } from './mock/local-transport.js';
@@ -21,12 +24,14 @@ import { mockPlaceDirectory } from './mock/data/places.js';
 import { MockHotelProvider } from './mock/hotels.js';
 import { MockBusProvider, MockFlightProvider, MockTrainProvider } from './mock/transport.js';
 
-type Factory<T> = (clock: Clock) => T;
+type Env = Record<string, string | undefined>;
+type Factory<T> = (clock: Clock, env: Env) => T;
 
 export interface Factories {
   attractions: Record<string, Factory<AttractionsProvider>>;
   local: Record<string, Factory<LocalTransportProvider>>;
   content: Record<string, Factory<ContentProvider>>;
+  restaurants: Record<string, Factory<RestaurantsProvider>>;
   train: Record<string, Factory<TrainProvider>>;
   bus: Record<string, Factory<BusProvider>>;
   flight: Record<string, Factory<FlightProvider>>;
@@ -41,6 +46,12 @@ export const DEFAULT_FACTORIES: Factories = {
   attractions: { mock: () => new MockAttractionsProvider() },
   local: { mock: () => new MockLocalTransportProvider() },
   content: { mock: () => new MockContentProvider() },
+  restaurants: {
+    mock: (c) => new MockRestaurantsProvider(c),
+    // Real eateries from OpenStreetMap (Overpass, free, no key; attribution required). Decision 2026-11-10.
+    osm: (c, env) =>
+      new OsmRestaurantsProvider({ clock: c, ...(env.OVERPASS_URL ? { baseUrl: env.OVERPASS_URL } : {}) }),
+  },
   train: { mock: (c) => new MockTrainProvider(c) },
   bus: { mock: (c) => new MockBusProvider(c) },
   flight: { mock: (c) => new MockFlightProvider(c) },
@@ -63,6 +74,7 @@ const ENV_KEYS = {
   attractions: 'ATTRACTION_PROVIDERS',
   local: 'LOCAL_TRANSPORT_PROVIDERS',
   content: 'CONTENT_PROVIDERS',
+  restaurants: 'RESTAURANT_PROVIDERS',
   train: 'TRAIN_PROVIDERS',
   bus: 'BUS_PROVIDERS',
   flight: 'FLIGHT_PROVIDERS',
@@ -84,7 +96,7 @@ function pick<T>(
   return ids.map((id) => {
     const factory = factories[id];
     if (!factory) throw new Error(`Unknown provider "${id}" in ${key}`);
-    return factory(clock);
+    return factory(clock, env);
   });
 }
 
@@ -98,6 +110,7 @@ export function createRegistry(
     attractions: { ...DEFAULT_FACTORIES.attractions, ...factories.attractions },
     local: { ...DEFAULT_FACTORIES.local, ...factories.local },
     content: { ...DEFAULT_FACTORIES.content, ...factories.content },
+    restaurants: { ...DEFAULT_FACTORIES.restaurants, ...factories.restaurants },
     train: { ...DEFAULT_FACTORIES.train, ...factories.train },
     bus: { ...DEFAULT_FACTORIES.bus, ...factories.bus },
     flight: { ...DEFAULT_FACTORIES.flight, ...factories.flight },
@@ -110,6 +123,7 @@ export function createRegistry(
     attractions: pick(env, ENV_KEYS.attractions, f.attractions, clock),
     local: pick(env, ENV_KEYS.local, f.local, clock),
     content: pick(env, ENV_KEYS.content, f.content, clock),
+    restaurants: pick(env, ENV_KEYS.restaurants, f.restaurants, clock),
     train: pick(env, ENV_KEYS.train, f.train, clock),
     bus: pick(env, ENV_KEYS.bus, f.bus, clock),
     flight: pick(env, ENV_KEYS.flight, f.flight, clock),

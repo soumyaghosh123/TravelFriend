@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { buildDeepLink } from '../src/deeplinks/index.js';
+import { buildDeepLink, googleMapsUrl } from '../src/deeplinks/index.js';
 
 const travellers = { adults: 2, childAges: [3, 6] };
 const goaStay = {
@@ -86,4 +86,8 @@ describe('buildDeepLink', () => {
     expect(() => buildDeepLink('booking', { ...goaStay, checkOut: undefined })).toThrow(/checkOut/);
     expect(() => buildDeepLink('redbus', { kind: 'bus', fromName: 'Kolkata', travellers })).toThrow(/toName/);
   });
+});
+
+test('googleMapsUrl points at the coordinates', () => {
+  expect(googleMapsUrl(15.5, 73.8)).toBe('https://www.google.com/maps/search/?api=1&query=15.5,73.8');
 });

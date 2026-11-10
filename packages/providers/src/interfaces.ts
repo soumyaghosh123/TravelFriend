@@ -2,6 +2,7 @@ import type {
   AttractionLike,
   CalendarEvent,
   ISODate,
+  LatLng,
   LocalModeLike,
   MonthClimate,
   PricedOffer,
@@ -265,9 +266,23 @@ export interface ContentProvider {
   guide(destination: string): Promise<DestinationGuide | null>;
 }
 
+/** Real places to eat near a destination's base areas (spec 2026-11-10-osm-restaurants). */
+export interface RestaurantsResult {
+  restaurants: Restaurant[];
+  source: { id: string; name: string; url: string; licence?: string };
+  fetchedAt: string;
+}
+
+export interface RestaurantsProvider {
+  id: string;
+  /** Eateries within `radiusKm` of any of the points (base areas, plan hotels). */
+  near(destination: string, points: LatLng[], radiusKm: number): Promise<RestaurantsResult>;
+}
+
 export interface ProviderSet {
   attractions: AttractionsProvider[];
   content: ContentProvider[];
+  restaurants: RestaurantsProvider[];
   local: LocalTransportProvider[];
   train: TrainProvider[];
   bus: BusProvider[];

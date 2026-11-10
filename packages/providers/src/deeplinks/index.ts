@@ -129,3 +129,8 @@ export function buildDeepLink(site: SiteId, p: DeepLinkParams): { url: string; p
       throw new Error(`${site} does not sell ${p.kind} tickets`);
   }
 }
+
+/** "Open in Google Maps" for a point. A plain link: no Maps API or key. */
+export function googleMapsUrl(lat: number, lng: number): string {
+  return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+}
