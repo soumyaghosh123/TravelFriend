@@ -42,8 +42,10 @@ variable with a comment about attribution and fair use.
     food_court` around each point (`around:3000`), `out center tags`. Endpoint
     `https://overpass-api.de/api/interpreter`, overridable with `OVERPASS_URL`.
   - Timeout from the existing per-provider timeout. User-Agent `TripSaver/0.1` (no personal email).
-  - Cache per destination for 24 hours (Redis when `REDIS_URL` is set, else in memory). Failures are not
-    cached. This keeps us far inside the public server's fair-use guidance (under 10,000 queries a day).
+  - Cache per destination for 24 hours in memory (like the Open-Meteo weather provider; `packages/providers`
+    has no Redis). Failures are not cached; a section timeout does not cancel the request, so the result
+    still lands in the cache for the next visitor. This keeps us far inside the public server's fair-use
+    guidance (under 10,000 queries a day).
   - Results are capped (nearest 60 per point) and de-duplicated by OSM id.
 
 ### Mapping OSM tags to `Restaurant`
@@ -74,10 +76,23 @@ variable with a comment about attribution and fair use.
 
 ## Section (`buildGuideSection`)
 
-Gets restaurants from the selected `RestaurantsProvider` for the destination's base areas. On success
-they replace the guide's sample restaurants and the section carries `restaurantSource` (name, licence,
-link, `fetchedAt`). On failure or timeout the sample restaurants stay and `restaurantSource` is `null`
-with `restaurantsLive: false`.
+Gets restaurants from the selected `RestaurantsProvider` for the destination's landmarks (base areas;
+hotels sit near them). The result goes in a new section-level block, so destinations without a curated
+guide (the 20 newer ones) get real eateries too:
+
+```ts
+GuideSection.restaurants: {
+  list: Restaurant[];
+  live: boolean;                 // true when a real provider answered with at least one place
+  realProvider: boolean;         // a non-mock restaurants provider is configured ("live list unavailable" note)
+  source: { name: string; url: string; licence?: string } | null;
+  fetchedAt: string | null;
+}
+```
+
+On failure, timeout or an empty answer the list is the curated guide's sample restaurants (or empty),
+`live: false`. The Food tab uses this list instead of `guide.restaurants`. When there is no curated guide
+but the list has places, the Food tab shows the places and hides the dishes.
 
 ## Web
 
