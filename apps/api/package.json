@@ -19,6 +19,7 @@
     "@tripsaver/db": "workspace:^",
     "@tripsaver/domain": "workspace:*",
     "@tripsaver/providers": "workspace:*",
+    "bullmq": "^6.7.3",
     "ioredis": "^6.0.0",
     "jose": "^6.2.16",
     "nodemailer": "^10.4.0",
