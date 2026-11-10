@@ -1,5 +1,6 @@
 import type { SearchInput, SearchInputIssue, ValidSearchInput } from '@tripsaver/domain';
 import type { GuideSection, ItinerarySection, PlanCostView, WindowDetail } from '@tripsaver/providers';
+import { withRestaurants } from './guide-compat';
 import type { PlaceOption } from './search-form-state';
 
 /** Server components call the API directly; the browser goes through the /api rewrite. */
@@ -68,7 +69,7 @@ export async function getGuide(code: string): Promise<GuideSection | null> {
   });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`guide ${res.status}`);
-  return (await res.json()) as GuideSection;
+  return withRestaurants((await res.json()) as GuideSection);
 }
 
 async function getJson<T>(path: string): Promise<T | null> {
