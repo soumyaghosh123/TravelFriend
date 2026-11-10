@@ -1,0 +1,38 @@
+# Render Blueprint for the TripSaver API (free plan). See docs/deploy.md.
+# The website runs on Vercel (apps/web/vercel.json); the database on Neon.
+services:
+  - type: web
+    name: tripsaver-api
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: >-
+      corepack enable pnpm &&
+      pnpm install --frozen-lockfile --prod=false &&
+      pnpm turbo run build --filter=@tripsaver/api &&
+      pnpm db:deploy &&
+      pnpm db:seed
+    startCommand: pnpm --filter @tripsaver/api start
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: API_PORT
+        value: "10000"
+      # Neon connection string (direct, not "-pooler"), with ?sslmode=require
+      - key: DATABASE_URL
+        sync: false
+      # The Vercel site, e.g. https://tripsaver.vercel.app (no trailing slash)
+      - key: WEB_ORIGIN
+        sync: false
+      - key: SMTP_URL
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: WEATHER_PROVIDERS
+        value: openmeteo
+      - key: RESTAURANT_PROVIDERS
+        value: osm
+      - key: ENABLE_DEV_ROUTES
+        value: "0"

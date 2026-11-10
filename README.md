@@ -80,7 +80,7 @@ pnpm db:down              # stop containers (data kept)
 - The UI and engines never import a concrete provider; everything goes through `packages/providers`.
 - No scraping of sites whose terms forbid it.
 
-More detail is in [CLAUDE.md](CLAUDE.md), the product brief in [BRIEF.md](BRIEF.md), the architecture and build order in [docs/PLAN.md](docs/PLAN.md), and the change history in [CHANGELOG.md](CHANGELOG.md).
+More detail is in [CLAUDE.md](CLAUDE.md), the product brief in [BRIEF.md](BRIEF.md), the architecture and build order in [docs/PLAN.md](docs/PLAN.md), deployment in [docs/deploy.md](docs/deploy.md), and the change history in [CHANGELOG.md](CHANGELOG.md).
 
 ## Data sources and attribution
 

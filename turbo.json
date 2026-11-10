@@ -9,6 +9,9 @@
         "dist/**",
         ".next/**",
         "!.next/cache/**"
+      ],
+      "env": [
+        "API_URL"
       ]
     },
     "test": {
