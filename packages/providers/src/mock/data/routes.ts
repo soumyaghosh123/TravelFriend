@@ -212,16 +212,30 @@ function reverse(t: RouteTemplate): RouteTemplate {
   return { ...t, id: `${t.id}-R`, from: t.to, to: t.from, fromPoint: t.toPoint, toPoint: t.fromPoint };
 }
 
-const OUTBOUND: RouteTemplate[] = MOCK_ORIGINS.flatMap((o) =>
-  MOCK_DESTINATIONS.filter((d) => d.code !== o.code).flatMap((d) =>
-    o.code === 'KOL' && d.code === 'GOA' ? KOL_GOA : generated(o, d),
+/**
+ * Every place, starting cities first. "From" accepts any place, so each pair gets routes once (Jaipur →
+ * Goa as well as Kolkata → Goa); routes between starting cities let combined journeys change at a hub
+ * (Kolkata → Hyderabad → Goa). A starting city keeps its own entry when it goes first; the other end
+ * uses its destination entry when it has one.
+ */
+const ORDER: { code: string; first: Place; second: Place }[] = [
+  ...MOCK_ORIGINS.map((o) => ({
+    code: o.code,
+    first: o,
+    second: MOCK_DESTINATIONS.find((d) => d.code === o.code) ?? o,
+  })),
+  ...MOCK_DESTINATIONS.filter((d) => !MOCK_ORIGINS.some((o) => o.code === d.code)).map((d) => ({
+    code: d.code,
+    first: d,
+    second: d,
+  })),
+];
+
+const PAIRS: RouteTemplate[] = ORDER.flatMap((a, i) =>
+  ORDER.slice(i + 1).flatMap((b) =>
+    a.code === 'KOL' && b.code === 'GOA' ? KOL_GOA : generated(a.first, b.second),
   ),
 );
 
-/** Routes between origin cities, so combined journeys can change at a hub (e.g. Kolkata → Hyderabad → Goa). */
-const BETWEEN_ORIGINS: RouteTemplate[] = MOCK_ORIGINS.flatMap((o, i) =>
-  MOCK_ORIGINS.slice(i + 1).flatMap((h) => generated(o, h)),
-);
-
 /** All templates, both directions. */
-export const ROUTES: RouteTemplate[] = [...OUTBOUND, ...BETWEEN_ORIGINS].flatMap((t) => [t, reverse(t)]);
+export const ROUTES: RouteTemplate[] = PAIRS.flatMap((t) => [t, reverse(t)]);
