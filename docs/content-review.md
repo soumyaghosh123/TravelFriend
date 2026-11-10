@@ -1,7 +1,7 @@
 # Data review list
 
 What in TripSaver is real, what is sourced but needs confirming, and what is still sample data.
-Last updated 2026-11-09. Tick items off as they are checked; change `fareSource` / `lastVerifiedOn`
+Last updated 2026-11-10. Tick items off as they are checked; change `fareSource` / `lastVerifiedOn`
 in the data when you do.
 
 ## Real data
@@ -9,6 +9,7 @@ in the data when you do.
 | What | Source | Notes |
 |---|---|---|
 | Monthly weather (max/min, rain, rainy days) | [Open-Meteo](https://open-meteo.com/) historical archive, 2021–2025 average | Free tier is non-commercial only: buy the paid plan before a commercial launch. One point per destination, so regions use one spot (Kerala = Kochi, not Munnar). Mountain grid cells can overstate rain: Manali shows ~170 mm in December, which looks high; compare with IMD normals. |
+| Places to eat (name, location, cuisine, veg tag, hours, address) | [OpenStreetMap](https://www.openstreetmap.org/copyright) via the public Overpass API, with `RESTAURANT_PROVIDERS=osm` (added 2026-11-10) | ODbL: keep the "© OpenStreetMap contributors" credit. No ratings or prices: the "typical for two" figure is our estimate by kind of place. Veg status is often missing (shown as "veg options not confirmed"). The public server is sometimes at capacity and slow (30 s seen); the first visitor then gets the sample places and later visitors the cached live list (24 h). For launch, consider a paid Overpass host or our own instance. |
 
 ## Sourced, but confirm against the official notice
 
@@ -30,7 +31,7 @@ in the data when you do.
 - **Trains, buses, flights, hotels:** all prices are mock until partner access is approved (Agoda Partners first).
 - **Monthly price index** (which months are cheap or peak): sample until we have real price history.
 - **Destination guides** (`packages/providers/src/mock/data/content.ts`, `lastVerifiedOn` 2026-11-02, not yet checked by a person):
-  - Restaurants are generic "(sample)" places: replace with real listings from a licensed places source.
+  - Restaurants are generic "(sample)" places. They show only when OpenStreetMap is off or unavailable, and they feed the "typical for two" estimate and the "try it at" line under dishes.
   - Markets, emporiums, cooperatives, GI outlets: check names, opening days and hours, and price ranges.
   - Hospitals and police stations: check names and coordinates.
   - Do's & don'ts, permits, plastic bans, network and ATM notes: check each line.
