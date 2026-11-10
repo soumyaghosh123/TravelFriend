@@ -36,6 +36,9 @@ const alert: AlertView = {
   lastNotifiedAmount: 38400,
 };
 
+// Golden rule 1: estimates say "approx.".
+const APPROX: Record<string, string> = { en: 'approx.', hi: 'लगभग', bn: 'আনুমানিক' };
+
 describe.each(['en', 'hi', 'bn'])('price alerts render (%s)', (locale) => {
   const m = messages(locale).alerts;
 
@@ -55,6 +58,7 @@ describe.each(['en', 'hi', 'bn'])('price alerts render (%s)', (locale) => {
     expect(html).toContain(m.button);
     expect(html).toContain('value="38000"');
     expect(html).toContain('₹40,000');
+    expect(html).toContain(APPROX[locale]);
   });
 
   test('signed out: asks you to sign in', () => {
@@ -82,6 +86,7 @@ describe.each(['en', 'hi', 'bn'])('price alerts render (%s)', (locale) => {
     expect(html).toContain(m.paused);
     expect(html).toContain(m.resume);
     expect(html).toContain('₹38,400');
+    expect(html).toContain(APPROX[locale]);
     expect(html).toContain(m.delete);
   });
 });

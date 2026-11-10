@@ -800,7 +800,7 @@
   "alerts": {
     "button": "Price alert",
     "title": "Tell me when this trip drops below",
-    "today": "Today's total: {total}",
+    "today": "Today's total: approx. {total}",
     "set": "Set alert",
     "saved": "We'll email you if it drops below {threshold}. Prices are checked every morning.",
     "signIn": "Sign in to get price alerts",
@@ -813,7 +813,7 @@
     "row": "Alert below {threshold}",
     "paused": "Paused",
     "lastChecked": "checked {ago}",
-    "lastEmailed": "last emailed at {amount}",
+    "lastEmailed": "last emailed at approx. {amount}",
     "pause": "Pause",
     "resume": "Resume",
     "delete": "Delete alert"

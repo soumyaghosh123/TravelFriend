@@ -25,7 +25,15 @@ export class PriceAlertChecker {
     private readonly webOrigin: string,
   ) {}
 
-  async runOnce(now: Date): Promise<AlertRunResult> {
+  private running: Promise<AlertRunResult> | null = null;
+
+  /** One run at a time: a call while a run is going joins it, so nobody is emailed twice. */
+  runOnce(now: Date): Promise<AlertRunResult> {
+    this.running ??= this.run(now).finally(() => (this.running = null));
+    return this.running;
+  }
+
+  private async run(now: Date): Promise<AlertRunResult> {
     const result: AlertRunResult = { checked: 0, notified: 0, expired: 0, failed: 0 };
     for (const a of await this.store.activeAlerts()) {
       try {

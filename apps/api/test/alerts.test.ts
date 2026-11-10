@@ -189,7 +189,20 @@ describe('/api/me/alerts', () => {
 });
 
 describe('dev trigger and schedule', () => {
-  test('POST /api/dev/alerts/run runs the check (not in production)', async () => {
+  test('POST /api/dev/alerts/run is off unless ENABLE_DEV_ROUTES=1, and never in production', async () => {
+    const env = { ...process.env };
+    delete process.env.ENABLE_DEV_ROUTES;
+    await http().post('/api/dev/alerts/run').set('Origin', WEB).expect(404);
+    process.env.ENABLE_DEV_ROUTES = '1';
+    process.env.NODE_ENV = 'production';
+    await http().post('/api/dev/alerts/run').set('Origin', WEB).expect(404);
+    process.env.NODE_ENV = env.NODE_ENV;
+    process.env.ENABLE_DEV_ROUTES = env.ENABLE_DEV_ROUTES;
+    if (env.ENABLE_DEV_ROUTES === undefined) delete process.env.ENABLE_DEV_ROUTES;
+  });
+
+  test('POST /api/dev/alerts/run runs the check when enabled', async () => {
+    process.env.ENABLE_DEV_ROUTES = '1';
     const { cookie, tripId } = await userWithTrip('dev@example.com');
     await post(cookie, { tripId, threshold: 38000 }).expect(201);
     priced = {
@@ -204,11 +217,7 @@ describe('dev trigger and schedule', () => {
     const res = await http().post('/api/dev/alerts/run').set('Origin', WEB).expect(201);
     expect(res.body).toMatchObject({ notified: expect.any(Number), checked: expect.any(Number), failed: 0 });
     expect(mails.some((m) => m.to === 'dev@example.com' && m.subject.includes('₹36,000'))).toBe(true);
-
-    const env = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
-    await http().post('/api/dev/alerts/run').set('Origin', WEB).expect(404);
-    process.env.NODE_ENV = env;
+    delete process.env.ENABLE_DEV_ROUTES;
   });
 
   test('daily at 07:00 India time', () => {

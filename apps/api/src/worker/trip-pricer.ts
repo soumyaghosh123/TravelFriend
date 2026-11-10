@@ -40,8 +40,8 @@ export class LiveTripPricer implements TripPricer {
     const parsed = makeSearchInputSchema(today).safeParse(trip.inputs);
     if (!parsed.success) return { kind: 'stale' };
     const style = trip.style as TripStyle;
-    // A fresh cache key each day, so today's prices are used (DatesService caches windows by key).
-    const detail = await this.dates.window(`alert:${trip.id}:${today}`, parsed.data, style, trip.start);
+    // Today's prices, without touching the results pages' window cache.
+    const detail = await this.dates.windowFresh(parsed.data, style, trip.start);
     if (!detail) return { kind: 'unavailable' };
     const view = await this.cost.plan(parsed.data, style, detail.window);
     if (!view.available) return { kind: 'unavailable' };

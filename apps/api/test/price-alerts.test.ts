@@ -137,6 +137,14 @@ describe('PriceAlertChecker.runOnce (spec 2026-11-10-price-alerts)', () => {
     expect(mails.map((m) => m.to)).toEqual(['b@example.com']);
   });
 
+  test('overlapping runs share one run: no duplicate emails', async () => {
+    const { trip } = await alertFor(40000);
+    pricer.script.set(trip.id, [ok(38400), ok(38400)]);
+    const [a, b] = await Promise.all([checker.runOnce(day1), checker.runOnce(day1)]);
+    expect(a).toEqual(b);
+    expect(mails).toHaveLength(1);
+  });
+
   test('a failed email is not recorded, so the next run emails again', async () => {
     const { user, trip, alert } = await alertFor(40000);
     pricer.script.set(trip.id, [ok(38400), ok(38400)]);
@@ -177,6 +185,16 @@ describe('LiveTripPricer with the mock providers', () => {
       destination: 'Goa',
       start: '2026-12-06',
     });
+  });
+
+  test("pricing alerts leaves the results pages' window cache alone", async () => {
+    const clock = fixedClock('2026-11-10T01:30:00Z');
+    const set = createRegistry({}, clock);
+    const dates = new DatesService(set, clock);
+    const size = () => (dates as unknown as { cache: Map<string, unknown> }).cache.size;
+    const trip = { id: 't1', start: '2026-12-06', style: 'budget', inputs } as SavedTrip;
+    await new LiveTripPricer(dates, new CostService(set, clock), set).price(trip, clock());
+    expect(size()).toBe(0);
   });
 
   test('a saved month that has passed is stale', async () => {

@@ -3,7 +3,10 @@ import type { Clock } from '@tripsaver/providers';
 import { CLOCK } from '../tokens.js';
 import { PriceAlertChecker, type AlertRunResult } from './price-alert-checker.js';
 
-/** Development only: run the daily price-alert check now instead of waiting for 07:00. */
+/**
+ * Development only: run the daily price-alert check now instead of waiting for 07:00. Off unless
+ * `ENABLE_DEV_ROUTES=1`, and never when `NODE_ENV=production` (it has no sign-in).
+ */
 @Controller('dev/alerts')
 export class DevAlertsController {
   constructor(
@@ -13,7 +16,8 @@ export class DevAlertsController {
 
   @Post('run')
   async run(): Promise<AlertRunResult> {
-    if (process.env.NODE_ENV === 'production') throw new NotFoundException();
+    if (process.env.ENABLE_DEV_ROUTES !== '1' || process.env.NODE_ENV === 'production')
+      throw new NotFoundException();
     return this.checker.runOnce(this.clock());
   }
 }

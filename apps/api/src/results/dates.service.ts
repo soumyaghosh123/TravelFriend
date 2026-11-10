@@ -48,7 +48,12 @@ export class DatesService {
     );
   }
 
-  async window(searchId: string, input: ValidSearchInput, style: TripStyle, start: string): Promise<WindowDetail | null> {
+  async window(
+    searchId: string,
+    input: ValidSearchInput,
+    style: TripStyle,
+    start: string,
+  ): Promise<WindowDetail | null> {
     const key = `${searchId}|${style}`;
     let c = this.cache.get(key);
     if (!c) {
@@ -56,6 +61,13 @@ export class DatesService {
       c = await loadWindows(this.providers, input, style, events, this.timeoutMs);
       this.remember(key, c);
     }
+    return windowDetail(this.providers, c, start, this.timeoutMs);
+  }
+
+  /** Today's prices for one start date, without using or filling the cache (price alerts). */
+  async windowFresh(input: ValidSearchInput, style: TripStyle, start: string): Promise<WindowDetail | null> {
+    const events = await monthEvents(this.providers, input, this.timeoutMs);
+    const c = await loadWindows(this.providers, input, style, events, this.timeoutMs);
     return windowDetail(this.providers, c, start, this.timeoutMs);
   }
 }
