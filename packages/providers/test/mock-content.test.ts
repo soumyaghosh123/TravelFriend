@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { fixedClock } from '../src/clock.js';
 import { buildGuideSection } from '../src/guide-section.js';
+import type { Restaurant, RestaurantsProvider } from '../src/interfaces.js';
 import type { ContentProvider } from '../src/interfaces.js';
 import { MockContentProvider } from '../src/mock/content.js';
 import { MOCK_GUIDES } from '../src/mock/data/content.js';
@@ -90,5 +91,78 @@ describe('buildGuideSection', () => {
     await expect(
       buildGuideSection(createRegistry({}, clock), 'NOWHERE', { clock, timeoutMs: 1000 }),
     ).rejects.toThrow();
+  });
+});
+
+describe('buildGuideSection restaurants block (spec 2026-11-10-osm-restaurants)', () => {
+  const place = (id: string): Restaurant => ({
+    id,
+    name: id,
+    kind: 'restaurant',
+    vegType: 'unknown',
+    lat: 15.55,
+    lng: 73.75,
+    live: true,
+  });
+  const live = (list: Restaurant[], calls: unknown[][] = []): RestaurantsProvider => ({
+    id: 'osm',
+    near: async (...args) => {
+      calls.push(args);
+      return {
+        restaurants: list,
+        source: { id: 'osm', name: 'OpenStreetMap contributors', url: 'https://www.openstreetmap.org/copyright', licence: 'ODbL' },
+        fetchedAt: '2026-11-08T09:00:00.000Z',
+      };
+    },
+  });
+  const opts = { clock, timeoutMs: 50 };
+
+  test('mock: the sample places, not live, no real provider', async () => {
+    const s = await buildGuideSection(createRegistry({}, clock), 'GOA', opts);
+    expect(s.restaurants.list).toEqual(s.guide!.restaurants);
+    expect(s.restaurants).toMatchObject({ live: false, realProvider: false, source: null, fetchedAt: null });
+  });
+
+  test('a live provider answering replaces the samples; asked around the landmarks within 3 km', async () => {
+    const calls: unknown[][] = [];
+    const set = { ...createRegistry({}, clock), restaurants: [live([place('a'), place('b')], calls)] };
+    const s = await buildGuideSection(set, 'GOA', opts);
+    expect(s.restaurants.list.map((r) => r.id)).toEqual(['a', 'b']);
+    expect(s.restaurants).toMatchObject({
+      live: true,
+      realProvider: true,
+      source: { name: 'OpenStreetMap contributors', url: 'https://www.openstreetmap.org/copyright', licence: 'ODbL' },
+      fetchedAt: '2026-11-08T09:00:00.000Z',
+    });
+    const [dest, points, radius] = calls[0]!;
+    expect(dest).toBe('GOA');
+    expect((points as unknown[]).length).toBeGreaterThan(0);
+    expect((points as unknown[]).length).toBeLessThanOrEqual(6);
+    expect(radius).toBe(3);
+  });
+
+  test.each([
+    ['rejects', { id: 'osm', near: () => Promise.reject(new Error('Overpass 504')) }],
+    ['never answers', { id: 'osm', near: () => new Promise(() => {}) }],
+  ] as [string, RestaurantsProvider][])('a live provider that %s: samples, not live', async (_n, p) => {
+    const set = { ...createRegistry({}, clock), restaurants: [p] };
+    const s = await buildGuideSection(set, 'GOA', opts);
+    expect(s.restaurants.list).toEqual(s.guide!.restaurants);
+    expect(s.restaurants).toMatchObject({ live: false, realProvider: true, source: null });
+  });
+
+  test('a live provider with no places nearby: samples, not live', async () => {
+    const set = { ...createRegistry({}, clock), restaurants: [live([])] };
+    const s = await buildGuideSection(set, 'GOA', opts);
+    expect(s.restaurants.list).toEqual(s.guide!.restaurants);
+    expect(s.restaurants.live).toBe(false);
+  });
+
+  test('a destination without a curated guide still gets live places; mock gives none', async () => {
+    const withLive = await buildGuideSection({ ...createRegistry({}, clock), restaurants: [live([place('x')])] }, 'AGRA', opts);
+    expect(withLive.guide).toBeNull();
+    expect(withLive.restaurants.list.map((r) => r.id)).toEqual(['x']);
+    const mock = await buildGuideSection(createRegistry({}, clock), 'AGRA', opts);
+    expect(mock.restaurants.list).toEqual([]);
   });
 });

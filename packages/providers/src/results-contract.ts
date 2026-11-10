@@ -14,7 +14,14 @@ import type {
   WindowReason,
 } from '@tripsaver/domain';
 import type { PricedWindow, TripStyle } from './assemble.js';
-import type { Attraction, DestinationGuide, HotelOffer, LocalMode, TransportOffer } from './interfaces.js';
+import type {
+  Attraction,
+  DestinationGuide,
+  HotelOffer,
+  LocalMode,
+  Restaurant,
+  TransportOffer,
+} from './interfaces.js';
 
 /** API ↔ web contract for the "Best dates & price calendar" section (SSE event `dates`). */
 
@@ -273,6 +280,18 @@ export interface GuideSection {
   sights: Attraction[];
   /** Null when no content provider covers the destination yet. */
   guide: DestinationGuide | null;
+  /**
+   * Places to eat. Real places from a live source (OpenStreetMap) when one answered with at least one
+   * place; otherwise the curated guide's sample places (or none). Use this, not `guide.restaurants`.
+   */
+  restaurants: {
+    list: Restaurant[];
+    live: boolean;
+    /** A real restaurants source is switched on (so "live list unavailable" can be said when it failed). */
+    realProvider: boolean;
+    source: { name: string; url: string; licence?: string } | null;
+    fetchedAt: string | null;
+  };
   sampleData: boolean;
   source: string;
   fetchedAt: string;
