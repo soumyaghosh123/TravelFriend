@@ -96,29 +96,60 @@ describe('OsmRestaurantsProvider', () => {
     expect(f).toHaveBeenCalledTimes(2);
     release();
     await new Promise((r) => setTimeout(r, 0));
-    // The refresh failed: still the old list, and the next call tries again.
+    // The refresh failed: still the old list, and no new request during the 5-minute pause.
+    expect(await p.near('GOA', [point], 3)).toBe(first);
+    expect(f).toHaveBeenCalledTimes(2);
+    now += 5 * 60_000 + 1;
     expect(await p.near('GOA', [point], 3)).toBe(first);
     expect(f).toHaveBeenCalledTimes(3);
   });
 
-  test.each([429, 504])('HTTP %i rejects and is not cached', async (status) => {
+  // Fair use (decision 2026-11-10): after a refusal, no request to Overpass for 5 minutes (or its
+  // Retry-After, up to an hour), for every destination: Overpass limits by our IP, not by place.
+  test.each([429, 504])('HTTP %i rejects; no request for 5 minutes, for any destination', async (status) => {
+    let now = new Date('2026-11-10T06:00:00Z').getTime();
     const f = vi
       .fn()
       .mockResolvedValueOnce(new Response('busy', { status }))
-      .mockResolvedValueOnce(new Response(fixture, { status: 200 }));
-    const p = osm(f as unknown as typeof fetch);
+      .mockResolvedValue(new Response(fixture, { status: 200 }));
+    const p = osm(f as unknown as typeof fetch, () => new Date(now));
     await expect(p.near('GOA', [point], 3)).rejects.toThrow(`Overpass ${status}`);
+    await expect(p.near('GOA', [point], 3)).rejects.toThrow('Overpass: paused');
+    await expect(p.near('JAIPUR', [point], 3)).rejects.toThrow('Overpass: paused');
+    expect(f).toHaveBeenCalledTimes(1);
+    now += 5 * 60_000 + 1;
     await expect(p.near('GOA', [point], 3)).resolves.toMatchObject({ source: { id: 'osm' } });
     expect(f).toHaveBeenCalledTimes(2);
   });
 
-  test('a network failure rejects and is not cached', async () => {
+  test('Retry-After (seconds) sets the pause, capped at an hour', async () => {
+    let now = new Date('2026-11-10T06:00:00Z').getTime();
+    const f = vi
+      .fn()
+      .mockResolvedValueOnce(new Response('slow down', { status: 429, headers: { 'Retry-After': '900' } }))
+      .mockResolvedValueOnce(new Response('slow down', { status: 429, headers: { 'Retry-After': '86400' } }))
+      .mockResolvedValue(new Response(fixture));
+    const p = osm(f as unknown as typeof fetch, () => new Date(now));
+    await expect(p.near('GOA', [point], 3)).rejects.toThrow('Overpass 429');
+    now += 10 * 60_000; // past 5 min, inside the 15 min Retry-After
+    await expect(p.near('GOA', [point], 3)).rejects.toThrow('Overpass: paused');
+    now += 5 * 60_000 + 1;
+    await expect(p.near('GOA', [point], 3)).rejects.toThrow('Overpass 429'); // a day asked for…
+    now += 60 * 60_000 + 1; // …but at most an hour
+    await expect(p.near('GOA', [point], 3)).resolves.toMatchObject({ source: { id: 'osm' } });
+    expect(f).toHaveBeenCalledTimes(3);
+  });
+
+  test('a network failure also pauses requests', async () => {
+    let now = new Date('2026-11-10T06:00:00Z').getTime();
     const f = vi
       .fn()
       .mockRejectedValueOnce(new Error('ECONNRESET'))
       .mockResolvedValueOnce(new Response(fixture));
-    const p = osm(f as unknown as typeof fetch);
+    const p = osm(f as unknown as typeof fetch, () => new Date(now));
     await expect(p.near('GOA', [point], 3)).rejects.toThrow('ECONNRESET');
+    await expect(p.near('GOA', [point], 3)).rejects.toThrow('Overpass: paused');
+    now += 5 * 60_000 + 1;
     await p.near('GOA', [point], 3);
     expect(f).toHaveBeenCalledTimes(2);
   });

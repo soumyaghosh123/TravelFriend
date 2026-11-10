@@ -43,7 +43,7 @@ variable with a comment about attribution and fair use.
     `https://overpass-api.de/api/interpreter`, overridable with `OVERPASS_URL`.
   - Timeout from the existing per-provider timeout. User-Agent `TripSaver/0.1` (no personal email).
   - Cache per destination for 24 hours in memory (like the Open-Meteo weather provider; `packages/providers`
-    has no Redis). Failures are not cached; a section timeout does not cancel the request, so the result
+    has no Redis). After expiry the last good list is served while a refresh runs. After a refusal or failure no request is sent for 5 minutes, or Overpass's Retry-After up to an hour, for any destination (changed 2026-11-10 after review: Overpass limits by IP); a section timeout does not cancel the request, so the result
     still lands in the cache for the next visitor. This keeps us far inside the public server's fair-use
     guidance (under 10,000 queries a day).
   - Results are capped (nearest 60 per point) and de-duplicated by OSM id.
