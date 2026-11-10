@@ -390,7 +390,7 @@ Each step: implement → unit tests → run dev server → fix → commit → CH
 | 8 | Sights, food, shopping, do's & don'ts tabs + destination guide pages | Content renders for all 5 destinations |
 | 9 | Cost summary + Book everything checklist | Totals reconcile; checklist ticks persist |
 | 10 | PDF export, share link, WhatsApp, Google Calendar (.ics) | Exported PDF matches plan |
-| 11 | (Phase 2) Accounts (email / Google / OTP), saved trips, price alerts, editable itinerary | — |
+| 11 | (Phase 2) Accounts (email / Google / OTP), saved trips, price alerts, editable itinerary | Email/Google sign-in, saved trips and price alerts done (2026-11-10); phone OTP and editable itinerary to do |
 
 ---
 
