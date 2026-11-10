@@ -12,7 +12,9 @@ import { createRegistry } from '../src/registry.js';
 const fixture = readFileSync(new URL('./fixtures/overpass-goa.json', import.meta.url), 'utf8');
 const clock = fixedClock('2026-11-10T06:00:00Z');
 const point = { lat: 15.553, lng: 73.752 };
-const ok = () => vi.fn(async () => new Response(fixture, { status: 200 })) as unknown as typeof fetch & ReturnType<typeof vi.fn>;
+const ok = () =>
+  vi.fn(async () => new Response(fixture, { status: 200 })) as unknown as typeof fetch &
+    ReturnType<typeof vi.fn>;
 const osm = (f: typeof fetch, c: Clock = clock) =>
   new OsmRestaurantsProvider({ clock: c, fetch: f, baseUrl: 'https://overpass.test/api/interpreter' });
 
@@ -84,7 +86,10 @@ describe('OsmRestaurantsProvider', () => {
   });
 
   test('a network failure rejects and is not cached', async () => {
-    const f = vi.fn().mockRejectedValueOnce(new Error('ECONNRESET')).mockResolvedValueOnce(new Response(fixture));
+    const f = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('ECONNRESET'))
+      .mockResolvedValueOnce(new Response(fixture));
     const p = osm(f as unknown as typeof fetch);
     await expect(p.near('GOA', [point], 3)).rejects.toThrow('ECONNRESET');
     await p.near('GOA', [point], 3);
@@ -114,7 +119,10 @@ describe('registry', () => {
   });
   test('OVERPASS_URL from the registry env is where osm asks', async () => {
     const f = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(fixture));
-    const set = createRegistry({ RESTAURANT_PROVIDERS: 'osm', OVERPASS_URL: 'https://mirror.test/api' }, clock);
+    const set = createRegistry(
+      { RESTAURANT_PROVIDERS: 'osm', OVERPASS_URL: 'https://mirror.test/api' },
+      clock,
+    );
     await set.restaurants[0]!.near('GOA', [point], 3);
     expect(f.mock.calls[0]![0]).toBe('https://mirror.test/api');
     f.mockRestore();

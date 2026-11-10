@@ -610,7 +610,8 @@
       "placeVeg": {
         "veg": "শুধু নিরামিষ",
         "non-veg": "আমিষ",
-        "both": "নিরামিষ ও আমিষ"
+        "both": "নিরামিষ ও আমিষ",
+        "unknown": "নিরামিষ বিকল্প নিশ্চিত নয়"
       },
       "tryAt": "{place}-এ চেখে দেখুন · {km} কিমি",
       "perUnit": "প্রতি {unit}",
@@ -635,7 +636,12 @@
       "breakfastNotIncluded": "প্রাতরাশ ধরা নেই।",
       "hotelMeal": "হোটেলের রেস্তোরাঁয় দুজনের খাবার",
       "hotelBreakfast": "জনপ্রতি প্রাতরাশ",
-      "hotelNoRestaurant": "এই হোটেলের রেস্তোরাঁর দাম এখনও আমরা জানি না।"
+      "hotelNoRestaurant": "এই হোটেলের রেস্তোরাঁর দাম এখনও আমরা জানি না।",
+      "openInMaps": "Google Maps-এ খুলুন",
+      "typicalForTwo": "দুজনের সাধারণ খরচ · TripSaver আনুমানিক",
+      "osmCredit": "রেস্তোরাঁর তথ্য © OpenStreetMap অবদানকারীরা (ODbL)",
+      "liveUnavailable": "লাইভ রেস্তোরাঁর তালিকা এখন পাওয়া যাচ্ছে না। নমুনা জায়গা দেখানো হচ্ছে।",
+      "noPlaces": "{name}-এর কাছে খাওয়ার কোনো জায়গা পাওয়া যায়নি।"
     },
     "shop": {
       "marketsTitle": "বাজার",

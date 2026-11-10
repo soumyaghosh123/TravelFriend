@@ -30,7 +30,8 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 
 function need<K extends keyof DeepLinkParams>(p: DeepLinkParams, key: K): NonNullable<DeepLinkParams[K]> {
   const v = p[key];
-  if (v === undefined || v === null || v === '') throw new Error(`Deep link needs "${String(key)}" for ${p.kind}`);
+  if (v === undefined || v === null || v === '')
+    throw new Error(`Deep link needs "${String(key)}" for ${p.kind}`);
   return v as NonNullable<DeepLinkParams[K]>;
 }
 

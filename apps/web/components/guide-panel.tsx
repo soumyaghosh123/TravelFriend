@@ -70,9 +70,8 @@ export function GuidePanel({
   const body =
     tab === 'sights' ? (
       <SightsTab guide={guide} anchor={anchor} inPlan={inPlan} />
-    ) : !content ? (
-      <p className="rounded-card bg-white p-4 text-muted shadow-card">{t('noContent')}</p>
-    ) : tab === 'food' ? (
+    ) : tab === 'food' && (content || guide.restaurants.list.length > 0) ? (
+      // Real places (OpenStreetMap) show even where we haven't written a guide yet.
       <FoodTab
         guide={guide}
         content={content}
@@ -81,6 +80,8 @@ export function GuidePanel({
         food={food}
         hotel={base?.hotel ?? null}
       />
+    ) : !content ? (
+      <p className="rounded-card bg-white p-4 text-muted shadow-card">{t('noContent')}</p>
     ) : tab === 'shopping' ? (
       <ShoppingTab guide={guide} content={content} anchor={anchor} {...(trip ? { trip } : {})} />
     ) : (

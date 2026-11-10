@@ -144,7 +144,8 @@ describe('guide content (en)', () => {
   });
 
   test('no content provider → sights still show, other tabs explain', () => {
-    const bare = { ...guides.GOA!, guide: null };
+    // No curated guide and no live restaurant source → no places either (as buildGuideSection gives it).
+    const bare = { ...guides.GOA!, guide: null, restaurants: { ...guides.GOA!.restaurants, list: [] } };
     expect(render('en', <GuidePanel tab="sights" guide={bare} style="budget" />).html).toContain(
       'Fort Aguada',
     );

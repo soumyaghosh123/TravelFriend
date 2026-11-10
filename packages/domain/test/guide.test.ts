@@ -194,11 +194,23 @@ describe('rankRestaurants with places that have no rating or price', () => {
       osm('veg', 'street', 0.03, 'veg'),
       osm('nonveg', 'street', 0.01, 'non-veg'),
     ];
-    expect(rankRestaurants(list, hotel, 'budget', 'veg').map((x) => x.id)).toEqual(['veg', 'both', 'unknown']);
+    expect(rankRestaurants(list, hotel, 'budget', 'veg').map((x) => x.id)).toEqual([
+      'veg',
+      'both',
+      'unknown',
+    ]);
   });
   test('comfort without ratings: kind order, then distance', () => {
-    const list = [osm('far-rest', 'restaurant', 0.02), osm('near-rest', 'restaurant', 0.01), osm('budget', 'budget', 0.005)];
-    expect(rankRestaurants(list, hotel, 'comfort', 'any').map((x) => x.id)).toEqual(['near-rest', 'far-rest', 'budget']);
+    const list = [
+      osm('far-rest', 'restaurant', 0.02),
+      osm('near-rest', 'restaurant', 0.01),
+      osm('budget', 'budget', 0.005),
+    ];
+    expect(rankRestaurants(list, hotel, 'comfort', 'any').map((x) => x.id)).toEqual([
+      'near-rest',
+      'far-rest',
+      'budget',
+    ]);
   });
   test('budget without costForTwo: kind order, then distance', () => {
     const list = [osm('far', 'street', 0.02), osm('near', 'street', 0.01)];

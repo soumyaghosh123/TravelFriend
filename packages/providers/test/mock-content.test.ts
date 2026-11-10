@@ -110,7 +110,12 @@ describe('buildGuideSection restaurants block (spec 2026-11-10-osm-restaurants)'
       calls.push(args);
       return {
         restaurants: list,
-        source: { id: 'osm', name: 'OpenStreetMap contributors', url: 'https://www.openstreetmap.org/copyright', licence: 'ODbL' },
+        source: {
+          id: 'osm',
+          name: 'OpenStreetMap contributors',
+          url: 'https://www.openstreetmap.org/copyright',
+          licence: 'ODbL',
+        },
         fetchedAt: '2026-11-08T09:00:00.000Z',
       };
     },
@@ -131,7 +136,11 @@ describe('buildGuideSection restaurants block (spec 2026-11-10-osm-restaurants)'
     expect(s.restaurants).toMatchObject({
       live: true,
       realProvider: true,
-      source: { name: 'OpenStreetMap contributors', url: 'https://www.openstreetmap.org/copyright', licence: 'ODbL' },
+      source: {
+        name: 'OpenStreetMap contributors',
+        url: 'https://www.openstreetmap.org/copyright',
+        licence: 'ODbL',
+      },
       fetchedAt: '2026-11-08T09:00:00.000Z',
     });
     const [dest, points, radius] = calls[0]!;
@@ -159,7 +168,11 @@ describe('buildGuideSection restaurants block (spec 2026-11-10-osm-restaurants)'
   });
 
   test('a destination without a curated guide still gets live places; mock gives none', async () => {
-    const withLive = await buildGuideSection({ ...createRegistry({}, clock), restaurants: [live([place('x')])] }, 'AGRA', opts);
+    const withLive = await buildGuideSection(
+      { ...createRegistry({}, clock), restaurants: [live([place('x')])] },
+      'AGRA',
+      opts,
+    );
     expect(withLive.guide).toBeNull();
     expect(withLive.restaurants.list.map((r) => r.id)).toEqual(['x']);
     const mock = await buildGuideSection(createRegistry({}, clock), 'AGRA', opts);

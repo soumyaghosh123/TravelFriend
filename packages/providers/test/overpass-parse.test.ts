@@ -3,7 +3,9 @@ import { describe, expect, test } from 'vitest';
 import { overpassQuery, parseOverpass } from '../src/real/overpass-parse.js';
 
 // Hand-made, shaped like a real Overpass response (tests never call the network).
-const body = JSON.parse(readFileSync(new URL('./fixtures/overpass-goa.json', import.meta.url), 'utf8')) as unknown;
+const body = JSON.parse(
+  readFileSync(new URL('./fixtures/overpass-goa.json', import.meta.url), 'utf8'),
+) as unknown;
 const point = { lat: 15.553, lng: 73.752 };
 const byId = (id: string) => parseOverpass(body, [point], 60).find((r) => r.id === id);
 
@@ -13,8 +15,12 @@ describe('overpassQuery', () => {
     expect(q).toContain('[out:json]');
     expect(q).toContain('out center tags');
     for (const p of ['15.553,73.752', '15.6,73.8']) {
-      expect(q).toContain(`node["amenity"~"^(restaurant|fast_food|cafe|food_court)$"]["name"](around:3000,${p});`);
-      expect(q).toContain(`way["amenity"~"^(restaurant|fast_food|cafe|food_court)$"]["name"](around:3000,${p});`);
+      expect(q).toContain(
+        `node["amenity"~"^(restaurant|fast_food|cafe|food_court)$"]["name"](around:3000,${p});`,
+      );
+      expect(q).toContain(
+        `way["amenity"~"^(restaurant|fast_food|cafe|food_court)$"]["name"](around:3000,${p});`,
+      );
     }
   });
 });
@@ -62,6 +68,8 @@ describe('parseOverpass', () => {
     expect(ids).toEqual(['osm-node-101', 'osm-node-102']);
   });
   test('an unexpected body throws', () => {
-    expect(() => parseOverpass({ remark: 'runtime error' }, [point], 60)).toThrow('Overpass: unexpected response');
+    expect(() => parseOverpass({ remark: 'runtime error' }, [point], 60)).toThrow(
+      'Overpass: unexpected response',
+    );
   });
 });

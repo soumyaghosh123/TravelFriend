@@ -315,6 +315,105 @@ describe('Guide tabs with the Budget plan (Goa)', () => {
   });
 });
 
+describe('Food tab with real places from OpenStreetMap (spec 2026-11-10-osm-restaurants)', () => {
+  const msgs = (locale: string) =>
+    JSON.parse(readFileSync(new URL(`../messages/${locale}.json`, import.meta.url), 'utf8')).results.food;
+  const near = (d: number) => ({ lat: guide.mainArea.lat + d, lng: guide.mainArea.lng });
+  const live = (): GuideSection => ({
+    ...guide,
+    restaurants: {
+      list: [
+        {
+          id: 'osm-node-1',
+          name: 'Souza Lobo',
+          kind: 'restaurant',
+          vegType: 'unknown',
+          live: true,
+          cuisine: ['goan', 'seafood'],
+          hours: 'Mo-Su 11:00-23:00',
+          ...near(0.005),
+        },
+        {
+          id: 'osm-node-2',
+          name: 'Ritz Classic',
+          kind: 'restaurant',
+          vegType: 'both',
+          live: true,
+          area: '18th June Road, Panaji',
+          ...near(0.01),
+        },
+      ],
+      live: true,
+      realProvider: true,
+      source: {
+        name: 'OpenStreetMap contributors',
+        url: 'https://www.openstreetmap.org/copyright',
+        licence: 'ODbL',
+      },
+      fetchedAt: '2026-11-08T05:00:00.000Z',
+    },
+  });
+
+  for (const locale of ['en', 'hi', 'bn']) {
+    test(`${locale}: real places with map links and OSM credit; no rating, no sample label, no "try it at"`, () => {
+      const m = msgs(locale);
+      const { html, errors } = render(
+        locale,
+        <GuidePanel tab="food" guide={live()} plan={itinerary} style="comfort" />,
+      );
+      expect(errors).toEqual([]);
+      expect(html).toContain('Souza Lobo');
+      expect(html).toContain(
+        `https://www.google.com/maps/search/?api=1&amp;query=${near(0.005).lat},${near(0.005).lng}`,
+      );
+      expect(html).toContain(m.openInMaps);
+      expect(html).toContain(m.osmCredit);
+      expect(html).toContain(m.placeVeg.unknown);
+      expect(html).toContain(m.typicalForTwo);
+      expect(html).not.toContain('(sample)');
+      expect(html).not.toContain('★');
+      // The fixed words of "Try it at {place} · {km} km" in this language (placeholders removed).
+      const tryAtWords = (m.tryAt as string)
+        .split(/\{[^}]+\}/)
+        .map((x) => x.trim())
+        .find((x) => x.length > 2)!;
+      expect(html).not.toContain(tryAtWords);
+    });
+  }
+
+  test('a destination without a curated guide still lists the real places', () => {
+    const { html, errors } = render(
+      'en',
+      <GuidePanel tab="food" guide={{ ...live(), guide: null }} plan={itinerary} style="budget" />,
+    );
+    expect(errors).toEqual([]);
+    expect(html).toContain('Ritz Classic');
+    expect(html).not.toContain(msgs('en').dishesTitle.split('{')[0].trim() || 'dishes to try');
+  });
+
+  test('veg traveller and only non-veg places nearby: says so instead of an empty list', () => {
+    const g = live();
+    g.restaurants.list = g.restaurants.list.map((r) => ({ ...r, vegType: 'non-veg' as const }));
+    const { html } = render(
+      'en',
+      <GuidePanel tab="food" guide={g} plan={itinerary} style="budget" food="veg" />,
+    );
+    expect(html).toContain('find places to eat near');
+  });
+
+  test('sample places (mock): ratings stay; no "live list unavailable" note', () => {
+    const { html } = render('en', <GuidePanel tab="food" guide={guide} plan={itinerary} style="budget" />);
+    expect(html).toContain('★');
+    expect(html).not.toContain(msgs('en').liveUnavailable);
+  });
+
+  test('real source switched on but it failed: says the live list is unavailable', () => {
+    const g = { ...guide, restaurants: { ...guide.restaurants, realProvider: true } };
+    const { html } = render('en', <GuidePanel tab="food" guide={g} plan={itinerary} style="budget" />);
+    expect(html).toContain(msgs('en').liveUnavailable);
+  });
+});
+
 describe('Total & book tab renders with real mock data', () => {
   const tab = () => (
     <CostTab

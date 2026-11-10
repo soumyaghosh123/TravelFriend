@@ -610,7 +610,8 @@
       "placeVeg": {
         "veg": "Pure veg",
         "non-veg": "Non-veg",
-        "both": "Veg & non-veg"
+        "both": "Veg & non-veg",
+        "unknown": "Veg options not confirmed"
       },
       "tryAt": "Try it at {place} · {km} km",
       "perUnit": "per {unit}",
@@ -635,7 +636,12 @@
       "breakfastNotIncluded": "Breakfast is not included.",
       "hotelMeal": "meal for two at the hotel restaurant",
       "hotelBreakfast": "breakfast per person",
-      "hotelNoRestaurant": "We don’t know this hotel’s restaurant prices yet."
+      "hotelNoRestaurant": "We don’t know this hotel’s restaurant prices yet.",
+      "openInMaps": "Open in Google Maps",
+      "typicalForTwo": "typical for two · TripSaver estimate",
+      "osmCredit": "Restaurant data © OpenStreetMap contributors (ODbL)",
+      "liveUnavailable": "Live restaurant list unavailable. Showing sample places.",
+      "noPlaces": "We couldn't find places to eat near {name}."
     },
     "shop": {
       "marketsTitle": "Markets",

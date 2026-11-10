@@ -610,7 +610,8 @@
       "placeVeg": {
         "veg": "शुद्ध शाकाहारी",
         "non-veg": "मांसाहारी",
-        "both": "शाकाहारी और मांसाहारी"
+        "both": "शाकाहारी और मांसाहारी",
+        "unknown": "शाकाहारी विकल्प की पुष्टि नहीं"
       },
       "tryAt": "{place} में चखें · {km} किमी",
       "perUnit": "प्रति {unit}",
@@ -635,7 +636,12 @@
       "breakfastNotIncluded": "नाश्ता शामिल नहीं है।",
       "hotelMeal": "होटल के रेस्तराँ में दो लोगों का खाना",
       "hotelBreakfast": "प्रति व्यक्ति नाश्ता",
-      "hotelNoRestaurant": "इस होटल के रेस्तराँ के दाम अभी हमें नहीं पता।"
+      "hotelNoRestaurant": "इस होटल के रेस्तराँ के दाम अभी हमें नहीं पता।",
+      "openInMaps": "Google Maps में खोलें",
+      "typicalForTwo": "दो लोगों का आम खर्च · TripSaver अनुमान",
+      "osmCredit": "रेस्तराँ डेटा © OpenStreetMap योगदानकर्ता (ODbL)",
+      "liveUnavailable": "लाइव रेस्तराँ सूची अभी उपलब्ध नहीं है। नमूना जगहें दिखा रहे हैं।",
+      "noPlaces": "{name} के पास खाने की कोई जगह नहीं मिली।"
     },
     "shop": {
       "marketsTitle": "बाज़ार",
