@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Deploy: free-plan setup for Neon (database), Render (API, `render.yaml`) and Vercel (website, `apps/web/vercel.json`); `API_URL` passed through Turborepo to the web build; guide in `docs/deploy.md`. README added.
 - Fix: the results header crashed in dev (`MISSING_MESSAGE results.planTotal.offbeat`) when the Offbeat plan was selected; label added in en/hi/bn, with a test covering every plan style.
 - Scaffold pnpm + Turborepo monorepo with `@tripsaver/domain` and `@tripsaver/providers` packages.
 - Domain: pricing engine (child rules, room suggestion), cheapest-dates engine (windows, bands, top 3, reasons, month comparison).
