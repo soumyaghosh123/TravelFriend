@@ -4,7 +4,8 @@ import { MOCK_LOCAL_MODES } from '../src/mock/data/local-transport.js';
 import { ROUTES } from '../src/mock/data/routes.js';
 import { eachDay } from '@tripsaver/domain';
 import { hashSeed, mulberry32 } from '../src/mock/rng.js';
-import { mockDailyPrice } from '../src/mock/pricing-model.js';
+import { mockDailyPrice, mockDailyPriceBase } from '../src/mock/pricing-model.js';
+import { indiaDate } from '../src/clock.js';
 import { MOCK_DESTINATIONS, MOCK_ORIGINS, mockPlaceDirectory } from '../src/mock/data/places.js';
 import { MOCK_CLIMATE, MOCK_EVENTS } from '../src/mock/data/calendar.js';
 import { MockCalendarEventsProvider, MockWeatherProvider } from '../src/mock/calendar.js';
@@ -33,6 +34,7 @@ describe('mockDailyPrice', () => {
     key: 'hotel-1',
     events: MOCK_EVENTS.GOA!,
     climate: MOCK_CLIMATE.GOA!,
+    today: '2026-11-08',
   });
 
   test('is deterministic', () => {
@@ -43,6 +45,37 @@ describe('mockDailyPrice', () => {
     const early = mean(eachDay('2026-12-01', '2026-12-10').map((d) => mockDailyPrice(args(d))));
     const late = mean(eachDay('2026-12-21', '2026-12-30').map((d) => mockDailyPrice(args(d))));
     expect(late).toBeGreaterThan(1.5 * early);
+  });
+});
+
+describe('daily drift (price alerts, spec 2026-11-10)', () => {
+  const at = (today: string) => ({
+    base: 1000,
+    date: '2026-12-05',
+    destination: 'GOA',
+    key: 'hotel-1',
+    events: MOCK_EVENTS.GOA!,
+    climate: MOCK_CLIMATE.GOA!,
+    today,
+  });
+  test('indiaDate is the date in India (UTC+05:30)', () => {
+    expect(indiaDate(new Date('2026-11-09T18:29:00Z'))).toBe('2026-11-09');
+    expect(indiaDate(new Date('2026-11-09T18:31:00Z'))).toBe('2026-11-10');
+  });
+  test('same day, same price', () => {
+    expect(mockDailyPrice(at('2026-11-10'))).toBe(mockDailyPrice(at('2026-11-10')));
+  });
+  test('the price changes from one day to the next', () => {
+    const prices = eachDay('2026-11-01', '2026-11-14').map((d) => mockDailyPrice(at(d)));
+    expect(new Set(prices).size).toBeGreaterThanOrEqual(10);
+  });
+  test('the drift stays within ±4%', () => {
+    const base = mockDailyPriceBase(at('2026-11-01'));
+    for (const d of eachDay('2026-06-01', '2026-12-17')) {
+      const r = mockDailyPrice(at(d)) / base;
+      expect(r).toBeGreaterThanOrEqual(0.96 - 0.001);
+      expect(r).toBeLessThanOrEqual(1.04 + 0.001);
+    }
   });
 });
 

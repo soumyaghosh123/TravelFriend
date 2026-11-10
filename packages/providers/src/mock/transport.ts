@@ -7,7 +7,7 @@ import {
   type ISODate,
   type Travellers,
 } from '@tripsaver/domain';
-import type { Clock } from '../clock.js';
+import { indiaDate, type Clock } from '../clock.js';
 import { buildDeepLink, SITE_NAMES, type SiteId } from '../deeplinks/index.js';
 import type {
   FareGridQuery,
@@ -69,6 +69,7 @@ abstract class MockTransport implements TransportProvider {
       key: `${t.id}|${classCode}`,
       events: MOCK_EVENTS[destination] ?? [],
       climate: MOCK_CLIMATE[destination] ?? [],
+      today: indiaDate(this.clock()),
     });
   }
 

@@ -10,7 +10,7 @@ import {
   type ISODate,
   type Travellers,
 } from '@tripsaver/domain';
-import type { Clock } from '../clock.js';
+import { indiaDate, type Clock } from '../clock.js';
 import { buildDeepLink, SITE_NAMES } from '../deeplinks/index.js';
 import type { HotelOffer, HotelProvider, HotelQuery, HotelSitePrice, HotelType } from '../interfaces.js';
 import { MOCK_CLIMATE, MOCK_EVENTS } from './data/calendar.js';
@@ -40,6 +40,7 @@ export class MockHotelProvider implements HotelProvider {
       key: h.hotelId,
       events: MOCK_EVENTS[destination] ?? [],
       climate: MOCK_CLIMATE[destination] ?? [],
+      today: indiaDate(this.clock()),
     });
     // Extra beds follow the same seasonal swing as the room rate.
     return room * rooms + Math.round((room * h.extraBedRate) / h.baseRoomRate) * extraBeds;
