@@ -69,7 +69,16 @@ export async function getGuide(code: string): Promise<GuideSection | null> {
   });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`guide ${res.status}`);
-  return withRestaurants((await res.json()) as GuideSection);
+  const guide = withRestaurants((await res.json()) as GuideSection);
+  // The hour-long cache may hold a copy from before the live restaurant list arrived (the first
+  // Overpass answer is slow): ask again, uncached, so the page goes live as soon as the API has it.
+  if (guide.restaurants.realProvider && !guide.restaurants.live) {
+    const fresh = await fetch(`${base()}/api/destinations/${encodeURIComponent(code)}/guide`, {
+      cache: 'no-store',
+    });
+    if (fresh.ok) return withRestaurants((await fresh.json()) as GuideSection);
+  }
+  return guide;
 }
 
 async function getJson<T>(path: string): Promise<T | null> {

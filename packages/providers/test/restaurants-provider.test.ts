@@ -74,6 +74,33 @@ describe('OsmRestaurantsProvider', () => {
     expect(f).toHaveBeenCalledTimes(2);
   });
 
+  test('after 24 hours the old list is served at once while a refresh runs; a failed refresh keeps it', async () => {
+    let now = new Date('2026-11-10T06:00:00Z').getTime();
+    let release!: () => void;
+    const f = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(fixture))
+      .mockImplementationOnce(async () => {
+        await new Promise<void>((r) => (release = r));
+        return new Response('busy', { status: 504 });
+      })
+      .mockResolvedValueOnce(new Response(JSON.stringify({ elements: [] })));
+    const p = osm(f as unknown as typeof fetch, () => new Date(now));
+    const first = await p.near('GOA', [point], 3);
+    now += 24 * 3600_000 + 1;
+    // Expired: answers with the old list straight away (no waiting on Overpass), refresh in flight.
+    expect(await withTimeout(p.near('GOA', [point], 3), 10, 'stale')).toBe(first);
+    expect(f).toHaveBeenCalledTimes(2);
+    // A second call while the refresh is in flight doesn't start another one.
+    expect(await p.near('GOA', [point], 3)).toBe(first);
+    expect(f).toHaveBeenCalledTimes(2);
+    release();
+    await new Promise((r) => setTimeout(r, 0));
+    // The refresh failed: still the old list, and the next call tries again.
+    expect(await p.near('GOA', [point], 3)).toBe(first);
+    expect(f).toHaveBeenCalledTimes(3);
+  });
+
   test.each([429, 504])('HTTP %i rejects and is not cached', async (status) => {
     const f = vi
       .fn()

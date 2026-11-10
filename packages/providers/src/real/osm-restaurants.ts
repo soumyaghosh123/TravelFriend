@@ -17,7 +17,16 @@ const PER_POINT = 60;
  */
 export class OsmRestaurantsProvider implements RestaurantsProvider {
   id = 'osm';
-  private readonly cache = new Map<string, { at: number; p: Promise<RestaurantsResult> }>();
+  private readonly cache = new Map<
+    string,
+    {
+      at: number;
+      p: Promise<RestaurantsResult>;
+      /** The last good answer, served while a refresh runs after it expires. */
+      last?: RestaurantsResult;
+      refreshing?: boolean;
+    }
+  >();
 
   constructor(
     private readonly deps: { clock: Clock; fetch?: typeof fetch; baseUrl?: string; ttlMs?: number },
@@ -27,12 +36,30 @@ export class OsmRestaurantsProvider implements RestaurantsProvider {
     const now = this.deps.clock().getTime();
     const hit = this.cache.get(destination);
     if (hit && now - hit.at < (this.deps.ttlMs ?? DAY_MS)) return hit.p;
+    // Expired but we have a good answer: serve it now and refresh in the background (one at a time).
+    if (hit?.last) {
+      if (!hit.refreshing) {
+        hit.refreshing = true;
+        this.load(points, radiusKm).then(
+          (res) => this.remember(destination, res),
+          () => (hit.refreshing = false),
+        );
+      }
+      return Promise.resolve(hit.last);
+    }
     const p = this.load(points, radiusKm);
     this.cache.set(destination, { at: now, p });
-    p.catch(() => {
-      if (this.cache.get(destination)?.p === p) this.cache.delete(destination);
-    });
+    p.then(
+      (res) => this.remember(destination, res),
+      () => {
+        if (this.cache.get(destination)?.p === p) this.cache.delete(destination);
+      },
+    );
     return p;
+  }
+
+  private remember(destination: string, res: RestaurantsResult): void {
+    this.cache.set(destination, { at: this.deps.clock().getTime(), p: Promise.resolve(res), last: res });
   }
 
   private async load(points: LatLng[], radiusKm: number): Promise<RestaurantsResult> {

@@ -70,8 +70,12 @@ function toRestaurant(e: OsmElement): Restaurant | null {
  * once, and only the `perPoint` nearest places to each point are kept. No rating or price is invented.
  */
 export function parseOverpass(body: unknown, points: LatLng[], perPoint: number): Restaurant[] {
-  const elements = (body as { elements?: unknown } | null)?.elements;
+  const { elements, remark } = (body ?? {}) as { elements?: unknown; remark?: unknown };
   if (!Array.isArray(elements)) throw new Error('Overpass: unexpected response');
+  // Overpass reports its own timeouts and memory limits with HTTP 200 and a "remark"; the elements are
+  // then empty or partial, so treat it as a failure (not cached) rather than a real answer.
+  if (typeof remark === 'string' && /runtime error|timed out|out of memory/i.test(remark))
+    throw new Error(`Overpass: runtime error (${remark.slice(0, 120)})`);
   const unique = new Map<string, Restaurant>();
   for (const e of elements as OsmElement[]) {
     const r = toRestaurant(e);

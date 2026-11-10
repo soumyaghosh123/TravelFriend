@@ -73,3 +73,28 @@ describe('parseOverpass', () => {
     );
   });
 });
+
+describe('Overpass errors sent with HTTP 200', () => {
+  test.each([
+    ['empty elements', []],
+    [
+      'partial elements',
+      [{ type: 'node', id: 1, lat: 15.55, lon: 73.75, tags: { amenity: 'cafe', name: 'Half' } }],
+    ],
+  ])('a runtime-error remark with %s throws (so it is not cached)', (_n, elements) => {
+    const errBody = {
+      elements,
+      remark: 'runtime error: Query timed out in "query" at line 1 after 26 seconds.',
+    };
+    expect(() => parseOverpass(errBody, [point], 60)).toThrow(/Overpass: runtime error/);
+  });
+  test('an out-of-memory remark throws', () => {
+    expect(() =>
+      parseOverpass(
+        { elements: [], remark: 'runtime error: Query run out of memory using about 2048 MB of RAM.' },
+        [point],
+        60,
+      ),
+    ).toThrow(/Overpass: runtime error/);
+  });
+});
