@@ -30,6 +30,10 @@ describe('messages', () => {
     for (const k of VALIDATION_KEYS) expect(en).toContain(`search.errors.${k}`);
   });
 
+  test('every plan style has a plan-total label (results header)', () => {
+    for (const style of ['offbeat', 'budget', 'comfort']) expect(en).toContain(`results.planTotal.${style}`);
+  });
+
   test('the schema produces no message keys the UI lacks', () => {
     const src = readFileSync(new URL('../../../packages/domain/src/search/search-input.ts', import.meta.url), 'utf8');
     const used = [...src.matchAll(/'([a-zA-Z]+\.[a-zA-Z]+)'/g)].map((m) => m[1]!).filter((k) => !k.includes('/'));

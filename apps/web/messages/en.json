@@ -234,6 +234,7 @@
     "selectedDates": "Selected",
     "changeSearch": "✎ Change search",
     "planTotal": {
+      "offbeat": "Offbeat plan · approx. total for group",
       "budget": "Budget plan · approx. total for group",
       "comfort": "Comfort plan · approx. total for group"
     },

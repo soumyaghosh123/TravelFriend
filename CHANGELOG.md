@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fix: the results header crashed in dev (`MISSING_MESSAGE results.planTotal.offbeat`) when the Offbeat plan was selected; label added in en/hi/bn, with a test covering every plan style.
 - Scaffold pnpm + Turborepo monorepo with `@tripsaver/domain` and `@tripsaver/providers` packages.
 - Domain: pricing engine (child rules, room suggestion), cheapest-dates engine (windows, bands, top 3, reasons, month comparison).
 - Providers: interfaces, registry, deep links (honest `prefilled` flag), mock trains/buses/flights/hotels/calendar/climate for Goa, Manali, Jaipur, Kerala, Darjeeling.
