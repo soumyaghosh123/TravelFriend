@@ -320,6 +320,13 @@
     "onward": "जाना",
     "return": "वापसी",
     "legTimes": "{depart} {from} → {arrive} {to}",
+    "faster": {
+      "fly": "इसके बजाय फ़्लाइट लें",
+      "other": "{mode} से जल्दी",
+      "line": "{depart} बजे रवाना · {duration} · {saved} जल्दी",
+      "extra": "{mode} से +{amount} · कुल ख़र्च में {mode} ही है",
+      "cheaper": "{mode} से {amount} कम"
+    },
     "hotelLine": "{rating} मेहमान रेटिंग · {reviews} समीक्षाएँ · {nights} रातें",
     "noHotel": "होटल की ज़रूरत नहीं",
     "noHotelSub": "आप उसी दिन लौटते हैं जिस दिन पहुँचते हैं।",

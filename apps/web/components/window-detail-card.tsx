@@ -1,9 +1,10 @@
 'use client';
 
 import type { WindowReason } from '@tripsaver/domain';
-import type { PricedWindow, TransportOffer } from '@tripsaver/providers';
+import type { DirectionTransport, PricedWindow, TransportOffer, TransportSection } from '@tripsaver/providers';
 import { useLocale, useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
+import { fasterOption } from '../lib/faster-option';
 import { dateRange, dayMonth, inr } from '../lib/format';
 import { tripSources } from '../lib/trip-sources';
 import { Price } from './price';
@@ -19,6 +20,8 @@ interface Props {
   /** Calendar estimate for this start date (only for dates outside the top 3). */
   estimate?: number;
   reasons: WindowReason[];
+  /** Transport for these dates, when loaded: adds a "fly instead" line under slow legs. */
+  transport?: TransportSection | null;
 }
 
 const MODE_ICON = { train: '🚆', bus: '🚌', flight: '✈️' } as const;
@@ -58,9 +61,50 @@ export function WindowDetailCard({
   mostExpensive,
   estimate,
   reasons,
+  transport = null,
 }: Props) {
   const t = useTranslations('results');
   const locale = useLocale();
+
+  const faster = (chosen: TransportOffer, d: DirectionTransport | null) => {
+    const f = fasterOption(chosen, d);
+    if (!f) return null;
+    const o = f.offer;
+    const dur = (min: number) => t('transport.duration', { h: Math.floor(min / 60), m: min % 60 });
+    return (
+      <li className="mb-2.5 flex flex-col gap-2 rounded-[10px] bg-bg px-3 py-2 sm:flex-row sm:items-start sm:gap-3">
+        <span className="hidden text-base sm:block" aria-hidden>
+          {o.mode === 'flight' ? '⚡' : '⏱️'}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-[13px] font-semibold">
+            {o.mode === 'flight' ? t('faster.fly') : t('faster.other', { mode: t(`modes.${o.mode}`) })}:{' '}
+            {o.number ?? o.operator} · {o.travelClass}
+          </div>
+          <div className="text-xs text-muted">
+            {t('faster.line', {
+              depart: o.departAt.slice(11, 16),
+              duration: dur(o.durationMin),
+              saved: dur(f.savedMin),
+            })}
+          </div>
+        </div>
+        <div className="sm:w-56 sm:shrink-0 sm:text-right">
+          <Price
+            amount={o.price.amount}
+            isEstimate={o.isEstimate}
+            offer={o}
+            size="sm"
+            note={
+              f.extra >= 0
+                ? t('faster.extra', { amount: inr(f.extra), mode: t(`modes.${chosen.mode}`).toLowerCase() })
+                : t('faster.cheaper', { amount: inr(-f.extra), mode: t(`modes.${chosen.mode}`).toLowerCase() })
+            }
+          />
+        </div>
+      </li>
+    );
+  };
 
   const leg = (o: TransportOffer, label: string) => (
     <Row
@@ -110,6 +154,7 @@ export function WindowDetailCard({
 
       <ul className="mt-2">
         {leg(w.onward, t('onward'))}
+        {faster(w.onward, transport?.onward ?? null)}
         {w.hotel ? (
           <Row
             icon="🏨"
@@ -138,6 +183,7 @@ export function WindowDetailCard({
           price={<Price amount={w.local.amount} isEstimate ownEstimate size="md" />}
         />
         {leg(w.return, t('return'))}
+        {faster(w.return, transport?.return ?? null)}
       </ul>
 
       {estimate !== undefined && estimate !== w.total && (

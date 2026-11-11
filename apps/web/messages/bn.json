@@ -320,6 +320,13 @@
     "onward": "যাওয়া",
     "return": "ফেরা",
     "legTimes": "{depart} {from} → {arrive} {to}",
+    "faster": {
+      "fly": "বরং ফ্লাইটে যান",
+      "other": "{mode}-এ তাড়াতাড়ি",
+      "line": "{depart}-এ ছাড়ে · {duration} · {saved} কম সময়",
+      "extra": "{mode}-এর চেয়ে +{amount} · মোট খরচে {mode}-ই ধরা আছে",
+      "cheaper": "{mode}-এর চেয়ে {amount} কম"
+    },
     "hotelLine": "{rating} অতিথি রেটিং · {reviews}টি রিভিউ · {nights} রাত",
     "noHotel": "হোটেলের দরকার নেই",
     "noHotelSub": "যেদিন পৌঁছবেন সেদিনই ফিরবেন।",

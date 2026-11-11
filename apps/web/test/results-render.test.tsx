@@ -135,6 +135,7 @@ function page() {
         selectedStart={top.start}
         selection={selection}
         onSelect={() => {}}
+        transport={transport}
       />
     </>
   );
@@ -188,6 +189,14 @@ describe('results page renders with real mock data', () => {
     const links = [...html.matchAll(/<a [^>]*href="(https:[^"]+)"[^>]*>/g)];
     expect(links.length).toBeGreaterThanOrEqual(3);
     for (const [tag] of links) expect(tag).toContain('rel="noopener noreferrer sponsored"');
+  });
+
+  test('en: "Fly instead" under the slow onward train, with its own price, source and link', () => {
+    // Onward is a ~34 h train; the return leg is already a 1-stop flight (non-stop saves < 3 h → no line).
+    const { html } = render('en', page());
+    expect(html.match(/Fly instead/g)).toHaveLength(1);
+    expect(html).toContain('vs the train');
+    expect(html).toContain(transport.onward.summary.fastest!.bookingUrl.replace(/&/g, '&amp;'));
   });
 
   test('calendar has a button for each of the 22 possible start dates', () => {

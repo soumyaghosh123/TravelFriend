@@ -1,6 +1,6 @@
 'use client';
 
-import type { DatesSection, StyleDates } from '@tripsaver/providers';
+import type { DatesSection, StyleDates, TransportSection } from '@tripsaver/providers';
 import { useLocale, useTranslations } from 'next-intl';
 import { monthLabel } from '../lib/format';
 import type { SelectedWindow } from '../lib/use-selected-window';
@@ -21,10 +21,12 @@ interface Props {
   selectedStart: string | null;
   selection: SelectedWindow;
   onSelect: (start: string) => void;
+  /** Transport for the selected dates, once loaded (for the "fly instead" lines). */
+  transport?: TransportSection | null;
 }
 
 /** Tab 1: price calendar, 3 cheapest windows, why dates cost more, month comparison, when to book. */
-export function BestDatesTab({ dates, style, people, selectedStart, selection, onSelect }: Props) {
+export function BestDatesTab({ dates, style, people, selectedStart, selection, onSelect, transport = null }: Props) {
   const t = useTranslations('results');
   const locale = useLocale();
   const month = `${dates.year}-${String(dates.month).padStart(2, '0')}`;
@@ -73,6 +75,7 @@ export function BestDatesTab({ dates, style, people, selectedStart, selection, o
           mostExpensive={style.mostExpensive}
           estimate={selection.estimate}
           reasons={selection.reasons}
+          transport={transport}
         />
       )}
 

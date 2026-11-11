@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Best dates card: under a slow onward or return leg, a "Fly instead" line (or "Faster by bus/train") shows the fastest direct option that day with its own price, source, booking link and the difference vs the chosen leg. It appears only when it saves at least 3 hours; the trip total still uses the cheapest leg. Labels in en/hi/bn.
 - Real flight fares: `FLIGHT_PROVIDERS=travelpayouts` uses the Travelpayouts (Aviasales) Flight Data API. Cheapest fare per day from one request per airport pair per month (cached 6 hours), always "approx.", booking links to Aviasales with route, date, travellers and the Partner ID. Days without data show no flight; routes or months without any data, and API failures (5-minute pause), use the sample flights.
 - Deploy: free-plan setup for Neon (database), Render (API, `render.yaml`) and Vercel (website, `apps/web/vercel.json`); `API_URL` passed through Turborepo to the web build; guide in `docs/deploy.md`. README added.
 - Fix: the results header crashed in dev (`MISSING_MESSAGE results.planTotal.offbeat`) when the Offbeat plan was selected; label added in en/hi/bn, with a test covering every plan style.

@@ -320,6 +320,13 @@
     "onward": "Onward",
     "return": "Return",
     "legTimes": "{depart} {from} → {arrive} {to}",
+    "faster": {
+      "fly": "Fly instead",
+      "other": "Faster by {mode}",
+      "line": "departs {depart} · {duration} · {saved} quicker",
+      "extra": "+{amount} vs the {mode} · trip total keeps the {mode}",
+      "cheaper": "{amount} less than the {mode}"
+    },
     "hotelLine": "{rating} guest rating · {reviews} reviews · {nights} nights",
     "noHotel": "No hotel night needed",
     "noHotelSub": "You travel back the same day you arrive.",

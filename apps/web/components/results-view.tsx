@@ -189,6 +189,7 @@ export function ResultsView({ searchId, input, fromName, toName, toKind, changeH
               selectedStart={start}
               selection={selection}
               onSelect={setStart}
+              transport={transport.status === 'ok' ? transport.data : null}
             />
           )}
 
